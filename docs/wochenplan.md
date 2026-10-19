@@ -21,6 +21,8 @@ Zwischen den Sessions baut Claude die nächste Version.
 - [x] Claude baut den ersten Prototyp: Insel, Figur, Touch-Joystick, Zelt, 100 Münzen
 - [x] Erster Test: nach 3 Minuten viel Feedback! (So läuft eine **Feedback-Schleife**)
 - [x] Claude baut aus dem Feedback: Rucksack, Aktions-Knopf, Schaufel, Grabestellen, Tag & Nacht (5 + 3 Min.), Schlafen im Zelt, Klaviermusik, 3× größere Insel mit Bergen, Wald, Seen, Pfad und Dorf, schönere Grafik
+- [x] Zweite Feedback-Runde: Schaufel falsch herum, Karte, Navigation, Boote, Tiere, Schwert bauen, viel bessere Grafik
+- [x] Claude + 3 Helfer-Agenten bauen das **parallel** (einer für Tiere, einer für Boote, einer für die Karte)
 - [ ] 🏠 Hausaufgabe: [Tag 1](hausaufgaben/tag-1.md)
 
 ## Tag 2: Der erste Test

@@ -22,6 +22,26 @@ export function baueSchaufel() {
   return schaufel;
 }
 
+export function baueSchwert() {
+  const schwert = new THREE.Group();
+  const metall = new THREE.MeshStandardMaterial({ color: '#d5dbe2', metalness: 0.85, roughness: 0.25 });
+  const klinge = new THREE.Mesh(new THREE.CylinderGeometry(0.07, 0.07, 0.95, 16), metall);
+  klinge.scale.z = 0.22;
+  klinge.position.y = 0.67;
+  const spitze = new THREE.Mesh(new THREE.ConeGeometry(0.07, 0.18, 16), metall);
+  spitze.scale.z = 0.22;
+  spitze.position.y = 1.23;
+  const parier = new THREE.Mesh(new THREE.CapsuleGeometry(0.045, 0.32, 4, 10), new THREE.MeshStandardMaterial({ color: '#8a6a2a', metalness: 0.6, roughness: 0.4 }));
+  parier.rotation.z = Math.PI / 2;
+  parier.position.y = 0.18;
+  const griff = new THREE.Mesh(new THREE.CylinderGeometry(0.04, 0.045, 0.28, 10), new THREE.MeshStandardMaterial({ color: '#5a3a22', roughness: 0.9 }));
+  const knauf = new THREE.Mesh(new THREE.SphereGeometry(0.065, 12, 10), parier.material);
+  knauf.position.y = -0.16;
+  schwert.add(klinge, spitze, parier, griff, knauf);
+  schwert.traverse((t) => (t.castShadow = true));
+  return schwert;
+}
+
 // farben = { shirt, hose, haare, haut, hut }
 export function baueFigur(farben) {
   const figur = new THREE.Group();

@@ -5,8 +5,8 @@
 // =============================================================
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { baueGelaende, bodenHoehe } from './gelaende.js';
-import { baueNatur, aktualisiereNatur } from './natur.js';
+import { baueGelaende, bodenHoehe, DORF } from './gelaende.js';
+import { baueNatur, aktualisiereNatur, wenigerDetails } from './natur.js';
 import { Hindernisse } from './hindernisse.js';
 import { Himmel } from './himmel.js';
 import { Wasser } from './wasser.js';
@@ -17,6 +17,11 @@ import { Steuerung, knopf } from './steuerung.js';
 import { Rucksack } from './rucksack.js';
 import { Objekte } from './objekte.js';
 import { Musik } from './musik.js';
+import { Karte } from './karte.js';
+import { Werkbank } from './werkbank.js';
+import { Boote } from './boote.js';
+import { Tiere } from './tiere.js';
+import { setzeAnisotropie } from './texturen.js';
 
 const spielfeld = document.getElementById('spielfeld');
 
@@ -29,6 +34,8 @@ renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; // Farben wie im Kino
 renderer.toneMappingExposure = 1.05;
 spielfeld.prepend(renderer.domElement);
+// Texturen auch schräg von der Seite scharf halten
+setzeAnisotropie(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
 
 const szene = new THREE.Scene();
 const kamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1200);
@@ -56,7 +63,10 @@ function meldung(text, sekunden = 3.5) {
 }
 
 const rucksack = new Rucksack(meldung);
-rucksack.beiAenderung = () => (spieler.schaufel.visible = rucksack.inDerHand === 'schaufel');
+rucksack.beiAenderung = () => {
+  spieler.schaufel.visible = rucksack.inDerHand === 'schaufel';
+  spieler.schwert.visible = rucksack.inDerHand === 'schwert';
+};
 rucksack.zeichnen();
 knopf(document.getElementById('rucksack-zu'), () => rucksack.schliessen());
 // Tippen im Rucksack-Fenster soll nicht den Joystick starten
@@ -81,6 +91,30 @@ function schlafen() {
 }
 
 const objekte = new Objekte(szene, hindernisse, { rucksack, musik, meldung, tageszeit, spieler, dorf, schlafen });
+
+// ---------- Werkbank ----------
+const werkbank = new Werkbank(szene, hindernisse, { rucksack, meldung, musik, elternElement: spielfeld });
+objekte.interaktionen.push(werkbank.interaktion);
+
+// ---------- Boote & Tiere ----------
+const boote = new Boote(szene, spieler);
+objekte.interaktionen.push(...boote.interaktionen);
+const tiere = new Tiere(szene, hindernisse);
+
+// ---------- Karte & Navigation ----------
+const karte = new Karte(spielfeld);
+karte.punkt('zelt', { name: 'Zelt', bild: '⛺', x: 5, z: -2 });
+karte.punkt('werkbank', { name: 'Werkbank', bild: '🔨', x: werkbank.ort.x, z: werkbank.ort.z });
+karte.punkt('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z });
+karte.beiZielErreicht = (ziel) => meldung(`${ziel.bild} Du bist da: ${ziel.name}!`, 4);
+// Boote erscheinen erst auf der Karte, wenn man sie entdeckt hat
+boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: false }));
+boote.beiEntdeckt = (boot) => {
+  const i = boote.liste.indexOf(boot);
+  const b = boote.positionen[i];
+  karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: true });
+  meldung('🚣 Du hast ein Boot entdeckt! Es ist jetzt auf deiner Karte.', 5);
+};
 
 // ---------- Anzeigen ----------
 document.getElementById('muenzen').textContent = EINSTELLUNGEN.startGeld;
@@ -140,6 +174,7 @@ function passeQualitaetAn(echteZeit) {
   const fps = bilderGezaehlt / messZeit;
   const pr = renderer.getPixelRatio();
   if (fps < 40 && pr > 1) renderer.setPixelRatio(Math.max(1, pr - 0.25));
+  else if (fps < 35) wenigerDetails(); // reicht das nicht: Pflanzen nicht so weit zeigen
   bilderGezaehlt = 0;
   messZeit = 0;
 }
@@ -152,12 +187,20 @@ function spielSchleife() {
 
   if (laeuft) {
     const eingabe = steuerung.lies();
-    if (eingabe.rucksack) rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
-    const pausiert = rucksack.offen || schlaeft;
+    if (eingabe.rucksack && !karte.offen) {
+      if (werkbank.offen) werkbank.schliessen();
+      else rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
+    }
+    if (karte.offen && rucksack.offen) rucksack.schliessen();
+    const pausiert = rucksack.offen || schlaeft || karte.offen || werkbank.offen;
     if (!pausiert) {
       tageszeit.aktualisiere(dt);
-      if (eingabe.aktion) objekte.aktion();
-      spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel);
+      if (eingabe.aktion) {
+        if (objekte.aktuelle) objekte.aktion();
+        else if (rucksack.inDerHand === 'schwert') spieler.schwingen();
+      }
+      if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
+      else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel);
     }
     bewegeKamera(dt, eingabe.kameraDrehung, eingabe.kameraNeigung);
   } else {
@@ -176,12 +219,16 @@ function spielSchleife() {
   const pos = spieler.figur.position;
   himmel.aktualisiere(dt, tageszeit, kamera, pos);
   wasser.aktualisiere(dt);
+  boote.aktualisiere(dt);
+  tiere.aktualisiere(dt, pos, himmel.helligkeit);
   aktualisiereNatur(dt, pos);
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
   spieler.laterne.intensity = (1 - himmel.helligkeit) * 14;
 
-  const naechste = objekte.aktualisiere(dt, pos);
-  const zeigen = laeuft && naechste && !rucksack.offen;
+  karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
+  let naechste = objekte.aktualisiere(dt, pos);
+  if (!naechste && rucksack.inDerHand === 'schwert') naechste = { bild: '⚔️', text: 'Schwingen' };
+  const zeigen = laeuft && naechste && !rucksack.offen && !karte.offen && !werkbank.offen;
   aktionsKnopf.classList.toggle('sichtbar', !!zeigen);
   if (zeigen) {
     aktionsBild.innerHTML = naechste.bild;
@@ -220,7 +267,7 @@ spielSchleife();
 
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
-  spieler, rucksack, tageszeit, objekte, renderer, starte,
+  spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere,
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {
     spieler.figur.position.set(x, bodenHoehe(x, z), z);

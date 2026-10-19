@@ -4,7 +4,7 @@
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { bodenHoehe, WASSER_HOEHE } from './gelaende.js';
-import { baueFigur, baueSchaufel } from './figur.js';
+import { baueFigur, baueSchaufel, baueSchwert } from './figur.js';
 
 export class Spieler {
   constructor(szene, hindernisse) {
@@ -20,11 +20,23 @@ export class Spieler {
     this.figur.add(rucksack);
 
     // Die Schaufel in der rechten Hand (nur sichtbar, wenn man sie hält)
-    this.schaufel = baueSchaufel();
+    // Die Hand hält den Stiel oben am Griff – das Schaufelblatt zeigt nach unten
+    this.schaufel = new THREE.Group();
+    const schaufelModell = baueSchaufel();
+    schaufelModell.position.y = -0.95;
+    this.schaufel.add(schaufelModell);
     this.schaufel.position.set(0, -0.62, 0.05);
-    this.schaufel.rotation.x = 1.3;
+    this.schaufel.rotation.x = 0.35;
     this.schaufel.visible = false;
     this.armR.add(this.schaufel);
+
+    // Das Schwert (wird an der Werkbank gebaut)
+    this.schwert = baueSchwert();
+    this.schwert.position.set(0, -0.62, 0.05);
+    this.schwert.rotation.x = Math.PI / 2;
+    this.schwert.visible = false;
+    this.armR.add(this.schwert);
+    this.schwungZeit = 0;
 
     // Nachts hat die Figur eine kleine Laterne dabei
     this.laterne = new THREE.PointLight('#ffcf8a', 0, 18, 1.4);
@@ -42,6 +54,10 @@ export class Spieler {
 
   kannStehen(x, z) {
     return bodenHoehe(x, z) > WASSER_HOEHE - 0.5 && !this.hindernisse.trifft(x, z, 0.4);
+  }
+
+  schwingen() {
+    if (this.schwungZeit <= 0) this.schwungZeit = 0.45;
   }
 
   // Graben-Animation starten
@@ -89,7 +105,17 @@ export class Spieler {
     this.fussL.position.z = 0.05 + w * 0.25;
     this.fussR.position.z = 0.05 - w * 0.25;
     this.armL.rotation.x = -w * 0.6;
-    this.armR.rotation.x = this.schaufel.visible ? -0.5 + w * 0.2 : w * 0.6;
+    this.armR.rotation.x = this.schaufel.visible || this.schwert.visible ? -0.5 + w * 0.2 : w * 0.6;
+
+    // Schwert-Schwung: Arm schnell von oben nach vorne
+    if (this.schwungZeit > 0) {
+      this.schwungZeit -= dt;
+      const t = 1 - this.schwungZeit / 0.45;
+      this.armR.rotation.x = -2.6 + t * 2.6;
+      this.armR.rotation.z = Math.sin(t * Math.PI) * 0.4;
+    } else {
+      this.armR.rotation.z = 0;
+    }
     this.koerper.position.y = 1.05 + Math.abs(w) * 0.04;
 
     // Graben-Animation: Schaufel hoch und runter

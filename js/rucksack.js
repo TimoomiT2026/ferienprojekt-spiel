@@ -2,6 +2,7 @@
 //  DER RUCKSACK (Inventar) – was hat man alles dabei?
 // =============================================================
 import { EINSTELLUNGEN } from './einstellungen.js';
+import { knopf } from './steuerung.js';
 
 // Die Schaufel malen wir selbst (das Schaufel-Emoji kennen nicht alle Geräte)
 export const SCHAUFEL_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hidden="true">
@@ -18,6 +19,7 @@ export const DINGE = {
   eisenerz: { name: 'Eisenerz', bild: '🔩', text: 'Daraus kann man Eisen machen.' },
   gold: { name: 'Goldnugget', bild: '🟡', text: 'Glänzt! Das ist bestimmt viel wert.' },
   edelstein: { name: 'Edelstein', bild: '💎', text: 'Super selten! Du hast Glück gehabt.' },
+  schwert: { name: 'Schwert', bild: '🗡️', werkzeug: true, text: 'Selbst gebaut! Damit bist du nachts nicht wehrlos.' },
 };
 
 export class Rucksack {
@@ -49,6 +51,24 @@ export class Rucksack {
     this.plaetze[frei] = { id, anzahl };
     this.zeichnen();
     return true;
+  }
+
+  // Wie viele hat man davon?
+  anzahl(id) {
+    return this.plaetze.reduce((summe, p) => summe + (p && p.id === id ? p.anzahl : 0), 0);
+  }
+
+  // Nimmt Dinge aus dem Rucksack heraus
+  nehmen(id, anzahl) {
+    for (let i = this.plaetze.length - 1; i >= 0 && anzahl > 0; i--) {
+      const p = this.plaetze[i];
+      if (!p || p.id !== id) continue;
+      const weg = Math.min(p.anzahl, anzahl);
+      p.anzahl -= weg;
+      anzahl -= weg;
+      if (p.anzahl === 0) this.plaetze[i] = null;
+    }
+    this.zeichnen();
   }
 
   hat(id) {
@@ -106,13 +126,7 @@ export class Rucksack {
           (this.inDerHand === platz.id ? '<span class="hand">✋</span>' : '');
         if (this.inDerHand === platz.id) feld.classList.add('gewaehlt');
       }
-      const tippen = (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        this.antippen(i);
-      };
-      feld.addEventListener('touchstart', tippen, { passive: false });
-      feld.addEventListener('click', tippen);
+      knopf(feld, () => this.antippen(i));
       this.raster.appendChild(feld);
     });
     const hand = this.inDerHand ? DINGE[this.inDerHand] : null;

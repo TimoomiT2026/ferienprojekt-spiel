@@ -7,13 +7,17 @@
 
 // Macht aus einem Element einen Knopf, der auf dem iPad sofort reagiert
 export function knopf(element, wasPassiert) {
+  let letzterTouch = 0;
   element.addEventListener('touchstart', (e) => {
     e.preventDefault();
     e.stopPropagation();
+    letzterTouch = performance.now();
     wasPassiert();
   }, { passive: false });
   element.addEventListener('click', (e) => {
     e.stopPropagation();
+    // Manche Geräte schicken nach dem Tippen noch einen "Klick" hinterher – nicht doppelt zählen
+    if (performance.now() - letzterTouch < 800) return;
     wasPassiert();
   });
   element.addEventListener('mousedown', (e) => e.stopPropagation());

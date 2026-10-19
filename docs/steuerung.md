@@ -7,6 +7,7 @@
 | Springen | Knopf unten rechts ⤒ | Leertaste |
 | Aktion (aufheben, graben, schlafen, reden) | Oranger Knopf, erscheint, wenn man vor etwas steht | E |
 | Rucksack öffnen | 🎒 oben links | I |
+| Karte öffnen | 🗺️ oben links (unter dem Rucksack) | M |
 | Musik an/aus | 🎵 oben rechts | – |
 
 ## Die ersten Schritte
@@ -16,6 +17,10 @@
 4. Ein **Tag** dauert 5 Minuten, eine **Nacht** 3 Minuten (änderbar in `js/einstellungen.js`).
 5. **Schlafen** geht nur nachts, im Zelt. Am nächsten Morgen sind die Grabestellen wieder voll.
 6. Folge dem **Trampelpfad**, dann findest du das **Dorf** und den Händler.
+7. **Verlaufen?** Karte 🗺️ öffnen und das Zelt (oder das Dorf) antippen. Dann zeigt unten ein **Pfeil** den Weg und wie viele Meter es noch sind.
+8. **Werkbank** 🔨 neben dem Zelt: Aus **2 Eisenerz + 3 Steinen** baust du ein **Schwert**. Im Rucksack antippen, dann hast du es in der Hand.
+9. **Boote** 🚣 liegen versteckt an der Küste. Einsteigen, mit dem Joystick rudern, an Land wieder aussteigen. Gefundene Boote erscheinen auf der Karte.
+10. **Tiere:** Schafe grasen in Herden, Hasen hoppeln weg, wenn du zu nah kommst. Nachts legen sich die Schafe schlafen.
 
 ## Hinweis Musik auf dem iPad
 Die Musik ist ruhiges Klavier, vom Computer selbst ausgerechnet (keine Musikdatei, darum garantiert lizenzfrei).

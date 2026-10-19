@@ -9,14 +9,15 @@ Echte Spielestudios haben so eine Liste auch, sie heißt dort **„Backlog“**.
 - [ ] Dorfbewohner, die herumlaufen (KI-gesteuert)
 - [ ] Kleidung: Hüte, Hemden
 - [ ] Fliegen
-- [ ] Floß und Schiffe
+- [x] ~~Boote~~ (fertig!) – Floß und größere Schiffe kommen vielleicht noch
 - [ ] Burg und Schatztruhen finden
 - [ ] Höhlen mit Fackeln
+- [ ] Tiere füttern oder streicheln?
 - [ ] Spielstand speichern (gerade fängt man nach dem Neuladen wieder von vorn an)
-- [ ] Crafting Table
+- [x] ~~Crafting Table~~ → Werkbank (fertig!)
 - [ ] TNT
 - [ ] Essen und Trinken (Wasserflasche)
 - [ ] Avatar aussuchen
 - [ ] Menü mit Einstellungen (Ton an/aus)
-- [ ] Schwert gegen Monster
+- [x] ~~Schwert~~ (fertig!) – fehlt noch: Monster, gegen die man es braucht
 - [ ] Einfache und doppelt starke Monster

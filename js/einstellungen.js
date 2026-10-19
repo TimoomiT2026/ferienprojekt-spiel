@@ -50,6 +50,12 @@ export const EINSTELLUNGEN = {
     edelstein: 2,
   },
 
+  // ---------- Werkbank ----------
+  // Was braucht man, um etwas zu bauen? (Ding: Anzahl)
+  rezepte: {
+    schwert: { eisenerz: 2, stein: 3 },
+  },
+
   // ---------- Musik ----------
   // Wie laut ist die Musik? (0 = aus, 1 = ganz laut)
   musikLautstaerke: 0.5,

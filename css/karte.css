@@ -1,0 +1,181 @@
+/* =============================================================
+   KARTE und NAVI-PFEIL
+   ============================================================= */
+
+/* ---------- Der Karten-Knopf (unter dem Rucksack) ---------- */
+#karte-knopf { width: 78px; height: 78px; font-size: 40px; }
+#karte-knopf.aktiv { background: #ffe3a8; }
+#karte-knopf.allein { position: absolute; top: 120px; left: 16px; }
+
+/* ---------- Das Kartenfenster ---------- */
+#karte-fenster {
+  --blatt: min(calc(94vh - 150px), calc(92vw - 40px), 760px);
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: calc(var(--blatt) + 40px);
+  padding: 14px 20px 12px;
+  border-radius: 28px;
+  background: #fff8ec;
+  border: 5px solid #8a5a2b;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.4);
+  transform: translate(-50%, -50%) scale(0.85);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 16;
+  touch-action: none;
+}
+#karte-fenster.offen { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+#karte-fenster .fenster-kopf { margin-bottom: 10px; }
+#karte-fenster .fenster-kopf h2 { color: #6b3f17; }
+#karte-zu {
+  width: 56px;
+  height: 56px;
+  border: none;
+  border-radius: 50%;
+  background: #8a5a2b;
+  color: #fff;
+  font-size: 26px;
+  box-shadow: 0 4px 0 #5c3a17;
+}
+#karte-zu:active { transform: translateY(3px); box-shadow: 0 1px 0 #5c3a17; }
+
+/* Das Kartenblatt – wie ein altes Stück Papier */
+#karte-blatt {
+  position: relative;
+  width: var(--blatt);
+  height: var(--blatt);
+  border-radius: 14px;
+  background: #efdcb0;
+  box-shadow: inset 0 0 0 3px #c9a877, 0 3px 10px rgba(80, 50, 20, 0.35);
+  overflow: hidden;
+}
+#karte-bild { width: 100%; height: 100%; display: block; }
+#karte-linie { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+#karte-linie line {
+  stroke: #c0392b;
+  stroke-width: 6;
+  stroke-dasharray: 4 14;
+  stroke-linecap: round;
+  vector-effect: non-scaling-stroke;
+}
+
+/* ---------- Punkte auf der Karte (Zelt, Dorf, Boote …) ---------- */
+.karte-punkt {
+  position: absolute;
+  width: 64px;
+  height: 64px;
+  margin: -32px 0 0 -32px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: rgba(255, 248, 236, 0.95);
+  box-shadow: 0 4px 0 rgba(60, 35, 10, 0.35), 0 4px 12px rgba(0, 0, 0, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  transition: transform 0.15s;
+}
+.karte-punkt[hidden] { display: none; }
+.karte-punkt:active { transform: scale(0.92); }
+.karte-punkt .punkt-bild { font-size: 34px; line-height: 1; }
+.karte-punkt .punkt-name {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, 4px);
+  padding: 2px 10px;
+  border-radius: 12px;
+  background: rgba(107, 63, 23, 0.88);
+  color: #fff;
+  font-size: 16px;
+  font-weight: bold;
+  white-space: nowrap;
+  pointer-events: none;
+}
+/* Das aktuelle Ziel blinkt mit einem roten Ring */
+.karte-punkt.ziel {
+  border-color: #c0392b;
+  background: #ffe3a8;
+  animation: ziel-ring 1.2s ease-out infinite;
+}
+.karte-punkt.ziel .punkt-name { background: #c0392b; }
+@keyframes ziel-ring {
+  0% { box-shadow: 0 4px 0 rgba(60, 35, 10, 0.35), 0 0 0 0 rgba(192, 57, 43, 0.7); }
+  100% { box-shadow: 0 4px 0 rgba(60, 35, 10, 0.35), 0 0 0 22px rgba(192, 57, 43, 0); }
+}
+
+/* Der Spieler auf der Karte: blauer Pfeil */
+#karte-ich {
+  position: absolute;
+  width: 40px;
+  height: 40px;
+  pointer-events: none;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+  z-index: 2;
+}
+#karte-ich svg { width: 100%; height: 100%; display: block; }
+
+/* ---------- Unten im Fenster ---------- */
+.karte-fuss {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 58px;
+  margin-top: 10px;
+}
+#karte-tipp { color: #4a3a28; font-size: 18px; line-height: 1.3; }
+#karte-navi-aus {
+  display: none;
+  flex-shrink: 0;
+  min-height: 56px;
+  padding: 0 20px;
+  border: none;
+  border-radius: 28px;
+  background: #c0392b;
+  color: #fff;
+  font-size: 19px;
+  font-weight: bold;
+  box-shadow: 0 4px 0 #8e2a20;
+}
+#karte-navi-aus.sichtbar { display: block; }
+#karte-navi-aus:active { transform: translateY(3px); box-shadow: 0 1px 0 #8e2a20; }
+
+/* ---------- Der Navi-Pfeil unten in der Mitte ---------- */
+#navi {
+  position: absolute;
+  left: 50%;
+  bottom: max(22px, env(safe-area-inset-bottom));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  transform: translate(-50%, 20px) scale(0.8);
+  opacity: 0;
+  pointer-events: none; /* damit der Joystick hier trotzdem geht */
+  transition: opacity 0.3s, transform 0.3s;
+}
+#navi.sichtbar { opacity: 1; transform: translate(-50%, 0) scale(1); }
+#navi-pfeil {
+  width: 96px;
+  height: 96px;
+  padding: 10px;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.32);
+  filter: drop-shadow(0 4px 4px rgba(0, 0, 0, 0.3));
+}
+#navi-pfeil svg { width: 100%; height: 100%; display: block; }
+#navi-text {
+  padding: 8px 20px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.92);
+  color: #24324a;
+  font-size: 22px;
+  font-weight: bold;
+  white-space: nowrap;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+}
+#navi.erreicht #navi-pfeil { display: none; }
+#navi.erreicht #navi-text { background: #ffb02e; color: #fff; font-size: 28px; animation: pulsieren 0.9s ease-in-out infinite; }

@@ -2,6 +2,7 @@
 //  DER HIMMEL – Sonne, Mond, Sterne, Wolken und das Licht
 // =============================================================
 import * as THREE from 'three';
+import { Sky } from 'three/addons/objects/Sky.js';
 import { zufallMitSeed } from './rauschen.js';
 
 const zufall = zufallMitSeed(7);
@@ -16,38 +17,42 @@ const FARBEN = {
   nachtHorizont: new THREE.Color('#16244a'),
 };
 
-function baueHimmelsKuppel() {
-  const material = new THREE.ShaderMaterial({
-    side: THREE.BackSide,
-    depthWrite: false,
-    fog: false,
-    uniforms: {
-      oben: { value: new THREE.Color() },
-      horizont: { value: new THREE.Color() },
-      sonnenRichtung: { value: new THREE.Vector3(0, 1, 0) },
-      sonnenFarbe: { value: new THREE.Color('#fff2c8') },
-      sonnenStaerke: { value: 1 },
-    },
-    vertexShader: `
-      varying vec3 vRichtung;
-      void main() {
-        vRichtung = normalize(position);
-        gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
-      }`,
-    fragmentShader: `
-      uniform vec3 oben, horizont, sonnenRichtung, sonnenFarbe;
-      uniform float sonnenStaerke;
-      varying vec3 vRichtung;
-      void main() {
-        float h = max(vRichtung.y, 0.0);
-        vec3 farbe = mix(horizont, oben, pow(h, 0.55));
-        float s = max(dot(vRichtung, sonnenRichtung), 0.0);
-        farbe += sonnenFarbe * (pow(s, 900.0) * 4.0 + pow(s, 12.0) * 0.35) * sonnenStaerke;
-        gl_FragColor = vec4(farbe, 1.0);
-        #include <colorspace_fragment>
-      }`,
-  });
-  return new THREE.Mesh(new THREE.SphereGeometry(900, 32, 16), material);
+// Der Himmel wird wie in echt berechnet: Sonnenlicht wird in der Luft
+// gestreut ("Rayleigh-Streuung"). Darum ist der Himmel blau und der
+// Sonnenuntergang orange! Das Programm dafür kommt von three.js.
+function baueAtmosphaere() {
+  const himmel = new Sky();
+  himmel.scale.setScalar(1000);
+  const u = himmel.material.uniforms;
+  u.turbidity.value = 4.5;
+  u.rayleigh.value = 1.6;
+  u.mieCoefficient.value = 0.004;
+  u.mieDirectionalG.value = 0.85;
+  u.hell = { value: 1 };
+  himmel.material.fragmentShader = himmel.material.fragmentShader
+    .replace('uniform vec3 up;', 'uniform vec3 up;\nuniform float hell;')
+    .replace('gl_FragColor = vec4( retColor, 1.0 );', 'gl_FragColor = vec4( retColor * hell, 1.0 );');
+  return himmel;
+}
+
+// Eine weiche Wolken-Flocke, mit dem Computer gemalt
+function wolkenBild() {
+  const n = 128;
+  const leinwand = document.createElement('canvas');
+  leinwand.width = leinwand.height = n;
+  const g = leinwand.getContext('2d');
+  for (let i = 0; i < 18; i++) {
+    const x = n / 2 + (zufall() - 0.5) * n * 0.45, y = n / 2 + (zufall() - 0.5) * n * 0.3;
+    const r = n * (0.15 + zufall() * 0.2);
+    const verlauf = g.createRadialGradient(x, y, 0, x, y, r);
+    verlauf.addColorStop(0, 'rgba(255,255,255,0.35)');
+    verlauf.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = verlauf;
+    g.fillRect(0, 0, n, n);
+  }
+  const t = new THREE.CanvasTexture(leinwand);
+  t.colorSpace = THREE.SRGBColorSpace;
+  return t;
 }
 
 function baueSterne() {
@@ -64,30 +69,29 @@ function baueSterne() {
 }
 
 function baueWolken() {
-  const gruppe = new THREE.Group();
-  const kugel = new THREE.SphereGeometry(1, 16, 12);
-  const material = new THREE.MeshStandardMaterial({ color: '#ffffff', roughness: 1, fog: false, transparent: true, opacity: 0.95 });
-  for (let i = 0; i < 32; i++) {
-    const wolke = new THREE.Group();
-    const teile = 5 + Math.floor(zufall() * 5);
-    for (let k = 0; k < teile; k++) {
-      const teil = new THREE.Mesh(kugel, material);
-      const r = 8 + zufall() * 10;
-      teil.scale.set(r * 1.4, r * 0.7, r);
-      teil.position.set((k - teile / 2) * 9 + zufall() * 6, zufall() * 5, zufall() * 10 - 5);
-      wolke.add(teil);
+  // Jede Wolke besteht aus vielen weichen Flocken (Punkte mit Bild)
+  const pos = [];
+  for (let i = 0; i < 34; i++) {
+    const mx = (zufall() - 0.5) * 900, my = 130 + zufall() * 60, mz = (zufall() - 0.5) * 900;
+    const laenge = 30 + zufall() * 50;
+    for (let k = 0; k < 16; k++) {
+      pos.push(mx + (zufall() - 0.5) * laenge, my + (zufall() - 0.3) * 8, mz + (zufall() - 0.5) * laenge * 0.5);
     }
-    wolke.position.set((zufall() - 0.5) * 900, 140 + zufall() * 50, (zufall() - 0.5) * 900);
-    gruppe.add(wolke);
   }
-  gruppe.userData.material = material;
-  return gruppe;
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  const material = new THREE.PointsMaterial({
+    map: wolkenBild(), size: 70, sizeAttenuation: true, transparent: true, depthWrite: false, fog: false, color: '#ffffff',
+  });
+  const wolken = new THREE.Points(geo, material);
+  wolken.userData.material = material;
+  return wolken;
 }
 
 export class Himmel {
   constructor(szene, renderer) {
     this.szene = szene;
-    this.kuppel = baueHimmelsKuppel();
+    this.kuppel = baueAtmosphaere();
     this.sterne = baueSterne();
     this.wolken = baueWolken();
     this.mond = new THREE.Mesh(
@@ -116,7 +120,7 @@ export class Himmel {
     // Spiegelungen (fürs Wasser): der Himmel wird einmal "fotografiert"
     this.pmrem = new THREE.PMREMGenerator(renderer);
     this.spiegelSzene = new THREE.Scene();
-    this.spiegelKuppel = baueHimmelsKuppel();
+    this.spiegelKuppel = baueAtmosphaere();
     this.spiegelSzene.add(this.spiegelKuppel);
     this.letzteSpiegelHelligkeit = -1;
     this.helligkeit = 1;
@@ -132,12 +136,12 @@ export class Himmel {
     this.helligkeit = hell;
 
     const u = this.kuppel.material.uniforms;
-    u.oben.value.copy(FARBEN.nachtOben).lerp(FARBEN.tagOben, hell).lerp(FARBEN.abendOben, abend * 0.4);
-    u.horizont.value.copy(FARBEN.nachtHorizont).lerp(FARBEN.tagHorizont, hell).lerp(FARBEN.abendHorizont, abend * 0.75);
-    u.sonnenRichtung.value.copy(richtung);
-    u.sonnenFarbe.value.set('#fff2c8').lerp(new THREE.Color('#ff7a3a'), abend);
-    u.sonnenStaerke.value = THREE.MathUtils.smoothstep(hoehe, -0.08, 0.02);
-    this.szene.fog.color.copy(u.horizont.value);
+    u.sunPosition.value.copy(richtung);
+    u.hell.value = 0.5 * THREE.MathUtils.smoothstep(hoehe, -0.25, 0.1);
+    // Nebel in der Ferne hat die Farbe des Horizonts
+    this.horizont = this.horizont || new THREE.Color();
+    this.horizont.copy(FARBEN.nachtHorizont).lerp(FARBEN.tagHorizont, hell).lerp(FARBEN.abendHorizont, abend * 0.6);
+    this.szene.fog.color.copy(this.horizont);
 
     // Kuppel, Sterne und Mond wandern mit der Kamera mit (sie sind "unendlich" weit weg)
     this.kuppel.position.copy(kamera.position);
@@ -151,10 +155,8 @@ export class Himmel {
     this.mond.visible = hell < 0.6;
 
     // Wolken ziehen langsam weiter und werden nachts dunkel
-    for (const wolke of this.wolken.children) {
-      wolke.position.x += dt * 2.5;
-      if (wolke.position.x > 450) wolke.position.x -= 900;
-    }
+    this.wolken.position.x += dt * 2.5;
+    if (this.wolken.position.x > 450) this.wolken.position.x -= 900;
     this.wolken.userData.material.color.setRGB(0.15, 0.17, 0.25).lerp(new THREE.Color(1, 1, 1), hell).lerp(new THREE.Color('#ffc59a'), abend * 0.6);
 
     // Licht: tagsüber Sonne, nachts bläuliches Mondlicht
@@ -176,11 +178,8 @@ export class Himmel {
     // Spiegelbild des Himmels nur neu machen, wenn es sich sichtbar geändert hat
     if (Math.abs(hell - this.letzteSpiegelHelligkeit) > 0.08) {
       const su = this.spiegelKuppel.material.uniforms;
-      su.oben.value.copy(u.oben.value);
-      su.horizont.value.copy(u.horizont.value);
-      su.sonnenRichtung.value.copy(u.sonnenRichtung.value);
-      su.sonnenFarbe.value.copy(u.sonnenFarbe.value);
-      su.sonnenStaerke.value = u.sonnenStaerke.value;
+      su.sunPosition.value.copy(u.sunPosition.value);
+      su.hell.value = u.hell.value;
       if (this.szene.environment) this.szene.environment.dispose();
       this.szene.environment = this.pmrem.fromScene(this.spiegelSzene, 0, 1, 1000).texture;
       this.letzteSpiegelHelligkeit = hell;
