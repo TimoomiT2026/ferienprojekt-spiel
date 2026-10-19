@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Inselspiel">
+  <title>Inselspiel</title>
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+  </script>
+</head>
+<body>
+  <div id="spielfeld">
+    <div id="start">
+      <h1>Inselspiel</h1>
+      <p class="untertitel">(den richtigen Namen erfindet ihr noch!)</p>
+      <p class="tippen">Tippen zum Starten</p>
+    </div>
+
+    <div id="hud">
+      <div id="muenz-anzeige">🪙 <span id="muenzen">0</span></div>
+      <div id="hilfe">Links: laufen · Rechts wischen: umschauen</div>
+      <button id="sprung-knopf" aria-label="Springen">⤒</button>
+    </div>
+
+    <div id="joystick"><div id="joystick-knopf"></div></div>
+  </div>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>

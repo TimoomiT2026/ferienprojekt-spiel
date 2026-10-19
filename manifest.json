@@ -1,0 +1,10 @@
+{
+  "name": "Inselspiel",
+  "short_name": "Inselspiel",
+  "start_url": "./",
+  "display": "fullscreen",
+  "orientation": "landscape",
+  "background_color": "#9fdcff",
+  "theme_color": "#9fdcff",
+  "icons": [{ "src": "icon.png", "sizes": "512x512", "type": "image/png" }]
+}

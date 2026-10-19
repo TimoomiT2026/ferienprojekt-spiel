@@ -1,0 +1,12 @@
+# Lexikon – Wörter, die wir gelernt haben
+
+| Wort | Was es bedeutet |
+|---|---|
+| **Mindmap** | Eine Gedanken-Landkarte: in der Mitte das Thema, außen herum alle Ideen, mit Linien verbunden. |
+| **Game Designer** | Die Person, die erfindet, *wie* ein Spiel funktioniert: Regeln, Ziele, was Spaß macht. |
+| **Game Loop** (Spiel-Kreislauf) | Das, was man im Spiel immer wieder macht. Bei uns: graben → handeln → bauen → Nacht überleben → von vorn. |
+| **Spielschleife** | Der Computer macht 60 Mal pro Sekunde: Eingabe lesen → alles bewegen → Bild malen. Steht in `js/main.js`. |
+| **Prototyp** | Eine erste, einfache Version zum Ausprobieren. Sieht noch nicht fertig aus, zeigt aber, ob die Idee funktioniert. |
+| **Backlog** | Die Warteliste für Ideen, die später kommen. |
+| **Bug** | Ein Fehler im Spiel. |
+| **Seed** | Eine Zahl, aus der die Welt „zufällig“ gebaut wird. Gleicher Seed = gleiche Welt. Unser Seed: 42. |

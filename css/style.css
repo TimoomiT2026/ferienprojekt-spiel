@@ -1,0 +1,125 @@
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #9fdcff;
+  font-family: "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
+  -webkit-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+}
+
+#spielfeld {
+  position: fixed;
+  inset: 0;
+  touch-action: none;
+}
+
+canvas { display: block; }
+
+/* ---------- Startbildschirm ---------- */
+#start {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  background: linear-gradient(180deg, rgba(20, 60, 110, 0.25), rgba(20, 60, 110, 0.55));
+  color: #fff;
+  text-align: center;
+  cursor: pointer;
+  transition: opacity 0.6s;
+  z-index: 10;
+}
+#start.weg { opacity: 0; pointer-events: none; }
+#start h1 {
+  font-size: clamp(48px, 10vw, 110px);
+  letter-spacing: 2px;
+  text-shadow: 0 6px 0 #1d5d8c, 0 10px 24px rgba(0, 0, 0, 0.35);
+}
+#start .untertitel { font-size: 18px; opacity: 0.9; }
+#start .tippen {
+  margin-top: 30px;
+  font-size: 26px;
+  padding: 14px 34px;
+  border-radius: 40px;
+  background: #ffb02e;
+  box-shadow: 0 6px 0 #c77c00;
+  animation: pulsieren 1.4s ease-in-out infinite;
+}
+@keyframes pulsieren { 50% { transform: scale(1.07); } }
+
+/* ---------- Anzeigen im Spiel ---------- */
+#hud { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s; }
+#hud.sichtbar { opacity: 1; }
+
+#muenz-anzeige {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  left: 16px;
+  padding: 8px 18px;
+  border-radius: 30px;
+  background: rgba(255, 255, 255, 0.9);
+  color: #7a4b00;
+  font-size: 26px;
+  font-weight: bold;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+#hilfe {
+  position: absolute;
+  top: max(20px, env(safe-area-inset-top));
+  right: 16px;
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  color: #fff;
+  font-size: 15px;
+}
+
+#sprung-knopf {
+  position: absolute;
+  right: 36px;
+  bottom: max(36px, env(safe-area-inset-bottom));
+  width: 96px;
+  height: 96px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: #1d5d8c;
+  font-size: 44px;
+  font-weight: bold;
+  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
+  pointer-events: auto;
+  touch-action: none;
+}
+#sprung-knopf:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); }
+
+/* ---------- Joystick (erscheint dort, wo der Finger hinkommt) ---------- */
+#joystick {
+  position: absolute;
+  width: 130px;
+  height: 130px;
+  margin: -65px 0 0 -65px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.25);
+  border: 3px solid rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+#joystick.sichtbar { opacity: 1; }
+#joystick-knopf {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 58px;
+  height: 58px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.9);
+  transform: translate(-50%, -50%);
+}
