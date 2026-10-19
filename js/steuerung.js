@@ -2,7 +2,22 @@
 //  STEUERUNG – Touch (iPad) und Tastatur (Mac)
 //  iPad: linke Bildschirmhälfte = Joystick, rechte Hälfte wischen = Kamera drehen
 //  Mac:  WASD oder Pfeiltasten = laufen, Leertaste = springen, Maus ziehen = Kamera
+//        E = Aktion (aufheben, graben, schlafen), I = Rucksack
 // =============================================================
+
+// Macht aus einem Element einen Knopf, der auf dem iPad sofort reagiert
+export function knopf(element, wasPassiert) {
+  element.addEventListener('touchstart', (e) => {
+    e.preventDefault();
+    e.stopPropagation();
+    wasPassiert();
+  }, { passive: false });
+  element.addEventListener('click', (e) => {
+    e.stopPropagation();
+    wasPassiert();
+  });
+  element.addEventListener('mousedown', (e) => e.stopPropagation());
+}
 
 export class Steuerung {
   constructor(element) {
@@ -10,6 +25,8 @@ export class Steuerung {
     this.kameraDrehung = 0; // wie weit die Kamera seit dem letzten Bild gedreht wurde
     this.kameraNeigung = 0;
     this.springen = false;
+    this.aktion = false;
+    this.rucksack = false;
     this.tasten = new Set();
 
     this.joystickFinger = null;
@@ -26,16 +43,16 @@ export class Steuerung {
     element.addEventListener('touchend', (e) => this.fingerHoch(e));
     element.addEventListener('touchcancel', (e) => this.fingerHoch(e));
 
-    sprungKnopf.addEventListener('touchstart', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      this.springen = true;
-    }, { passive: false });
-    sprungKnopf.addEventListener('mousedown', () => (this.springen = true));
+    knopf(sprungKnopf, () => (this.springen = true));
+    knopf(document.getElementById('aktion-knopf'), () => (this.aktion = true));
+    knopf(document.getElementById('rucksack-knopf'), () => (this.rucksack = true));
 
     window.addEventListener('keydown', (e) => {
+      if (e.repeat) return;
       this.tasten.add(e.code);
       if (e.code === 'Space') this.springen = true;
+      if (e.code === 'KeyE' || e.code === 'Enter') this.aktion = true;
+      if (e.code === 'KeyI' || e.code === 'KeyR' || e.code === 'Escape') this.rucksack = true;
     });
     window.addEventListener('keyup', (e) => this.tasten.delete(e.code));
 
@@ -120,10 +137,14 @@ export class Steuerung {
     const eingabe = {
       richtung: { x, y },
       springen: this.springen,
+      aktion: this.aktion,
+      rucksack: this.rucksack,
       kameraDrehung: this.kameraDrehung,
       kameraNeigung: this.kameraNeigung,
     };
     this.springen = false;
+    this.aktion = false;
+    this.rucksack = false;
     this.kameraDrehung = 0;
     this.kameraNeigung = 0;
     return eingabe;

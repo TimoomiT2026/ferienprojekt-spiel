@@ -9,15 +9,12 @@ html, body {
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
 }
 
-#spielfeld {
-  position: fixed;
-  inset: 0;
-  touch-action: none;
-}
-
+#spielfeld { position: fixed; inset: 0; touch-action: none; }
 canvas { display: block; }
+button { font-family: inherit; cursor: pointer; }
 
 /* ---------- Startbildschirm ---------- */
 #start {
@@ -28,12 +25,12 @@ canvas { display: block; }
   align-items: center;
   justify-content: center;
   gap: 12px;
-  background: linear-gradient(180deg, rgba(20, 60, 110, 0.25), rgba(20, 60, 110, 0.55));
+  background: linear-gradient(180deg, rgba(20, 60, 110, 0.2), rgba(20, 60, 110, 0.55));
   color: #fff;
   text-align: center;
   cursor: pointer;
   transition: opacity 0.6s;
-  z-index: 10;
+  z-index: 20;
 }
 #start.weg { opacity: 0; pointer-events: none; }
 #start h1 {
@@ -56,11 +53,26 @@ canvas { display: block; }
 /* ---------- Anzeigen im Spiel ---------- */
 #hud { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s; }
 #hud.sichtbar { opacity: 1; }
+#hud button { pointer-events: auto; touch-action: none; }
 
-#muenz-anzeige {
+.rund-knopf {
+  border: none;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.88);
+  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
+}
+.rund-knopf:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18); }
+
+#oben-links {
   position: absolute;
   top: max(16px, env(safe-area-inset-top));
   left: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+}
+#muenz-anzeige {
   padding: 8px 18px;
   border-radius: 30px;
   background: rgba(255, 255, 255, 0.9);
@@ -69,17 +81,50 @@ canvas { display: block; }
   font-weight: bold;
   box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
 }
+#rucksack-knopf { width: 78px; height: 78px; font-size: 40px; }
 
-#hilfe {
+#uhr {
   position: absolute;
-  top: max(20px, env(safe-area-inset-top));
-  right: 16px;
-  padding: 6px 14px;
-  border-radius: 20px;
-  background: rgba(0, 0, 0, 0.3);
+  top: max(18px, env(safe-area-inset-top));
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 20px;
+  border-radius: 30px;
+  background: rgba(0, 0, 0, 0.35);
   color: #fff;
-  font-size: 15px;
+  font-size: 20px;
+  font-weight: bold;
+  white-space: nowrap;
 }
+
+#musik-knopf {
+  position: absolute;
+  top: max(16px, env(safe-area-inset-top));
+  right: 16px;
+  width: 60px;
+  height: 60px;
+  font-size: 28px;
+}
+#musik-knopf.aus { opacity: 0.45; text-decoration: line-through; }
+
+#meldung {
+  position: absolute;
+  top: 84px;
+  left: 50%;
+  transform: translate(-50%, -10px);
+  max-width: min(640px, 80vw);
+  padding: 14px 24px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.95);
+  color: #24324a;
+  font-size: 21px;
+  line-height: 1.35;
+  text-align: center;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+  opacity: 0;
+  transition: opacity 0.3s, transform 0.3s;
+}
+#meldung.sichtbar { opacity: 1; transform: translate(-50%, 0); }
 
 #sprung-knopf {
   position: absolute;
@@ -87,17 +132,122 @@ canvas { display: block; }
   bottom: max(36px, env(safe-area-inset-bottom));
   width: 96px;
   height: 96px;
-  border: none;
-  border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
   color: #1d5d8c;
   font-size: 44px;
   font-weight: bold;
-  box-shadow: 0 6px 0 rgba(0, 0, 0, 0.2);
-  pointer-events: auto;
-  touch-action: none;
 }
-#sprung-knopf:active { transform: translateY(4px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); }
+
+#aktion-knopf {
+  position: absolute;
+  right: 150px;
+  bottom: max(70px, env(safe-area-inset-bottom));
+  width: 120px;
+  height: 120px;
+  border: 4px solid #fff;
+  border-radius: 50%;
+  background: #ffb02e;
+  color: #fff;
+  box-shadow: 0 6px 0 #c77c00, 0 0 0 0 rgba(255, 176, 46, 0.6);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  opacity: 0;
+  transform: scale(0.6);
+  pointer-events: none !important;
+  transition: opacity 0.2s, transform 0.2s;
+  animation: winken 1.6s infinite;
+}
+#aktion-knopf.sichtbar { opacity: 1; transform: scale(1); pointer-events: auto !important; }
+#aktion-knopf:active { transform: scale(0.94); }
+#aktion-bild { font-size: 44px; line-height: 1; }
+#aktion-text { font-size: 17px; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
+@keyframes winken { 50% { box-shadow: 0 6px 0 #c77c00, 0 0 0 14px rgba(255, 176, 46, 0); } }
+
+#hand-anzeige {
+  position: absolute;
+  right: 170px;
+  bottom: max(200px, env(safe-area-inset-bottom));
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  font-size: 32px;
+  line-height: 56px;
+  text-align: center;
+  opacity: 0;
+  transition: opacity 0.3s;
+}
+#hand-anzeige.sichtbar { opacity: 1; }
+
+/* ---------- Rucksack-Fenster ---------- */
+#rucksack-fenster {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: min(560px, 92vw);
+  padding: 22px;
+  border-radius: 28px;
+  background: #fff8ec;
+  border: 5px solid #c0392b;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s, transform 0.2s;
+  z-index: 15;
+}
+#rucksack-fenster.offen { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
+.fenster-kopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
+.fenster-kopf h2 { color: #7a2a1f; font-size: 28px; }
+#rucksack-zu {
+  width: 52px;
+  height: 52px;
+  border: none;
+  border-radius: 50%;
+  background: #c0392b;
+  color: #fff;
+  font-size: 24px;
+}
+#rucksack-raster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+.platz {
+  position: relative;
+  aspect-ratio: 1;
+  border: 3px solid #e2cfae;
+  border-radius: 18px;
+  background: #f3e6cf;
+}
+.platz.gewaehlt { border-color: #ffb02e; background: #fff1cf; box-shadow: 0 0 0 4px rgba(255, 176, 46, 0.4); }
+.platz .bild { font-size: 46px; }
+.platz .anzahl {
+  position: absolute;
+  right: 8px;
+  bottom: 4px;
+  font-size: 20px;
+  font-weight: bold;
+  color: #5a3a10;
+}
+.platz .hand { position: absolute; left: 6px; top: 4px; font-size: 20px; }
+#rucksack-info { margin-top: 16px; min-height: 2.6em; color: #4a3a28; font-size: 19px; line-height: 1.35; text-align: center; }
+
+/* ---------- Schlafen ---------- */
+#schlafen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #050816;
+  color: #cfd8ff;
+  font-size: 64px;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1.2s;
+  z-index: 18;
+}
+#schlafen.sichtbar { opacity: 1; pointer-events: auto; }
+#schlafen span { animation: pulsieren 1.6s ease-in-out infinite; }
 
 /* ---------- Joystick (erscheint dort, wo der Finger hinkommt) ---------- */
 #joystick {
@@ -123,3 +273,6 @@ canvas { display: block; }
   background: rgba(255, 255, 255, 0.9);
   transform: translate(-50%, -50%);
 }
+
+/* Selbst gemalte Bilder (z. B. die Schaufel) */
+.svg-bild { width: 1em; height: 1em; vertical-align: -0.12em; }

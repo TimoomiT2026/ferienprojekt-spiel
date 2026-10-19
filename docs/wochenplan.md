@@ -19,13 +19,16 @@ Zwischen den Sessions baut Claude die nächste Version.
 - [x] Lernthema: **Game Loop**
 - [x] Projekt auf GitHub angelegt
 - [x] Claude baut den ersten Prototyp: Insel, Figur, Touch-Joystick, Zelt, 100 Münzen
+- [x] Erster Test: nach 3 Minuten viel Feedback! (So läuft eine **Feedback-Schleife**)
+- [x] Claude baut aus dem Feedback: Rucksack, Aktions-Knopf, Schaufel, Grabestellen, Tag & Nacht (5 + 3 Min.), Schlafen im Zelt, Klaviermusik, 3× größere Insel mit Bergen, Wald, Seen, Pfad und Dorf, schönere Grafik
 - [ ] 🏠 Hausaufgabe: [Tag 1](hausaufgaben/tag-1.md)
 
 ## Tag 2: Der erste Test
 - [ ] Prototyp zum ersten Mal auf dem iPad spielen
 - [ ] Lernthema: **Was ist ein Prototyp?** Warum fängt man mit grauen Klötzen an?
 - [ ] Erste Fehler aufschreiben
-- [ ] Claude baut: Grabestellen + Schaufel, Rucksack (Inventar), Tag-Nacht-Wechsel
+- [x] ~~Claude baut: Grabestellen + Schaufel, Rucksack (Inventar), Tag-Nacht-Wechsel~~ (schon an Tag 1 fertig!)
+- [ ] Neue Insel erkunden: Wo sind die Berge, Seen, das Dorf?
 
 ## Tag 3: Film & Dorf
 - [ ] Film schauen: KI und Ressourcenverbrauch (max. 15 Min.)

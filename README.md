@@ -16,6 +16,7 @@ Survival auf einer Insel, im Comic-Look, spielbar auf dem iPad.
 
 ## Wo steht was?
 
+- [So spielt man](docs/steuerung.md) – Steuerung & erste Schritte
 - [Die Spielidee](docs/spielidee.md) – was wir bauen (aus der Mindmap)
 - [Wochenplan & Aufgaben](docs/wochenplan.md) – was wann passiert
 - [Warteliste](docs/warteliste.md) – coole Ideen für später
@@ -27,7 +28,8 @@ Survival auf einer Insel, im Comic-Look, spielbar auf dem iPad.
 
 ## Selber was ändern
 
-In [`js/einstellungen.js`](js/einstellungen.js) stehen Zahlen wie Lauftempo, Sprungkraft oder Startgeld.
+In [`js/einstellungen.js`](js/einstellungen.js) stehen Zahlen wie Lauftempo, Startgeld, Inselgröße,
+wie lange Tag und Nacht dauern oder wie oft man beim Graben einen Edelstein findet.
 Ändern, speichern, neu laden und schauen, was passiert!
 
 ## Technik

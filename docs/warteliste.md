@@ -12,6 +12,7 @@ Echte Spielestudios haben so eine Liste auch, sie heißt dort **„Backlog“**.
 - [ ] Floß und Schiffe
 - [ ] Burg und Schatztruhen finden
 - [ ] Höhlen mit Fackeln
+- [ ] Spielstand speichern (gerade fängt man nach dem Neuladen wieder von vorn an)
 - [ ] Crafting Table
 - [ ] TNT
 - [ ] Essen und Trinken (Wasserflasche)

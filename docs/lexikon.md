@@ -9,4 +9,8 @@
 | **Prototyp** | Eine erste, einfache Version zum Ausprobieren. Sieht noch nicht fertig aus, zeigt aber, ob die Idee funktioniert. |
 | **Backlog** | Die Warteliste für Ideen, die später kommen. |
 | **Bug** | Ein Fehler im Spiel. |
+| **Feedback-Schleife** | Spielen → sagen, was stört → reparieren → wieder spielen. Je öfter, desto besser wird das Spiel. |
+| **Inventar** | Der Rucksack im Spiel: Liste von allem, was man dabei hat. |
+| **Chunk** (Stück) | Die Welt wird in Quadrate geteilt. Gemalt werden nur die in der Nähe, damit das iPad nicht ins Schwitzen kommt. |
+| **Dreiecke** | Alles im 3D-Spiel ist aus winzigen Dreiecken gebaut. Ein Baum hat ein paar hundert. Zu viele machen das Spiel langsam. |
 | **Seed** | Eine Zahl, aus der die Welt „zufällig“ gebaut wird. Gleicher Seed = gleiche Welt. Unser Seed: 42. |

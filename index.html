@@ -12,7 +12,12 @@
   <link rel="apple-touch-icon" href="icon.png">
   <link rel="stylesheet" href="css/style.css">
   <script type="importmap">
-    { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
   </script>
 </head>
 <body>
@@ -24,10 +29,28 @@
     </div>
 
     <div id="hud">
-      <div id="muenz-anzeige">🪙 <span id="muenzen">0</span></div>
-      <div id="hilfe">Links: laufen · Rechts wischen: umschauen</div>
-      <button id="sprung-knopf" aria-label="Springen">⤒</button>
+      <div id="oben-links">
+        <div id="muenz-anzeige">🪙 <span id="muenzen">0</span></div>
+        <button id="rucksack-knopf" class="rund-knopf" aria-label="Rucksack öffnen">🎒</button>
+      </div>
+      <div id="uhr"></div>
+      <button id="musik-knopf" class="rund-knopf" aria-label="Musik an oder aus">🎵</button>
+      <div id="meldung"></div>
+      <div id="hand-anzeige" title="In der Hand"></div>
+      <button id="aktion-knopf" aria-label="Aktion"><span id="aktion-bild">✋</span><span id="aktion-text">Aktion</span></button>
+      <button id="sprung-knopf" class="rund-knopf" aria-label="Springen">⤒</button>
     </div>
+
+    <div id="rucksack-fenster">
+      <div class="fenster-kopf">
+        <h2>🎒 Dein Rucksack</h2>
+        <button id="rucksack-zu" aria-label="Schließen">✕</button>
+      </div>
+      <div id="rucksack-raster"></div>
+      <p id="rucksack-info"></p>
+    </div>
+
+    <div id="schlafen"><span>Z z z …</span></div>
 
     <div id="joystick"><div id="joystick-knopf"></div></div>
   </div>
