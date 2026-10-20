@@ -16,6 +16,7 @@ Survival auf einer Insel, im Comic-Look, spielbar auf dem iPad.
 
 ## Wo steht was?
 
+- [📌 Projektstand](docs/projektstand.md) – was gebaut ist und warum
 - [So spielt man](docs/steuerung.md) – Steuerung & erste Schritte
 - [Die Spielidee](docs/spielidee.md) – was wir bauen (aus der Mindmap)
 - [Wochenplan & Aufgaben](docs/wochenplan.md) – was wann passiert

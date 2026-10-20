@@ -36,3 +36,11 @@ Wenn nichts zu hören ist: Lautstärke hochdrehen und prüfen, ob das iPad auf *
 - **Werkbank:** Schwert, Feuerzeug (2 Steine + 1 Eisenerz + 1 Kohle) und Angel (3 Holz).
 - **Angeln:** Angel in die Hand, Köder im Rucksack, an eine Angelstelle stellen (dort kräuselt sich das Wasser).
 - **Speichern:** passiert automatisch. Beim Start steht dann *Weiterspielen*. Achtung: Der Spielstand liegt nur auf dem jeweiligen Gerät.
+
+## Neu in Etappe 2
+- **Händler:** Je mehr du vom Gleichen verkaufst, desto weniger zahlt er. Pro Tag kauft er höchstens 10 Sachen. Größere Rucksäcke (18 / 24 Plätze) gibt es bei ihm.
+- **Base-Menü:** am Schild „BASE“ neben dem Zelt. Dort baust du aus: großes Zelt → Hütte (mit Truhe 📦) → Garten (Karotten 🥕) → Haus mit Fischteich. Und ab der Hütte und Tag 3 den Pferdestall.
+- **Reisezelt ⛺:** bekommst du beim ersten Ausbau. Im Rucksack „Aufstellen“, dort nachts schlafen, danach wieder „Einpacken“. Braucht 3 Plätze!
+- **Pferde 🐴:** Kauf Äpfel im Dorf. Geh LANGSAM zu einem Wildpferd (Joystick nur ein bisschen schieben) und füttere es 3 Mal. Dann „Aufsteigen“ und reiten!
+- **Zauberpilze 🍄:** leuchten im Wald (nachts besser zu sehen). Im Rucksack „✨ Essen“: 1 Minute fliegen. Sprungknopf festhalten = höher.
+- **Fernrohr 🔭:** an der Werkbank bauen (2 Eisenerz, 1 Gold, 1 Holz). In die Hand nehmen, „Durchschauen“, mit ➕/➖ oder zwei Fingern zoomen. Halte ein Boot 1 Sekunde in der Mitte, dann ist es entdeckt.

@@ -2,6 +2,9 @@
 
 Vater-Sohn-Ferienprojekt (Sohn fast 9). Ziel: in ~6 Tagen à 1 Stunde ein fertiges, spielbares 3D-Spiel, **und** dabei lernen, wie Spieleentwicklung funktioniert.
 
+## Zuerst lesen
+- `docs/projektstand.md` – was gebaut ist, Entscheidungen und warum, nächste Etappe.
+
 ## Rollen
 - **Sohn = Game Designer & Chef-Tester.** Seine Entscheidungen gelten. Nicht ungefragt Features erfinden, die er nicht wollte. Bei Designfragen: ihm die Frage stellen, nicht selbst entscheiden.
 - **Papa = Produzent.** Zeit, Umfang.

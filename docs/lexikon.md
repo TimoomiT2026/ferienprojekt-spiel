@@ -29,4 +29,7 @@
 | **Nachbearbeitung** | Das fertige Bild wird noch einmal „gefiltert“: Farben, Leuchten, dunkle Ecken (Vignette). Wie ein Instagram-Filter fürs Spiel. |
 | **Atlas** | Viele kleine Bilder (z. B. 4 Laubsorten) in einem großen Bild. Spart Arbeit für das iPad. |
 | **Gerstner-Wellen** | Eine Rechenformel für echte Meereswellen, benannt nach einem Forscher von vor über 200 Jahren. |
+| **Angebot & Nachfrage** | Wenn viele dasselbe verkaufen, wird es weniger wert. Darum zahlt der Händler für den 10. Stein weniger als für den ersten. |
+| **Upgrade** | Etwas verbessern, z. B. das Zelt zur Hütte ausbauen. |
+| **Freischalten** | Etwas wird erst möglich, wenn man etwas geschafft hat (Pferdestall erst ab Hütte und Tag 3). |
 | **Seed** | Eine Zahl, aus der die Welt „zufällig“ gebaut wird. Gleicher Seed = gleiche Welt. Unser Seed: 42. |

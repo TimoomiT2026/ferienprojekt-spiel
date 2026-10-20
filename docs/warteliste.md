@@ -19,11 +19,13 @@ Echte Spielestudios haben so eine Liste auch, sie heißt dort **„Backlog“**.
 - [x] Spielstand speichern
 
 **Etappe 2 · Ausbauen**
-- [ ] Größerer Rucksack (Händler)
-- [ ] Zelt mitnehmen (3 Plätze im Rucksack) – die Base bleibt, wo sie ist
-- [ ] Base-Upgrades: Zelt → besseres Zelt → Hütte
-- [ ] Zauberpilze im Wald (selten): essen = 1 Minute fliegen, oder verkaufen
-- [ ] Fernrohr: zoomen und über die Inseln schauen
+- [x] Größerer Rucksack (Händler)
+- [x] Zelt mitnehmen (3 Plätze im Rucksack) – die Base bleibt, wo sie ist
+- [x] Base-Upgrades: Zelt → besseres Zelt → Hütte
+- [x] Zauberpilze im Wald (selten): essen = 1 Minute fliegen, oder verkaufen
+- [x] Fernrohr: zoomen und über die Inseln schauen
+- [x] Pferdestall + Wildpferde zähmen und reiten (Idee vom Game Designer)
+- [x] Strengere Münzlogik (Angebot & Nachfrage)
 - [ ] Fotomodus?
 
 **Etappe 3 · Das große Abenteuer**

@@ -136,8 +136,10 @@ export class Haendler {
     return s;
   }
 
-  kaufen(id, preis) {
+  kaufen(id, preis = EINSTELLUNGEN.kaufPreise[id]) {
     const { rucksack, musik } = this.spiel;
+    if (EINSTELLUNGEN.kaufPreise[id] === undefined) return; // das verkauft der Händler nicht
+    preis = EINSTELLUNGEN.kaufPreise[id];
     if (rucksack.muenzen < preis) {
       this.info('„Dafür hast du nicht genug Münzen. Verkauf mir doch etwas!“');
       return;
