@@ -23,9 +23,8 @@ const FANG_CHANCEN = {
 const ANZAHL_ANGELSTELLEN = 10;
 // Wie weit müssen zwei Angelstellen mindestens auseinander sein? (Meter)
 const MIN_ABSTAND = 40;
-// Wie viele Stellen sollen möglichst nah am Start liegen – und wie nah?
+// Wie viele Stellen sollen möglichst nah am Start liegen? (die nächsten am Zelt)
 const NAH_ANZAHL = 2;
-const NAH_RADIUS = 60;
 // Wie lange wippt der Schwimmer, bevor etwas anbeißt? (Sekunden, von – bis)
 const WARTEN_MIN = 2;
 const WARTEN_MAX = 5;
@@ -201,7 +200,7 @@ function sucheKandidaten() {
 function waehleStellen(kandidaten) {
   const gewaehlt = [];
   const abstand = (k) => Math.min(Infinity, ...gewaehlt.map((g) => Math.hypot(g.x - k.x, g.z - k.z)));
-  // 1) Ein paar Stellen nah am Start (am liebsten näher als NAH_RADIUS – sonst die nächsten)
+  // 1) Die Stellen, die dem Start am nächsten sind
   const nachStart = [...kandidaten].sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z));
   for (const k of nachStart) {
     if (gewaehlt.length >= NAH_ANZAHL) break;

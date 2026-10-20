@@ -23,6 +23,7 @@ import { Boote } from './boote.js';
 import { Tiere } from './tiere.js';
 import { setzeAnisotropie } from './texturen.js';
 import { Haendler } from './haendler.js';
+import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
 import { ladeSpielstand, speichereSpielstand, loescheSpielstand } from './speicher.js';
@@ -72,6 +73,7 @@ const rucksack = new Rucksack(meldung);
 rucksack.beiAenderung = () => {
   spieler.schaufel.visible = rucksack.inDerHand === 'schaufel';
   spieler.schwert.visible = rucksack.inDerHand === 'schwert';
+  spieler.angel.visible = rucksack.inDerHand === 'angel';
 };
 rucksack.zeichnen();
 knopf(document.getElementById('rucksack-zu'), () => rucksack.schliessen());
@@ -113,6 +115,11 @@ objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
 rucksack.beimEssen = () => ueberleben.gegessen();
 
+// ---------- Angeln ----------
+spieler.angel.add(baueAngel());
+const angeln = new Angeln(szene, { rucksack, meldung, musik, spieler });
+objekte.interaktionen.push(...angeln.interaktionen);
+
 // Fenster, die das Spiel anhalten
 const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen;
 
@@ -127,6 +134,7 @@ karte.punkt('zelt', { name: 'Zelt', bild: '⛺', x: 5, z: -2 });
 karte.punkt('werkbank', { name: 'Werkbank', bild: '🔨', x: werkbank.ort.x, z: werkbank.ort.z });
 karte.punkt('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z });
 karte.beiZielErreicht = (ziel) => meldung(`${ziel.bild} Du bist da: ${ziel.name}!`, 4);
+angeln.positionen.forEach((p, i) => karte.punkt(`angel${i}`, { name: 'Angelstelle', bild: '🎣', x: p.x, z: p.z }));
 // Boote erscheinen erst auf der Karte, wenn man sie entdeckt hat
 boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: false }));
 boote.beiEntdeckt = (boot) => {
@@ -221,7 +229,9 @@ function spielSchleife() {
         else if (rucksack.inDerHand === 'schwert') schwertSchlag();
       }
       if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
+      else if (angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, kameraWinkel);
       else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel);
+      angeln.aktualisiere(dt); // nach dem Spieler, damit die Arm-Haltung stimmt
     }
     bewegeKamera(dt, eingabe.kameraDrehung, eingabe.kameraNeigung);
   } else {
