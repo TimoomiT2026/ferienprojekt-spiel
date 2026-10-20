@@ -372,3 +372,17 @@ button { font-family: inherit; cursor: pointer; }
 .tb-punkte span.an { background: #8a5a34; }
 #start .neues-spiel { margin-top: 18px; font-size: 16px; padding: 8px 18px; border: none; border-radius: 20px; background: rgba(255,255,255,0.25); color: #fff; }
 #start .willkommen { font-size: 20px; }
+
+/* Fenster dürfen nie größer als der Bildschirm sein – sonst scrollen */
+#rucksack-fenster, .spiel-fenster, #karte-fenster {
+  max-height: calc(100vh - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+@media (max-height: 600px) {
+  #rucksack-fenster, .spiel-fenster { padding: 14px; }
+  .platz .bild { font-size: 34px; }
+  .fenster-kopf { margin-bottom: 8px; }
+}

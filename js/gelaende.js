@@ -285,7 +285,7 @@ export function baueGelaende() {
 
         vec3 bodenFarbe = cSand * wA.x + cGras * wA.y * 1.1 + cWald * wA.z
                         + cFels * wB.x + cPfad * wB.y + cSchnee * wB.z;
-        vec2 beulen = nSand * wA.x * 0.9 + nGras * wA.y * 1.1 + nWald * wA.z + nPfad * wB.y * 1.2;
+        vec2 beulen = nSand * wA.x * 0.45 + nGras * wA.y * 1.1 + nWald * wA.z + nPfad * wB.y * 1.2;
         vec3 bodenNormale = normalize(nGeo + vec3(beulen.x, 0.0, beulen.y) * 0.9);
         bodenNormale = normalize(mix(bodenNormale, nFels, wB.x + wB.z * 0.5));
         float bodenRauheit = dot(wA, vec3(0.88, 0.93, 0.96)) + dot(wB, vec3(0.78, 0.95, 0.55));
