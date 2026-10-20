@@ -1,0 +1,126 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Test: Zauberpilze & Fliegen</title>
+  <base href="../">
+  <link rel="stylesheet" href="css/style.css">
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <!-- Testseite: Gelände, Natur, Licht, Spieler, Steuerung und Zauberpilze -->
+  <div id="spielfeld">
+    <div id="hud" class="sichtbar">
+      <div id="meldung"></div>
+      <button id="aktion-knopf" aria-label="Aktion"><span id="aktion-bild">✋</span><span id="aktion-text">Aktion</span></button>
+      <button id="sprung-knopf" class="rund-knopf" aria-label="Springen">⤒</button>
+      <button id="rucksack-knopf" class="rund-knopf" aria-label="Rucksack">🎒</button>
+    </div>
+    <div id="joystick"><div id="joystick-knopf"></div></div>
+  </div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { baueGelaende, bodenHoehe } from './js/gelaende.js';
+    import { baueNatur, aktualisiereNatur } from './js/natur.js';
+    import { Hindernisse } from './js/hindernisse.js';
+    import { Himmel } from './js/himmel.js';
+    import { Wasser } from './js/wasser.js';
+    import { Tageszeit } from './js/tageszeit.js';
+    import { Spieler } from './js/spieler.js';
+    import { Steuerung } from './js/steuerung.js';
+    import { Pilze } from './js/pilze.js';
+    import { Nachbearbeitung } from './js/nachbearbeitung.js';
+
+    const spielfeld = document.getElementById('spielfeld');
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    spielfeld.prepend(renderer.domElement);
+    const szene = new THREE.Scene();
+    const kamera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1200);
+    const nach = new Nachbearbeitung(renderer, szene, kamera);
+
+    const hindernisse = new Hindernisse();
+    szene.add(baueGelaende());
+    baueNatur(szene, hindernisse);
+    const wasser = new Wasser(szene);
+    const himmel = new Himmel(szene, renderer);
+    const tageszeit = new Tageszeit();
+    const spieler = new Spieler(szene, hindernisse);
+    const steuerung = new Steuerung(spielfeld);
+
+    const meldungen = [];
+    const meldung = (t) => { meldungen.push(t); const f = document.getElementById('meldung'); f.textContent = t; f.classList.add('sichtbar'); };
+    // Mini-Rucksack-Attrappe
+    const rucksack = {
+      inhalt: {}, voll: false,
+      passt() { return !this.voll; },
+      hinein(id, n = 1) { if (this.voll) return false; this.inhalt[id] = (this.inhalt[id] || 0) + n; return true; },
+    };
+    const musik = { plings: 0, pling() { this.plings++; } };
+    const pilze = new Pilze(szene, { rucksack, meldung, musik, tageszeit, hindernisse });
+
+    spieler.beiFlugWarnung = (s) => meldung(`⏳ Noch ${s} Sekunden Flug!`);
+    spieler.beiFlugEnde = () => meldung('🍄 Der Zauber ist vorbei – du landest.');
+    spieler.beiGelandet = () => meldung('🦶 Gelandet!');
+
+    let kameraWinkel = 0, kameraNeigung = 0.3, kameraAbstand = 9;
+    const kameraPos = new THREE.Vector3();
+    function kameraSetzen(sofort = false) {
+      const p = spieler.figur.position;
+      const a = kameraAbstand * (spieler.fliegt ? 1.35 : 1);
+      const ziel = new THREE.Vector3(
+        p.x + Math.sin(kameraWinkel) * Math.cos(kameraNeigung) * a,
+        p.y + 1.5 + Math.sin(kameraNeigung) * a,
+        p.z + Math.cos(kameraWinkel) * Math.cos(kameraNeigung) * a);
+      ziel.y = Math.max(ziel.y, bodenHoehe(ziel.x, ziel.z) + 1, 0.8);
+      if (sofort) kameraPos.copy(ziel); else kameraPos.lerp(ziel, 0.15);
+      kamera.position.copy(kameraPos);
+      kamera.lookAt(p.x, p.y + 1.4, p.z);
+    }
+
+    // Ein Spiel-Schritt (für Tests von außen mit festem dt aufrufbar)
+    function schritt(dt, eingabe = steuerung.lies()) {
+      tageszeit.aktualisiere(dt);
+      spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel, eingabe.springenGehalten);
+      pilze.aktualisiere(dt, spieler.figur.position);
+    }
+    function malen(dt = 0.016) {
+      himmel.aktualisiere(dt, tageszeit, kamera, spieler.figur.position);
+      wasser.aktualisiere(dt);
+      aktualisiereNatur(dt, spieler.figur.position);
+      kameraSetzen();
+      nach.render(dt);
+    }
+    let automatisch = false;
+    const uhr = new THREE.Clock();
+    function schleife() {
+      requestAnimationFrame(schleife);
+      const dt = Math.min(uhr.getDelta(), 0.05);
+      if (automatisch) { schritt(dt); malen(dt); }
+    }
+    schleife();
+
+    window.__test = {
+      THREE, spieler, pilze, rucksack, musik, tageszeit, steuerung, meldungen, renderer, szene, kamera, nach, hindernisse,
+      bodenHoehe, schritt, malen, kameraSetzen,
+      set automatisch(a) { automatisch = a; },
+      set kameraWinkel(w) { kameraWinkel = w; }, get kameraWinkel() { return kameraWinkel; },
+      set kameraNeigung(w) { kameraNeigung = w; },
+      set kameraAbstand(w) { kameraAbstand = w; },
+      bereit: true,
+    };
+  </script>
+</body>
+</html>

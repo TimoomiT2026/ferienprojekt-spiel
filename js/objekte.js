@@ -1,6 +1,7 @@
 // =============================================================
 //  DINGE IN DER WELT, mit denen man etwas machen kann:
-//  das Zelt, die Schaufel, die Grabestellen und der Händler.
+//  die Schaufel, die Grabestellen und der Händler.
+//  (Das Zelt und das Schlafen wohnen jetzt in base.js)
 //  Steht man nah genug davor, erscheint der Aktions-Knopf.
 // =============================================================
 import * as THREE from 'three';
@@ -12,31 +13,6 @@ import { DINGE, SCHAUFEL_BILD } from './rucksack.js';
 
 const zufall = zufallMitSeed(99);
 
-// Kuppelzelt – rund, nicht eckig!
-function baueZelt() {
-  const zelt = new THREE.Group();
-  const plane = new THREE.Mesh(
-    new THREE.SphereGeometry(1, 32, 16, 0, Math.PI * 2, 0, Math.PI / 2),
-    new THREE.MeshStandardMaterial({ color: '#ff8a3d', roughness: 0.75, side: THREE.DoubleSide })
-  );
-  plane.scale.set(1.8, 1.5, 2.1);
-  const eingang = new THREE.Mesh(new THREE.CircleGeometry(0.75, 24, 0, Math.PI), new THREE.MeshStandardMaterial({ color: '#4a2a18' }));
-  eingang.position.set(0, 0.02, 2.05);
-  eingang.rotation.x = -0.25;
-  const stangenMat = new THREE.MeshStandardMaterial({ color: '#2e4b7a', roughness: 0.5 });
-  for (const w of [0.7, -0.7]) {
-    const stange = new THREE.Mesh(new THREE.TorusGeometry(1, 0.035, 8, 32, Math.PI), stangenMat);
-    stange.scale.set(2.05, 1.52, 1);
-    stange.rotation.y = w + Math.PI / 2;
-    zelt.add(stange);
-  }
-  zelt.add(plane, eingang);
-  zelt.traverse((t) => {
-    if (t.isMesh) t.castShadow = t.receiveShadow = true;
-  });
-  return zelt;
-}
-
 export class Objekte {
   constructor(szene, hindernisse, spiel) {
     this.spiel = spiel; // { rucksack, musik, meldung, tageszeit, spieler, dorf, schlafen }
@@ -44,21 +20,6 @@ export class Objekte {
     this.aktuelle = null;
     this.zeit = 0;
     this.beschaeftigt = false;
-
-    // ---------- Das Zelt ----------
-    const zx = 5, zz = -2;
-    this.zelt = baueZelt();
-    this.zelt.position.set(zx, bodenHoehe(zx, zz), zz);
-    this.zelt.rotation.y = -0.6;
-    szene.add(this.zelt);
-    hindernisse.hinzufuegen(zx, zz, 1.9);
-    this.interaktionen.push({
-      pos: new THREE.Vector3(zx, 0, zz),
-      radius: 4,
-      bild: '😴',
-      text: 'Schlafen',
-      ausfuehren: () => this.schlafenVersuchen(),
-    });
 
     // ---------- Die Schaufel liegt neben dem Zelt ----------
     const sx = -3, sz = 8;
@@ -218,16 +179,6 @@ export class Objekte {
       if (wurf <= 0) return id;
     }
     return chancen[0][0];
-  }
-
-  schlafenVersuchen() {
-    const { tageszeit, meldung } = this.spiel;
-    if (!tageszeit.istNacht()) {
-      const rest = Math.ceil(tageszeit.restSekunden());
-      meldung(`Du bist noch gar nicht müde. Schlafen geht nur nachts 🌙 (noch ${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, '0')} Minuten)`, 4);
-      return;
-    }
-    this.spiel.schlafen();
   }
 
   // Für den Spielstand

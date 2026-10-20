@@ -25,6 +25,7 @@ import { setzeAnisotropie } from './texturen.js';
 import { Haendler } from './haendler.js';
 import { Aufgaben } from './aufgaben.js';
 import { Nachbearbeitung } from './nachbearbeitung.js';
+import { Fernrohr } from './fernrohr.js';
 import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
@@ -146,6 +147,20 @@ karte.beiZielErreicht = (ziel) => meldung(`${ziel.bild} Du bist da: ${ziel.name}
 angeln.positionen.forEach((p, i) => karte.punkt(`angel${i}`, { name: 'Angelstelle', bild: '🎣', x: p.x, z: p.z }));
 // Boote erscheinen erst auf der Karte, wenn man sie entdeckt hat
 boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: false }));
+// ---------- Fernrohr ----------
+const fernrohr = new Fernrohr(kamera, spielfeld);
+fernrohr.meldung = meldung;
+// Boote kann man auch durchs Fernrohr entdecken
+boote.liste.forEach((b, i) => fernrohr.ziel('boot' + i, {
+  name: 'Boot', bild: '🚣', pos: b.gruppe.position, hoehe: 3,
+  beiEntdeckt: () => {
+    if (!b.entdeckt) {
+      b.entdeckt = true;
+      boote.beiEntdeckt?.(b);
+    }
+  },
+}));
+
 boote.beiEntdeckt = (boot) => {
   const i = boote.liste.indexOf(boot);
   const b = boote.positionen[i];
@@ -227,7 +242,15 @@ function spielSchleife() {
   const dt = Math.min(echteZeit, 0.05);
   if (laeuft) passeQualitaetAn(echteZeit);
 
-  if (laeuft) {
+  if (laeuft && fernrohr.aktiv) {
+    // Durchs Fernrohr schauen: Die Figur steht still, die Zeit läuft weiter
+    const eingabe = steuerung.lies();
+    fernrohr.aktualisiere(dt, eingabe);
+    if (!fernrohr.aktiv) kameraWinkel = fernrohr.blickWinkel; // danach in dieselbe Richtung weiterschauen
+    tageszeit.aktualisiere(dt);
+    spieler.figur.visible = !fernrohr.aktiv;
+  } else if (laeuft) {
+    spieler.figur.visible = true;
     const eingabe = steuerung.lies();
     if (eingabe.rucksack && !karte.offen) {
       if (werkbank.offen) werkbank.schliessen();
@@ -242,6 +265,7 @@ function spielSchleife() {
       if (eingabe.aktion) {
         if (objekte.aktuelle) objekte.aktion();
         else if (rucksack.inDerHand === 'schwert') schwertSchlag();
+        else if (rucksack.inDerHand === 'fernrohr' && !boote.faehrt) fernrohr.starten(spieler.figur.position, kameraWinkel);
       }
       if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, kameraWinkel);
@@ -270,6 +294,7 @@ function spielSchleife() {
   const hand = boote.faehrt ? null : rucksack.inDerHand;
   spieler.schaufel.visible = hand === 'schaufel';
   spieler.schwert.visible = hand === 'schwert';
+  // (Das Fernrohr hält man nicht sichtbar in der Hand – man schaut nur hindurch)
   spieler.angel.visible = hand === 'angel';
   lagerfeuer.aktualisiere(dt);
   if (laeuft) {
@@ -287,7 +312,8 @@ function spielSchleife() {
     const holz = holzInDerNaehe(pos.x, pos.z);
     naechste = holz ? { bild: '🪓', text: holz.art === 'baum' ? 'Fällen' : 'Zerschlagen' } : { bild: '⚔️', text: 'Schwingen' };
   }
-  const zeigen = laeuft && naechste && !fensterOffen();
+  if (!naechste && rucksack.inDerHand === 'fernrohr' && !boote.faehrt) naechste = { bild: '🔭', text: 'Durchschauen' };
+  const zeigen = laeuft && naechste && !fensterOffen() && !fernrohr.aktiv;
   aktionsKnopf.classList.toggle('sichtbar', !!zeigen);
   if (zeigen) {
     aktionsBild.innerHTML = naechste.bild;

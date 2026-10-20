@@ -35,6 +35,7 @@ export const DINGE = {
   schuh: { name: 'Alter Schuh', bild: '👞', text: 'Igitt, nass. Den willst du nicht anziehen.' },
   dose: { name: 'Alte Dose', bild: '🥫', text: 'Müll aus dem Meer. Wirf ihn lieber weg.' },
   alge: { name: 'Alge', bild: '🌿', text: 'Glitschig und grün.' },
+  karotte: { name: 'Karotte', bild: '🥕', essen: true, text: 'Aus deinem Garten! Eine Mahlzeit.' },
   apfel: { name: 'Apfel', bild: '🍎', text: 'Pferde lieben Äpfel! Damit kannst du ein Wildpferd zähmen.' },
   zauberpilz: { name: 'Zauberpilz', bild: '🍄', zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
   fernrohr: { name: 'Fernrohr', bild: '🔭', werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },

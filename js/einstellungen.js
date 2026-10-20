@@ -60,6 +60,7 @@ export const EINSTELLUNGEN = {
     feuerzeug: { stein: 2, eisenerz: 1, kohle: 1 },
     schnur: { holz: 2 }, // dünnes Holz, zur Schnur gebunden
     angel: { holz: 2, schnur: 1 },
+    fernrohr: { eisenerz: 2, gold: 1, holz: 1 },
   },
 
   // Wie oft kann man etwas benutzen, bevor es kaputt / leer ist?
@@ -84,7 +85,9 @@ export const EINSTELLUNGEN = {
     angel: 8,
     schnur: 3,
     zauberpilz: 30,
+    fernrohr: 10,
     edelstein: 40,
+    karotte: 3, // aus deinem Garten
   },
   // Angebot & Nachfrage: Jedes weitere Stück vom Gleichen bringt weniger.
   // 0.8 heißt: 2. Stück = 80 %, 3. Stück = 64 %, … (am nächsten Morgen wieder voll)
@@ -117,7 +120,46 @@ export const EINSTELLUNGEN = {
   holzProBaum: 3,
   holzProBusch: 1,
 
+  // ---------- Base ----------
+  // Deine Base kannst du in 5 Stufen ausbauen (Stufe 1 = Zelt hast du schon).
+  // Was kostet jede Stufe? Dinge aus dem Rucksack + Münzen.
+  baseStufen: {
+    2: { holz: 6, schnur: 2, muenzen: 20 }, // großes Zelt mit Vordach
+    3: { holz: 15, stein: 6, muenzen: 40 }, // Holzhütte mit Truhe
+    4: { holz: 10, kohle: 3, muenzen: 30 }, // Hütte mit Garten
+    5: { holz: 20, stein: 10, eisenerz: 4, muenzen: 80 }, // Haus mit Fischteich
+  },
+  // Wie viele Plätze hat die Truhe in der Hütte?
+  truhePlaetze: 20,
+  // Wie viele Karotten wachsen im Garten an jedem neuen Tag?
+  karottenProTag: 2,
+  // Wie viele Karotten können höchstens im Beet warten?
+  karottenMax: 4,
+  // Wie viele sind schon reif, wenn der Garten fertig gebaut ist?
+  karottenStart: 2,
+  // Der Pferdestall (eine Erweiterung im Base-Menü)
+  stallKosten: { holz: 12, stein: 4, muenzen: 30 },
+  // Ab welcher Base-Stufe und ab welchem Tag darf man ihn bauen?
+  stallAbStufe: 3,
+  stallAbTag: 3,
+
   // ---------- Musik ----------
   // Wie laut ist die Musik? (0 = aus, 1 = ganz laut)
   musikLautstaerke: 0.5,
+
+  // ---------- Zauberpilze & Fliegen ----------
+  // Wie viele Zauberpilze wachsen in den Wäldern?
+  anzahlPilze: 14,
+  // Nach wie vielen Tagen wächst ein gepflückter Pilz wieder nach?
+  pilzNachwachsTage: 3,
+  // Wie lange fliegt man nach einem Zauberpilz? (Sekunden)
+  flugSekunden: 60,
+  // Wie schnell fliegt man vorwärts? (Meter pro Sekunde – laufen ist 7)
+  flugTempo: 12,
+  // Wie schnell steigt man, wenn man den Sprungknopf festhält?
+  steigTempo: 6,
+  // Wie schnell sinkt man, wenn man loslässt?
+  sinkTempo: 2,
+  // Wie hoch kann man höchstens fliegen? (Meter über dem Boden)
+  maxFlugHoehe: 40,
 };

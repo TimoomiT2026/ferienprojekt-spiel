@@ -2,6 +2,7 @@
 //  STEUERUNG – Touch (iPad) und Tastatur (Mac)
 //  iPad: linke Bildschirmhälfte = Joystick, rechte Hälfte wischen = Kamera drehen
 //  Mac:  WASD oder Pfeiltasten = laufen, Leertaste = springen, Maus ziehen = Kamera
+//        (Beim Fliegen: Sprungknopf / Leertaste FESTHALTEN = höher fliegen)
 //        E = Aktion (aufheben, graben, schlafen), I = Rucksack
 // =============================================================
 
@@ -29,6 +30,7 @@ export class Steuerung {
     this.kameraDrehung = 0; // wie weit die Kamera seit dem letzten Bild gedreht wurde
     this.kameraNeigung = 0;
     this.springen = false;
+    this.sprungGehalten = false; // wird der Sprungknopf gerade festgehalten? (fürs Fliegen)
     this.aktion = false;
     this.rucksack = false;
     this.tasten = new Set();
@@ -48,6 +50,17 @@ export class Steuerung {
     element.addEventListener('touchcancel', (e) => this.fingerHoch(e));
 
     knopf(sprungKnopf, () => (this.springen = true));
+    // Festhalten merken: Finger drauf = gehalten, Finger weg = losgelassen
+    sprungKnopf.addEventListener('touchstart', () => (this.sprungGehalten = true));
+    sprungKnopf.addEventListener('touchend', () => (this.sprungGehalten = false));
+    sprungKnopf.addEventListener('touchcancel', () => (this.sprungGehalten = false));
+    sprungKnopf.addEventListener('mousedown', () => (this.sprungGehalten = true));
+    window.addEventListener('mouseup', () => (this.sprungGehalten = false));
+    // Wechselt man das Fenster, gilt alles als losgelassen
+    window.addEventListener('blur', () => {
+      this.sprungGehalten = false;
+      this.tasten.clear();
+    });
     knopf(document.getElementById('aktion-knopf'), () => (this.aktion = true));
     knopf(document.getElementById('rucksack-knopf'), () => (this.rucksack = true));
 
@@ -141,6 +154,7 @@ export class Steuerung {
     const eingabe = {
       richtung: { x, y },
       springen: this.springen,
+      springenGehalten: this.sprungGehalten || this.tasten.has('Space'),
       aktion: this.aktion,
       rucksack: this.rucksack,
       kameraDrehung: this.kameraDrehung,
