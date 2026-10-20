@@ -558,8 +558,8 @@ export class Boote {
       const tempo = imBoot ? boot.tempo.length() : 0;
 
       // Auf und ab mit den Wellen, dazu passend kippen (+ ein ganz kleines Wackeln)
-      const w = this.schaukeln(boot, zeit);
-      let y = WASSER_HOEHE + w.hoehe - (imBoot ? 0.06 : 0);
+      const lage = this.schaukeln(boot, zeit);
+      let y = WASSER_HOEHE + lage.hoehe - (imBoot ? 0.06 : 0);
       // Im ganz flachen Wasser sitzt das Boot auf dem Sand auf (statt darin zu versinken)
       const b = boot.boden;
       if (Math.abs(b.x - g.position.x) + Math.abs(b.z - g.position.z) > 0.05) {
@@ -570,8 +570,8 @@ export class Boote {
       y = Math.max(y, b.h + 0.2);
       g.position.y = y;
       g.rotation.y = boot.winkel;
-      g.rotation.x = w.nicken + Math.sin(t * 1.1) * 0.012 - tempo * 0.006; // beim Fahren hebt sich die Spitze
-      g.rotation.z = w.rollen + Math.sin(t * 0.8 + 1) * 0.015;
+      g.rotation.x = lage.nicken + Math.sin(t * 1.1) * 0.012 - tempo * 0.006; // beim Fahren hebt sich die Spitze
+      g.rotation.z = lage.rollen + Math.sin(t * 0.8 + 1) * 0.015;
 
       // Ruder: beim Fahren rudern, sonst eingezogen am Boot
       const ziel = imBoot ? 1 : 0;

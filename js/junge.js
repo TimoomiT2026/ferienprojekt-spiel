@@ -66,12 +66,12 @@ const KNOCHEN_PLAN = [
   ['brust', 'bauch', [0, 0.96, 0]],
   ['hals', 'brust', [0, 1.06, 0]],
   ['kopf', 'hals', [0, 1.13, 0]],
-  ['schulterL', 'brust', [-0.158, 1.025, 0]],
-  ['ellbogenL', 'schulterL', [-0.158, 0.805, 0]],
-  ['handL', 'ellbogenL', [-0.158, 0.625, 0]],
-  ['schulterR', 'brust', [0.158, 1.025, 0]],
-  ['ellbogenR', 'schulterR', [0.158, 0.805, 0]],
-  ['handR', 'ellbogenR', [0.158, 0.625, 0]],
+  ['schulterL', 'brust', [-0.14, 1.02, 0]],
+  ['ellbogenL', 'schulterL', [-0.14, 0.8, 0]],
+  ['handL', 'ellbogenL', [-0.14, 0.62, 0]],
+  ['schulterR', 'brust', [0.14, 1.02, 0]],
+  ['ellbogenR', 'schulterR', [0.14, 0.8, 0]],
+  ['handR', 'ellbogenR', [0.14, 0.62, 0]],
   ['beinL', 'huefte', [-0.068, 0.655, 0]],
   ['knieL', 'beinL', [-0.068, 0.37, 0]],
   ['fussL', 'knieL', [-0.068, 0.085, 0]],
@@ -230,7 +230,7 @@ export function baueJunge(farben = {}) {
   // Oberkörper als Drehkörper, vorne/hinten etwas flacher
   const rumpf = dreh([
     [0.112, 0.64], [0.126, 0.646], [0.129, 0.664], [0.123, 0.7], [0.12, 0.76], [0.123, 0.84],
-    [0.13, 0.92], [0.13, 0.97], [0.124, 1.008], [0.108, 1.038], [0.08, 1.058], [0.052, 1.068],
+    [0.124, 0.92], [0.124, 0.97], [0.118, 1.005], [0.102, 1.034], [0.076, 1.056], [0.052, 1.068],
   ], 28);
   plan.add('shirt', rumpf, matrix(V(0, 0, 0), [0, 0, 0], [1, 1, 0.74]),
     (w) => kette(w.y, [[0.7, K.huefte], [0.84, K.bauch], [0.97, K.brust]]), null, shirtUV);
@@ -244,18 +244,18 @@ export function baueJunge(farben = {}) {
   for (const seite of ['L', 'R']) {
     const s = seite === 'L' ? -1 : 1;
     const sch = abs['schulter' + seite], ell = abs['ellbogen' + seite], hand = abs['hand' + seite];
-    plan.add('shirt', kugel(0.052, 16, 12), matrix(sch), K['schulter' + seite], null, shirtUV);
-    const oben = dreh([[0.03, 0.03], [0.046, 0.005], [0.044, -0.06], [0.04, -0.15], [0.037, -0.22]], 16);
+    plan.add('shirt', kugel(0.047, 16, 12), matrix(sch), K['schulter' + seite], null, shirtUV);
+    const oben = dreh([[0.03, 0.03], [0.044, 0.005], [0.042, -0.06], [0.039, -0.15], [0.036, -0.22]], 16);
     plan.add('shirt', oben, matrix(sch), K['schulter' + seite], null, shirtUV);
-    plan.add('shirt', kugel(0.038, 12, 10), matrix(ell), K['ellbogen' + seite], null, shirtUV);
+    plan.add('shirt', kugel(0.0355, 12, 10), matrix(ell), K['ellbogen' + seite], null, shirtUV);
     const unten = dreh([[0.037, 0.0], [0.035, -0.08], [0.032, -0.148], [0.035, -0.152], [0.034, -0.176], [0.024, -0.18], [0.02, -0.17]], 16);
     plan.add('shirt', unten, matrix(ell), K['ellbogen' + seite], null, shirtUV);
 
     // Hand: Handgelenk, Handfläche, Finger (leicht gekrümmt) und Daumen
     const hk = K['hand' + seite];
     plan.add('haut', new THREE.CylinderGeometry(0.021, 0.022, 0.04, 10), matrix(V(hand.x, hand.y + 0.005, hand.z)), hk, haut);
-    plan.add('haut', kugel(1, 12, 10), matrix(V(hand.x, hand.y - 0.042, hand.z + 0.002), [0, 0, 0], [0.019, 0.04, 0.033]), hk, haut);
-    plan.add('haut', kugel(1, 12, 10), matrix(V(hand.x - s * 0.002, hand.y - 0.078, hand.z + 0.008), [-0.3, 0, 0], [0.017, 0.034, 0.029]), hk, haut);
+    plan.add('haut', kugel(1, 12, 10), matrix(V(hand.x, hand.y - 0.042, hand.z + 0.002), [0, 0, 0], [0.023, 0.038, 0.036]), hk, haut);
+    plan.add('haut', kugel(1, 12, 10), matrix(V(hand.x - s * 0.002, hand.y - 0.078, hand.z + 0.008), [-0.3, 0, 0], [0.021, 0.032, 0.032]), hk, haut);
     plan.add('haut', new THREE.CapsuleGeometry(0.0095, 0.026, 4, 8), matrix(V(hand.x - s * 0.008, hand.y - 0.038, hand.z + 0.03), [-0.55, 0, s * 0.25]), hk, haut);
   }
 
@@ -272,7 +272,7 @@ export function baueJunge(farben = {}) {
     const bein = abs['bein' + seite], knie = abs['knie' + seite], fuss = abs['fuss' + seite];
     const ober = dreh([[0.045, 0.07], [0.06, 0.03], [0.062, -0.03], [0.058, -0.13], [0.052, -0.22], [0.048, -0.285]], 18);
     plan.add('hose', ober, matrix(bein), K['bein' + seite], null, hosenUV);
-    plan.add('hose', kugel(0.049, 14, 10), matrix(knie), K['knie' + seite], null, hosenUV);
+    plan.add('hose', kugel(0.0465, 14, 10), matrix(knie), K['knie' + seite], null, hosenUV);
     const unter = dreh([[0.048, 0.0], [0.047, -0.08], [0.042, -0.17], [0.037, -0.226], [0.039, -0.232], [0.037, -0.268], [0.032, -0.274], [0.02, -0.276]], 18);
     plan.add('hose', unter, matrix(knie), K['knie' + seite], null, hosenUV);
 
@@ -329,7 +329,7 @@ export function baueJunge(farben = {}) {
     plan.add('haut', kugel(1, 12, 10), matrix(V(s * 0.111, 1.212, 0.004), [0, s * 0.3, 0], [0.014, 0.032, 0.024]), kk, haut);
   }
   // Nase
-  plan.add('haut', kugel(1, 12, 10), matrix(V(0, 1.19, 0.111), [0.2, 0, 0], [0.016, 0.014, 0.014]), kk, haut);
+  plan.add('haut', kugel(1, 12, 10), matrix(V(0, 1.19, 0.108), [0.2, 0, 0], [0.0125, 0.011, 0.012]), kk, haut);
 
   // Augen: weiß, Iris, Pupille, Glanzpunkt. Sie sitzen auf der Gesichtskugel.
   const weiss = C('#fbfbf8'), iris = C(f.augen), pupille = C('#0d0a08');
@@ -342,13 +342,13 @@ export function baueJunge(farben = {}) {
       const m = new THREE.Matrix4().compose(auf(abstand).add(versatz), q, V(...skala));
       plan.add('haut', geo, m, kk, farbe);
     };
-    setze(kugel(1, 16, 12), 0.084, [0.023, 0.026, 0.012], weiss);
-    setze(kugel(1, 14, 10), 0.0925, [0.0145, 0.016, 0.0045], iris);
-    setze(kugel(1, 10, 8), 0.0955, [0.0075, 0.0085, 0.0025], pupille);
-    setze(kugel(1, 8, 6), 0.0975, [0.0035, 0.0035, 0.0015], weiss, V(s * 0.004 + 0.004, 0.006, 0));
+    setze(kugel(1, 16, 12), 0.086, [0.026, 0.029, 0.014], weiss);
+    setze(kugel(1, 14, 10), 0.0965, [0.0165, 0.018, 0.0045], iris);
+    setze(kugel(1, 10, 8), 0.0995, [0.0085, 0.0095, 0.0025], pupille);
+    setze(kugel(1, 8, 6), 0.1012, [0.0042, 0.0042, 0.0015], weiss, V(0.005, 0.007, 0));
     // Augenbraue
     const braue = new THREE.CapsuleGeometry(0.004, 0.026, 2, 6);
-    const bm = new THREE.Matrix4().compose(auf(0.094).add(V(0, 0.038, 0)), q.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2 + s * 0.12))), V(1, 1, 0.6));
+    const bm = new THREE.Matrix4().compose(auf(0.096).add(V(0, 0.041, 0)), q.clone().multiply(new THREE.Quaternion().setFromEuler(new THREE.Euler(0, 0, Math.PI / 2 + s * 0.12))), V(1, 1, 0.6));
     plan.add('haut', braue, bm, kk, haare);
   }
   // Lächelnder Mund: ein Stück von einem Ring
@@ -357,63 +357,64 @@ export function baueJunge(farben = {}) {
 
   // ---------- Die Haare: ein "Wuschel-Pilzkopf" ----------
   const hm = V(0, 1.236, -0.008); // Mitte der Haare
-  // Kappe oben und eine Haube hinten/seitlich (bedeckt Ohren und Nacken)
-  plan.add('rest', new THREE.SphereGeometry(0.124, 26, 12, 0, Math.PI * 2, 0, Math.PI * 0.43), matrix(hm, [0, 0, 0], [1.0, 0.99, 1.05]), kk, haare);
-  plan.add('rest', new THREE.SphereGeometry(0.127, 24, 14, Math.PI * 0.86, Math.PI * 1.28, 0, Math.PI * 0.72), matrix(V(0, 1.232, -0.012), [0, 0, 0], [1.02, 1.0, 1.06]), kk, haare);
+  // Kappe oben (reicht vorne bis knapp über die Augenbrauen) und eine Haube
+  // hinten/seitlich (bedeckt Ohren und Nacken)
+  plan.add('rest', new THREE.SphereGeometry(0.126, 28, 14, 0, Math.PI * 2, 0, Math.PI * 0.47), matrix(hm, [0, 0, 0], [1.02, 1.0, 1.06]), kk, haare);
+  plan.add('rest', new THREE.SphereGeometry(0.129, 26, 16, Math.PI * 0.84, Math.PI * 1.32, 0, Math.PI * 0.74), matrix(V(0, 1.232, -0.012), [0, 0, 0], [1.04, 1.0, 1.07]), kk, haare);
 
-  // Eine Strähne: oben rund, unten spitz, flach wie ein Blatt
-  const straehneGeo = dreh(
-    Array.from({ length: 9 }, (_, i) => {
-      const t = i / 8;
-      return [0.5 * Math.pow(1 - t, 0.85) * Math.min(1, 0.4 + t * 3), -t];
+  // Ein Haarbüschel: wie eine Zunge – oben breit, unten rund, flach
+  const bueschelGeo = dreh(
+    Array.from({ length: 10 }, (_, i) => {
+      const t = i / 9;
+      return [0.5 * Math.sqrt(Math.max(0, 1 - Math.pow(t, 2.4))) * (0.75 + 0.25 * Math.sin(t * Math.PI)), -t];
     }),
-    7
+    8
   );
   const zufall = zufallMitStart(42);
   const richtung = (a, e) => V(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e));
   // a = rundherum (0 = vorne), eOben/eUnten = Höhe als Winkel, rO/rU = Abstand zur Mitte
-  const straehne = (a, eOben, eUnten, breite, rO, rU, dicke = 0.022) => {
+  const bueschel = (a, eOben, eUnten, breite, rO, rU, dicke = 0.03) => {
     const wurzel = hm.clone().add(richtung(a, eOben).multiplyScalar(rO));
     const spitze = hm.clone().add(richtung(a, eUnten).multiplyScalar(rU));
     const d = spitze.clone().sub(wurzel);
-    const laenge = d.length() * 1.12;
+    const laenge = d.length();
     d.normalize();
     const mitte = wurzel.clone().lerp(spitze, 0.5).sub(hm).normalize();
     const seite = mitte.clone().cross(d).normalize();
-    const normal = d.clone().negate().cross(seite).negate().normalize();
+    const normal = d.clone().cross(seite).normalize();
     const m = new THREE.Matrix4().makeBasis(seite, d.clone().negate(), normal);
     m.scale(V(breite, laenge, dicke));
     m.setPosition(wurzel);
-    const hell = 0.55 + zufall() * 0.45;
-    plan.add('rest', straehneGeo, m, kk, (l) => haare.clone().lerp(spitzen, Math.pow(-l.y, 1.6) * hell));
+    const hell = 0.5 + zufall() * 0.5;
+    plan.add('rest', bueschelGeo, m, kk, (l) => haare.clone().lerp(spitzen, Math.pow(-l.y, 1.8) * hell));
   };
-  const zz = () => (zufall() - 0.5);
+  const zz = () => zufall() - 0.5;
   // Pony: fällt vorne in die Stirn
   for (let i = 0; i < 9; i++) {
-    const a = -0.95 + (i / 8) * 1.9 + zz() * 0.1;
-    straehne(a, 1.0 + zz() * 0.1, 0.36 + Math.abs(a) * 0.12 + zz() * 0.06, 0.062, 0.118, 0.137);
+    const a = -1.0 + (i / 8) * 2.0 + zz() * 0.08;
+    bueschel(a, 0.95 + zz() * 0.1, 0.1 + Math.abs(a) * 0.1 + zz() * 0.05, 0.075, 0.122, 0.135);
   }
   // Seiten: über die Ohren
   for (const s of [-1, 1]) {
     for (let i = 0; i < 5; i++) {
-      const a = s * (1.05 + i * 0.22 + zz() * 0.06);
-      straehne(a, 0.9 + zz() * 0.1, -0.32 - i * 0.05 + zz() * 0.06, 0.07, 0.122, 0.139);
+      const a = s * (1.08 + i * 0.22 + zz() * 0.05);
+      bueschel(a, 0.75 + zz() * 0.1, -0.42 - i * 0.07 + zz() * 0.05, 0.08, 0.128, 0.136);
     }
   }
   // Hinten: bis in den Nacken, schön voll
   for (let i = 0; i < 9; i++) {
-    const a = Math.PI - 1.0 + (i / 8) * 2.0 + zz() * 0.06;
-    straehne(a, 0.85 + zz() * 0.12, -0.78 + zz() * 0.08, 0.075, 0.125, 0.136, 0.026);
+    const a = Math.PI - 0.95 + (i / 8) * 1.9 + zz() * 0.05;
+    bueschel(a, 0.6 + zz() * 0.12, -0.85 + zz() * 0.08, 0.085, 0.13, 0.134, 0.032);
   }
-  // Oben: ein paar wuschelige Büschel für Volumen
-  for (let i = 0; i < 12; i++) {
-    const a = (i / 12) * Math.PI * 2 + zz() * 0.3;
-    straehne(a, 1.45 + zz() * 0.1, 0.62 + zz() * 0.2, 0.075, 0.118, 0.134, 0.03);
+  // Oben: wuschelige Büschel für Volumen
+  for (let i = 0; i < 14; i++) {
+    const a = (i / 14) * Math.PI * 2 + zz() * 0.3;
+    bueschel(a, 1.4 + zz() * 0.12, 0.55 + zz() * 0.2, 0.085, 0.122, 0.132, 0.032);
   }
   // Wirbel ganz oben
-  for (let i = 0; i < 5; i++) {
-    const a = (i / 5) * Math.PI * 2 + 0.3;
-    straehne(a, 1.57, 1.05 + zz() * 0.1, 0.06, 0.12, 0.13, 0.03);
+  for (let i = 0; i < 6; i++) {
+    const a = (i / 6) * Math.PI * 2 + 0.3;
+    bueschel(a, 1.56, 1.0 + zz() * 0.12, 0.07, 0.124, 0.131, 0.03);
   }
 
   // ---------- Der rote Rucksack (Forscher-Rucksack) ----------
@@ -427,7 +428,7 @@ export function baueJunge(farben = {}) {
   for (const s of [-1, 1]) {
     const kurve = new THREE.CatmullRomCurve3([
       V(s * 0.07, 0.97, -0.11), V(s * 0.085, 1.045, -0.06), V(s * 0.09, 1.065, 0.0),
-      V(s * 0.085, 1.025, 0.075), V(s * 0.08, 0.93, 0.1), V(s * 0.085, 0.84, 0.093),
+      V(s * 0.082, 1.02, 0.07), V(s * 0.078, 0.95, 0.092), V(s * 0.08, 0.88, 0.094),
     ]);
     plan.add('rest', new THREE.TubeGeometry(kurve, 16, 0.01, 6, false), matrix(V(0, 0, 0), [0, 0, 0], [1, 1, 1]), rk, ruckDunkel);
   }

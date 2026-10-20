@@ -209,7 +209,7 @@ export class Spieler {
     k.schulterL.rotation.set(
       mische(Math.sin(p) * armSchwung - 0.1 * renn * bewegt, -0.9, armLuft),
       0,
-      mische(-0.07 - atem * 0.015 * (1 - bewegt), -0.55, armLuft)
+      mische(-0.1 - atem * 0.015 * (1 - bewegt), -0.55, armLuft)
     );
     k.ellbogenL.rotation.x = -(ellbogenBasis + Math.max(0, -Math.sin(p)) * 0.35 * bewegt) * (1 - armLuft) - 0.6 * armLuft;
     // rechter Arm
@@ -220,7 +220,7 @@ export class Spieler {
       k.schulterR.rotation.set(
         mische(-Math.sin(p) * armSchwung - 0.1 * renn * bewegt, -0.9, armLuft),
         0,
-        mische(0.07 + atem * 0.015 * (1 - bewegt), 0.55, armLuft)
+        mische(0.1 + atem * 0.015 * (1 - bewegt), 0.55, armLuft)
       );
       k.ellbogenR.rotation.x = -(ellbogenBasis + Math.max(0, Math.sin(p)) * 0.35 * bewegt) * (1 - armLuft) - 0.6 * armLuft;
     }
