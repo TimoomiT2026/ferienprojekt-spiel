@@ -111,8 +111,8 @@ function baueAtmosphaere() {
   const himmel = new Sky();
   himmel.scale.setScalar(1000);
   const u = himmel.material.uniforms;
-  u.turbidity.value = 2.6;
-  u.rayleigh.value = 2.0;
+  u.turbidity.value = 4.0;
+  u.rayleigh.value = 1.5;
   u.mieCoefficient.value = 0.0035;
   u.mieDirectionalG.value = 0.86;
   Object.assign(u, KUPPEL_WERTE, { nebelGlanz: NEBEL.nebelGlanz });
@@ -443,7 +443,7 @@ export class Himmel {
 
     const u = this.kuppel.material.uniforms;
     u.sunPosition.value.copy(richtung);
-    u.hell.value = 0.5 * S(hoehe, -0.25, 0.1);
+    u.hell.value = 0.46 * S(hoehe, -0.25, 0.1);
     KUPPEL_WERTE.nacht.value = nacht;
 
     // Dunst-Farbe am Horizont: Tag → Abendrot → Nacht

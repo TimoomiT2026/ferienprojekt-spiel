@@ -75,6 +75,22 @@ function beideSeitenHell(material) {
   return material;
 }
 
+// Blätter glänzen kaum. Ohne das hier leuchten die Ränder der Krone
+// weißlich, weil schräg getroffene Flächen den Himmel spiegeln.
+function wenigGlanz(material) {
+  const vorher = material.onBeforeCompile;
+  material.onBeforeCompile = (shader, r) => {
+    if (vorher) vorher(shader, r);
+    shader.fragmentShader = shader.fragmentShader.replace(
+      '#include <lights_physical_fragment>',
+      `#include <lights_physical_fragment>
+      material.specularColor *= 0.35;
+      material.specularF90 = 0.2;`
+    );
+  };
+  return material;
+}
+
 // Jede Kopie sucht sich eins der 4 Bilder im Laub-Atlas aus.
 // gewichte = wie oft welches Bild genommen wird (oben links, oben rechts, unten links, unten rechts)
 function atlasWahl(material, gewichte) {
@@ -428,13 +444,13 @@ const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
 const hochAchse = v3(0, 1, 0);
 
 function blattMaterial(bild, wind, ab, name, flattern = 0) {
-  return beideSeitenHell(mitWind(new THREE.MeshStandardMaterial({
+  return wenigGlanz(beideSeitenHell(mitWind(new THREE.MeshStandardMaterial({
     map: textur(bild, { wiederholen: false }),
     alphaTest: 0.45,
     side: THREE.DoubleSide,
     roughness: 0.75,
     vertexColors: true,
-  }), wind, ab, name, flattern));
+  }), wind, ab, name, flattern)));
 }
 
 function holzMaterial(bild) {

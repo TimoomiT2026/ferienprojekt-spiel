@@ -23,6 +23,7 @@ import { Boote } from './boote.js';
 import { Tiere } from './tiere.js';
 import { setzeAnisotropie } from './texturen.js';
 import { Haendler } from './haendler.js';
+import { Aufgaben } from './aufgaben.js';
 import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
@@ -113,15 +114,20 @@ const haendler = new Haendler({ rucksack, meldung, musik, elternElement: spielfe
 const lagerfeuer = new Lagerfeuer(szene, hindernisse, { rucksack, meldung, musik });
 objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
-rucksack.beimEssen = () => ueberleben.gegessen();
+rucksack.beimEssen = (id) => {
+  ueberleben.gegessen();
+  aufgaben.gegessen(id);
+};
 
 // ---------- Angeln ----------
 spieler.angel.add(baueAngel());
 const angeln = new Angeln(szene, { rucksack, meldung, musik, spieler });
 objekte.interaktionen.push(...angeln.interaktionen);
 
+const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld });
+
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);
@@ -218,6 +224,7 @@ function spielSchleife() {
     if (eingabe.rucksack && !karte.offen) {
       if (werkbank.offen) werkbank.schliessen();
       else if (haendler.offen) haendler.schliessen();
+      else if (aufgaben.offen) aufgaben.schliessen();
       else rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
     }
     if (karte.offen && rucksack.offen) rucksack.schliessen();
@@ -257,7 +264,10 @@ function spielSchleife() {
   spieler.schwert.visible = hand === 'schwert';
   spieler.angel.visible = hand === 'angel';
   lagerfeuer.aktualisiere(dt);
-  if (laeuft) ueberleben.aktualisiere();
+  if (laeuft) {
+    ueberleben.aktualisiere();
+    aufgaben.aktualisiere(dt);
+  }
   tiere.aktualisiere(dt, pos, himmel.helligkeit);
   aktualisiereNatur(dt, pos);
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
@@ -310,6 +320,7 @@ function sammleSpielstand() {
     tageszeit: { zeit: tageszeit.zeit, tag: tageszeit.tag },
     spieler: { x: p.x, z: p.z, winkel: spieler.figur.rotation.y },
     ueberleben: ueberleben.alsDaten(),
+    aufgaben: aufgaben.alsDaten(),
     objekte: objekte.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
@@ -324,6 +335,7 @@ function wendeSpielstandAn(s) {
     tageszeit.zeit = s.tageszeit?.zeit ?? 0;
     tageszeit.tag = s.tageszeit?.tag ?? 1;
     ueberleben.ladeDaten(s.ueberleben || {});
+    aufgaben.ladeDaten(s.aufgaben || {});
     objekte.ladeDaten(s.objekte || {});
     ladeGefaellte(s.gefaellt);
     lagerfeuer.brennt = s.feuer || 0;
@@ -408,7 +420,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere,
-  haendler, lagerfeuer, ueberleben, speichern, sammleSpielstand,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand,
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {
     spieler.figur.position.set(x, bodenHoehe(x, z), z);

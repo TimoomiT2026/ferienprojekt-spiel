@@ -17,7 +17,7 @@ export const EINSTELLUNGEN = {
 
   // ---------- Geld & Rucksack ----------
   // Mit wie vielen Münzen startet man? (aus der Mindmap!)
-  startGeld: 100,
+  startGeld: 30,
   // Wie viele Plätze hat der Rucksack?
   rucksackPlaetze: 12,
   // Wie viele gleiche Dinge passen auf einen Platz?
@@ -46,6 +46,7 @@ export const EINSTELLUNGEN = {
     stein: 50,
     kohle: 25,
     eisenerz: 15,
+    koeder: 12, // Würmer!
     gold: 8,
     edelstein: 2,
   },
@@ -55,7 +56,8 @@ export const EINSTELLUNGEN = {
   rezepte: {
     schwert: { eisenerz: 2, stein: 3 },
     feuerzeug: { stein: 2, eisenerz: 1, kohle: 1 },
-    angel: { holz: 3 },
+    schnur: { holz: 2 }, // dünnes Holz, zur Schnur gebunden
+    angel: { holz: 2, schnur: 1 },
   },
 
   // Wie oft kann man etwas benutzen, bevor es kaputt / leer ist?
@@ -77,14 +79,15 @@ export const EINSTELLUNGEN = {
     schwert: 25,
     feuerzeug: 10,
     angel: 12,
+    schnur: 4,
     edelstein: 60,
   },
   // So viele Münzen kostet es, etwas zu KAUFEN
+  // (Eine Angel gibt es beim Händler nicht – die baust du selbst!)
   kaufPreise: {
     koeder: 3,
-    holz: 6,
-    brot: 10,
-    angel: 30,
+    holz: 12,
+    brot: 15,
   },
 
   // ---------- Essen & Schlafen ----------
