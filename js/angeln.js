@@ -234,6 +234,7 @@ function waehleStellen(kandidaten) {
 export class Angeln {
   constructor(szene, spiel) {
     this.spiel = spiel; // { rucksack, meldung, musik, spieler }
+    this.szene = szene;
     this.zeit = 0;
     this.wurf = null; // läuft gerade ein Wurf? Dann steht hier alles darüber
 
@@ -423,6 +424,42 @@ export class Angeln {
     szene.add(this.fang);
   }
 
+  // ---------- Eine neue Angelstelle (z. B. am Fischteich der Base) ----------
+  // stand = wo man steht, wasserZiel = wohin der Schwimmer fliegt (mit der Höhe des Wassers!)
+  // Gibt die neue Interaktion zurück – die muss noch in objekte.interaktionen.
+  stelleHinzufuegen(stand, wasserZiel) {
+    const stelle = {
+      stand: stand.clone(),
+      ziel: wasserZiel.clone(),
+      richtung: Math.atan2(wasserZiel.x - stand.x, wasserZiel.z - stand.z),
+      imSee: true,
+      steil: true,
+      eigenerSteg: true, // den Steg baut, wer die Stelle bestellt hat
+      steg: stand.clone(),
+      sprungIn: 3,
+      sprung: -1,
+      spritzer: -1,
+    };
+    this.stellen.push(stelle);
+    // Wellenringe und springende Fische brauchen jetzt einen Platz mehr: neu bauen
+    for (const teil of [this.ringe, this.springer]) {
+      this.szene.remove(teil);
+      teil.geometry.dispose();
+      teil.material.dispose();
+    }
+    this.baueWellen(this.szene);
+    const ia = {
+      pos: stelle.stand,
+      radius: ANGEL_RADIUS,
+      bild: '🎣',
+      text: 'Angeln',
+      aktiv: () => !this.wurf,
+      ausfuehren: () => this.angeln(stelle),
+    };
+    this._interaktionen.push(ia);
+    return ia;
+  }
+
   // ---------- Für main.js ----------
   get interaktionen() {
     return this._interaktionen;
@@ -485,11 +522,12 @@ export class Angeln {
 
   // Die Schnur von der Spitze zum Ende malen (durchhängen = wie weit sie nach unten hängt)
   maleSchnur(von, bis, durchhaengen) {
+    const wasserY = this.wurf ? this.wurf.stelle.ziel.y : WASSER_HOEHE; // Teiche liegen höher als das Meer
     const p = this.schnur.geometry.attributes.position;
     for (let i = 0; i < this.schnurPunkte; i++) {
       const t = i / (this.schnurPunkte - 1);
       const y = THREE.MathUtils.lerp(von.y, bis.y, t) - durchhaengen * 4 * t * (1 - t);
-      p.setXYZ(i, THREE.MathUtils.lerp(von.x, bis.x, t), Math.max(y, Math.min(bis.y, WASSER_HOEHE + 0.01)), THREE.MathUtils.lerp(von.z, bis.z, t));
+      p.setXYZ(i, THREE.MathUtils.lerp(von.x, bis.x, t), Math.max(y, Math.min(bis.y, wasserY + 0.01)), THREE.MathUtils.lerp(von.z, bis.z, t));
     }
     p.needsUpdate = true;
   }
@@ -545,7 +583,7 @@ export class Angeln {
     } else if (w.phase === 'warten') {
       // Der Schwimmer wippt sanft auf den Wellen
       sp.copy(ziel);
-      sp.y = WASSER_HOEHE - 0.03 + Math.sin(w.zeit * 4) * 0.025;
+      sp.y = ziel.y - 0.03 + Math.sin(w.zeit * 4) * 0.025;
       // Einmal kurz zucken – beißt da was? Noch nicht!
       const zucken = w.zeit / w.warten - w.zuckenBei;
       if (zucken > 0 && zucken < 0.06) sp.y -= 0.08;
@@ -560,7 +598,7 @@ export class Angeln {
     } else if (w.phase === 'biss') {
       // Der Schwimmer wird unter Wasser gezogen
       sp.copy(ziel);
-      sp.y = WASSER_HOEHE - Math.min(1, w.zeit / 0.15) * 0.35 + Math.sin(w.zeit * 40) * 0.03;
+      sp.y = ziel.y - Math.min(1, w.zeit / 0.15) * 0.35 + Math.sin(w.zeit * 40) * 0.03;
       sp.x += Math.sin(w.zeit * 23) * 0.05;
       arm = -0.9 - Math.min(1, w.zeit / 0.5) * 0.3;
       this.maleSchnur(spitze, sp, 0);
@@ -614,8 +652,8 @@ export class Angeln {
     const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(), p = new THREE.Vector3();
     const farbe = new THREE.Color();
     const leer = new THREE.Vector3(0, 0, 0);
-    const ring = (i, ort, radius, hell) => {
-      m.compose(p.set(ort.x, WASSER_HOEHE + 0.03, ort.z), q.identity(), hell > 0.003 ? s.set(radius, 1, radius) : leer);
+    const ring = (i, ort, radius, hell, wasserY = WASSER_HOEHE) => {
+      m.compose(p.set(ort.x, wasserY + 0.03, ort.z), q.identity(), hell > 0.003 ? s.set(radius, 1, radius) : leer);
       this.ringe.setMatrixAt(i, m);
       this.ringe.setColorAt(i, farbe.setScalar(hell));
     };
@@ -624,7 +662,7 @@ export class Angeln {
       // 3 Wellenringe breiten sich langsam aus und werden blasser
       for (let k = 0; k < 3; k++) {
         const t = (this.zeit / 3.2 + k / 3 + i * 0.137) % 1;
-        ring(i * 4 + k, st.ziel, 0.3 + t * 2.2, Math.sin(t * Math.PI) * 0.35 * (1 - t));
+        ring(i * 4 + k, st.ziel, 0.3 + t * 2.2, Math.sin(t * Math.PI) * 0.35 * (1 - t), st.ziel.y);
       }
 
       // Ab und zu springt ein Tofu-Fisch aus dem Wasser
@@ -640,7 +678,7 @@ export class Angeln {
         st.sprung += dt / 0.8;
         const t = st.sprung;
         const weg = (t - 0.5) * 1.4; // springt ein Stück nach vorne
-        p.set(st.sprungOrt.x + Math.sin(st.sprungRichtung) * weg, WASSER_HOEHE - 0.2 + Math.sin(t * Math.PI) * 0.9, st.sprungOrt.z + Math.cos(st.sprungRichtung) * weg);
+        p.set(st.sprungOrt.x + Math.sin(st.sprungRichtung) * weg, st.ziel.y - 0.2 + Math.sin(t * Math.PI) * 0.9, st.sprungOrt.z + Math.cos(st.sprungRichtung) * weg);
         // Erst Nase nach oben, dann Nase nach unten – wie ein Delfin
         q.setFromEuler(new THREE.Euler(-Math.cos(t * Math.PI) * 1.1, st.sprungRichtung, 0, 'YXZ'));
         this.springer.setMatrixAt(i, m.compose(p, q, s.setScalar(1)));
@@ -655,7 +693,7 @@ export class Angeln {
       // Spritz-Ring, wo der Fisch wieder eintaucht
       if (st.spritzer >= 0) {
         st.spritzer += dt / 1.2;
-        ring(i * 4 + 3, st.spritzOrt, 0.2 + st.spritzer * 1.6, (1 - st.spritzer) * 0.6);
+        ring(i * 4 + 3, st.spritzOrt, 0.2 + st.spritzer * 1.6, (1 - st.spritzer) * 0.6, st.ziel.y);
         if (st.spritzer >= 1) st.spritzer = -1;
       } else {
         ring(i * 4 + 3, st.ziel, 0, 0);
@@ -668,7 +706,7 @@ export class Angeln {
       if (this.schwimmerRinge[k] >= 0) {
         this.schwimmerRinge[k] += dt / 1.0;
         const t = this.schwimmerRinge[k];
-        ring(basis + k, this.schwimmerRingOrt[k], 0.15 + t * 1.3, (1 - t) * 0.7);
+        ring(basis + k, this.schwimmerRingOrt[k], 0.15 + t * 1.3, (1 - t) * 0.7, this.schwimmerRingOrt[k].y);
         if (t >= 1) this.schwimmerRinge[k] = -1;
       } else {
         ring(basis + k, leer, 0, 0);
