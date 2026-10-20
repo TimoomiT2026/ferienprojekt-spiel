@@ -263,10 +263,10 @@ export function baueGelaende() {
           if (nb.z > 0.01) { cFels += texture2D(tFels, uvZ).rgb * nb.z; tz = texture2D(tFelsN, uvZ).xyz * 2.0 - 1.0; }
           cFels /= max(nb.x * step(0.01, nb.x) + nb.y * step(0.01, nb.y) + nb.z * step(0.01, nb.z), 1e-3);
           // Beulen von drei Seiten zusammenmischen ("Whiteout"-Trick)
-          tx = vec3(tx.xy * 1.3 + nGeo.zy, abs(tx.z) * nGeo.x);
-          ty = vec3(ty.xy * 1.3 + nGeo.xz, abs(ty.z) * nGeo.y);
-          tz = vec3(tz.xy * 1.3 + nGeo.xy, abs(tz.z) * nGeo.z);
-          nFels = normalize(mix(nGeo, normalize(tx.zyx * nb.x + ty.xzy * nb.y + tz.xyz * nb.z), 0.35 + 0.65 * nah));
+          tx = vec3(tx.xy * 0.6 + nGeo.zy, abs(tx.z) * nGeo.x);
+          ty = vec3(ty.xy * 0.6 + nGeo.xz, abs(ty.z) * nGeo.y);
+          tz = vec3(tz.xy * 0.6 + nGeo.xy, abs(tz.z) * nGeo.z);
+          nFels = normalize(mix(nGeo, normalize(tx.zyx * nb.x + ty.xzy * nb.y + tz.xyz * nb.z), 0.3 + 0.5 * nah));
         }
         vec3 cSchnee = vec3(0.86, 0.89, 0.93) * (0.9 + 0.1 * cFels.r);
 
@@ -285,7 +285,7 @@ export function baueGelaende() {
 
         vec3 bodenFarbe = cSand * wA.x + cGras * wA.y * 1.1 + cWald * wA.z
                         + cFels * wB.x + cPfad * wB.y + cSchnee * wB.z;
-        vec2 beulen = nSand * wA.x * 0.45 + nGras * wA.y * 1.1 + nWald * wA.z + nPfad * wB.y * 1.2;
+        vec2 beulen = nSand * wA.x * 0.25 + nGras * wA.y * 1.1 + nWald * wA.z + nPfad * wB.y * 1.2;
         vec3 bodenNormale = normalize(nGeo + vec3(beulen.x, 0.0, beulen.y) * 0.9);
         bodenNormale = normalize(mix(bodenNormale, nFels, wB.x + wB.z * 0.5));
         float bodenRauheit = dot(wA, vec3(0.88, 0.93, 0.96)) + dot(wB, vec3(0.78, 0.95, 0.55));

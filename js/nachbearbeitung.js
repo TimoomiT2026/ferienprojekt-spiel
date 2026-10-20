@@ -18,7 +18,7 @@ import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 const LEUCHT_SCHWELLE = 2.0;    // ab welcher Helligkeit etwas leuchtet
 const LEUCHT_STAERKE = 0.16;    // wie stark das Leuchten ist
 const WAERME = [1.025, 1.0, 0.97];  // Rot etwas mehr, Blau etwas weniger
-const SAETTIGUNG = 1.1;         // Farben etwas kräftiger (1 = normal)
+const SAETTIGUNG = 1.04;        // Farben etwas kräftiger (1 = normal)
 const KONTRAST = 1.07;          // 1 = normal
 const VIGNETTE = 0.28;          // 0 = keine dunklen Ecken
 const KOERNCHEN = 1.6 / 255;    // Film-Körnchen (ganz fein!)
@@ -119,10 +119,13 @@ const ZUSAMMEN = /* glsl */ `
     #include <tonemapping_fragment>
     #include <colorspace_fragment>
     vec3 c = gl_FragColor.rgb;
-    // Warmer Film-Look
-    c *= waerme;
+    // Warmer Film-Look: dunkle und mittlere Töne etwas wärmer,
+    // helle (z. B. der Himmel) bleiben frisch blau
     float grau = dot(c, vec3(0.2126, 0.7152, 0.0722));
-    c = mix(vec3(grau), c, saettigung);
+    c *= mix(waerme, vec3(1.0), smoothstep(0.45, 0.9, grau));
+    // "Vibrance": blasse Farben bekommen mehr Kraft als schon kräftige
+    float bunt = max(c.r, max(c.g, c.b)) - min(c.r, min(c.g, c.b));
+    c = mix(vec3(grau), c, saettigung + 0.25 * (1.0 - bunt));
     c = (c - 0.5) * kontrast + 0.5;
     // Vignette: zur Ecke hin sanft dunkler (rund, nicht oval)
     vec2 m = (vUv - 0.5) * vec2(seitenVerhaeltnis, 1.0);

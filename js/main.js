@@ -24,6 +24,7 @@ import { Tiere } from './tiere.js';
 import { setzeAnisotropie } from './texturen.js';
 import { Haendler } from './haendler.js';
 import { Aufgaben } from './aufgaben.js';
+import { Nachbearbeitung } from './nachbearbeitung.js';
 import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
@@ -47,6 +48,8 @@ setzeAnisotropie(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
 
 const szene = new THREE.Scene();
 const kamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1200);
+// Nachbearbeitung: Leuchten, Farben wie im Film, Vignette
+const nach = new Nachbearbeitung(renderer, szene, kamera);
 
 // ---------- Die Welt bauen ----------
 const hindernisse = new Hindernisse();
@@ -201,14 +204,19 @@ let warNacht = false;
 
 // Automatische Qualität: Ruckelt es, rechnen wir mit etwas weniger Pixeln
 let bilderGezaehlt = 0, messZeit = 0;
+let automatik = true; // für Tests abschaltbar
 function passeQualitaetAn(echteZeit) {
+  if (!automatik) return;
   bilderGezaehlt++;
   messZeit += echteZeit;
   if (messZeit < 3) return;
   const fps = bilderGezaehlt / messZeit;
   const pr = renderer.getPixelRatio();
-  if (fps < 40 && pr > 1) renderer.setPixelRatio(Math.max(1, pr - 0.25));
-  else if (fps < 35) wenigerDetails(); // reicht das nicht: Pflanzen nicht so weit zeigen
+  // Ruckelt es? Schritt für Schritt sparen: erst das Leuchten, dann Pixel, dann Filter, dann Pflanzen
+  if (fps < 40 && nach.stufe === 2) nach.stufe = 1;
+  else if (fps < 40 && pr > 1) renderer.setPixelRatio(Math.max(1, pr - 0.25));
+  else if (fps < 35 && nach.stufe === 1) nach.stufe = 0;
+  else if (fps < 35) wenigerDetails();
   bilderGezaehlt = 0;
   messZeit = 0;
 }
@@ -286,7 +294,7 @@ function spielSchleife() {
     aktionsText.textContent = naechste.text;
   }
   zeigeUhr();
-  renderer.render(szene, kamera);
+  nach.render(dt);
 }
 
 // ---------- Mit dem Schwert Bäume fällen ----------
@@ -410,6 +418,7 @@ window.addEventListener('resize', () => {
   kamera.aspect = window.innerWidth / window.innerHeight;
   kamera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  nach.setSize(window.innerWidth, window.innerHeight);
 });
 
 // Auf dem iPad das Heranzoomen mit zwei Fingern verhindern
@@ -420,7 +429,8 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach,
+  set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {
     spieler.figur.position.set(x, bodenHoehe(x, z), z);

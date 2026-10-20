@@ -350,12 +350,12 @@ export class Dorf {
 
     // Sechs Hütten im Kreis, die Türen zeigen zur Dorfmitte
     const arten = [
-      { wand: '#e8d8bc', dach: '#c0644a', reet: false, tuer: '#9a6a44', laden: '#4f7f5a', schornstein: true },
-      { wand: '#e2cfb0', reet: true, tuer: '#7a5236', laden: '#8a4a3a', schornstein: false },
-      { wand: '#ead2b0', dach: '#d07a4a', reet: false, tuer: '#a07048', laden: '#3f6f8a', schornstein: true },
-      { wand: '#dcd4c8', reet: true, tuer: '#6b4a30', laden: '#6a4a8a', schornstein: true },
-      { wand: '#e6cca6', dach: '#8a5a4a', reet: false, tuer: '#8a5a34', laden: '#a8743a', schornstein: false },
-      { wand: '#e4d6be', reet: true, tuer: '#9a6a44', laden: '#4f7f5a', schornstein: true },
+      { wand: '#f2dcb4', dach: '#c0644a', reet: false, tuer: '#9a6a44', laden: '#4f7f5a', schornstein: true },
+      { wand: '#ecd2a8', reet: true, tuer: '#7a5236', laden: '#8a4a3a', schornstein: false },
+      { wand: '#f4d6aa', dach: '#d07a4a', reet: false, tuer: '#a07048', laden: '#3f6f8a', schornstein: true },
+      { wand: '#ead8bc', reet: true, tuer: '#6b4a30', laden: '#6a4a8a', schornstein: true },
+      { wand: '#f0cfa0', dach: '#8a5a4a', reet: false, tuer: '#8a5a34', laden: '#a8743a', schornstein: false },
+      { wand: '#eed8b6', reet: true, tuer: '#9a6a44', laden: '#4f7f5a', schornstein: true },
     ];
     this.rauchQuellen = [];
     const hutPlatz = [];
