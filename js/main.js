@@ -426,6 +426,13 @@ window.addEventListener('resize', () => {
 // Auf dem iPad das Heranzoomen mit zwei Fingern verhindern
 document.addEventListener('gesturestart', (e) => e.preventDefault());
 
+// Gegen Ruckeln am Anfang: Alle Grafik-Programme ("Shader") schon vorbereiten,
+// während der Startbildschirm zu sehen ist – nicht erst beim ersten Umschauen.
+try {
+  if (renderer.compileAsync) renderer.compileAsync(szene, kamera).catch(() => {});
+  else renderer.compile(szene, kamera);
+} catch {}
+
 spielSchleife();
 
 // Für automatische Tests: Spielzustand von außen ablesbar machen
