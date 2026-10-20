@@ -362,7 +362,7 @@ export class Boote {
         ruderEinsatz: 0, // 0 = Ruder eingezogen, 1 = rudern
         entdeckt: false,
         wackelVersatz: zufall() * 10,
-        boden: { x: NaN, z: NaN, h: 0 }, // gemerkte Bodenhöhe unter dem Boot
+        boden: { x: Infinity, z: Infinity, h: 0 }, // gemerkte Bodenhöhe unter dem Boot
       };
       this.liste.push(boot);
     }

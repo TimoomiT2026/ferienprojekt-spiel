@@ -14,10 +14,10 @@ import { EINSTELLUNGEN } from './einstellungen.js';
 //   richtung = wohin sie läuft (Grad, 0 = nach Osten)
 // Zusammen werden sie draußen auf dem Meer ca. 0,5 m hoch.
 const WELLEN = [
-  { laenge: 34, hoehe: 0.2, richtung: 20 },
-  { laenge: 21, hoehe: 0.14, richtung: -30 },
-  { laenge: 13, hoehe: 0.09, richtung: 70 },
-  { laenge: 8.5, hoehe: 0.05, richtung: 145 },
+  { laenge: 34, hoehe: 0.24, richtung: 20 },
+  { laenge: 21, hoehe: 0.16, richtung: -30 },
+  { laenge: 13, hoehe: 0.1, richtung: 70 },
+  { laenge: 8.5, hoehe: 0.055, richtung: 145 },
 ];
 // Wie spitz sind die Wellenberge? (0 = runde Hügel, 1 = ganz spitz)
 const WELLEN_SPITZE = 0.55;
@@ -147,7 +147,8 @@ const glatt = (a, b, x) => {
 
 // Wie groß dürfen die Wellen hier sein? (0 = gar keine, 1 = volle Höhe)
 function wellenStaerke(x, z) {
-  let s = glatt(0.15, VOLLE_WELLEN_TIEFE, tiefeBei(x, z));
+  const t = THREE.MathUtils.clamp((tiefeBei(x, z) - 0.1) / (VOLLE_WELLEN_TIEFE - 0.1), 0, 1);
+  let s = t * (2 - t); // erst schnell größer, dann sanft bis zur vollen Höhe
   if (kameraBekannt) s *= 1 - glatt(WELLEN_WEITE - 45, WELLEN_WEITE - 3, Math.hypot(x - KAMERA.x, z - KAMERA.z));
   return s;
 }
@@ -231,7 +232,7 @@ export class Wasser {
       metalness: 0.1,
       transparent: true,
       normalMap: this.wellen,
-      normalScale: new THREE.Vector2(0.3, 0.3),
+      normalScale: new THREE.Vector2(0.2, 0.2),
     });
     material.onBeforeCompile = (shader) => {
       shader.uniforms.tTiefe = { value: tiefenKarte };
@@ -262,7 +263,8 @@ export class Wasser {
           vec2 p0 = (modelMatrix * vec4(position, 1.0)).xz;
           // Am Strand flache Wellen, draußen große. Weit weg von der Kamera keine.
           float tiefeHier = texture2D(tTiefe, p0 / uGroesse + 0.5).r * 6.0;
-          float staerke = smoothstep(0.15, ${f(VOLLE_WELLEN_TIEFE)}, tiefeHier);
+          float tw = clamp((tiefeHier - 0.1) / ${f(VOLLE_WELLEN_TIEFE - 0.1)}, 0.0, 1.0);
+          float staerke = tw * (2.0 - tw);
           staerke *= 1.0 - smoothstep(${f(WELLEN_WEITE - 45)}, ${f(WELLEN_WEITE - 3)}, distance(p0, uKamera.xz));
           vec3 versatz = vec3(0.0);
           float nx = 0.0, nz = 0.0, ny = 1.0;
@@ -286,7 +288,7 @@ export class Wasser {
           diffuseColor.rgb = mix(flach, tief, smoothstep(0.0, 4.5, tiefe));
           // Wellenberge sind etwas heller (die Sonne scheint durchs Wasser), Täler dunkler
           float berg = clamp(vWelle / 0.5, -1.0, 1.0);
-          diffuseColor.rgb *= 1.0 + 0.22 * berg;
+          diffuseColor.rgb *= 1.0 + 0.3 * berg;
           diffuseColor.rgb += vec3(0.02, 0.09, 0.08) * max(berg, 0.0);
           // Schaum, wo die Wellen auf den Strand laufen
           float welle = 0.3 + 0.18 * sin(uZeit * 1.4 - tiefe * 9.0 + vWP.x * 0.05);
@@ -294,7 +296,7 @@ export class Wasser {
           float kraeusel = texture2D(normalMap, vWP.xz * 0.08 + uZeit * 0.01).r;
           schaum *= 0.55 + 0.45 * kraeusel;
           // Ein bisschen weiße Gischt oben auf den höchsten Wellenbergen
-          schaum = max(schaum, smoothstep(0.36, 0.55, vWelle) * smoothstep(0.45, 0.7, kraeusel) * 0.7);
+          schaum = max(schaum, smoothstep(0.4, 0.62, vWelle) * smoothstep(0.55, 0.75, kraeusel) * 0.5);
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.92, 0.96, 0.98), schaum * 0.85);
           diffuseColor.a = max(mix(0.45, 0.94, smoothstep(0.0, 3.0, tiefe)), schaum);`);
     };
