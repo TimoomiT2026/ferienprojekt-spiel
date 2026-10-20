@@ -17,8 +17,8 @@ import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 // ---------- Zahlen zum Drehen ----------
 const LEUCHT_SCHWELLE = 2.0;    // ab welcher Helligkeit etwas leuchtet
 const LEUCHT_STAERKE = 0.16;    // wie stark das Leuchten ist
-const WAERME = [1.035, 1.0, 0.955]; // Rot etwas mehr, Blau etwas weniger
-const SAETTIGUNG = 1.06;        // Farben etwas kräftiger (1 = normal)
+const WAERME = [1.025, 1.0, 0.97];  // Rot etwas mehr, Blau etwas weniger
+const SAETTIGUNG = 1.1;         // Farben etwas kräftiger (1 = normal)
 const KONTRAST = 1.07;          // 1 = normal
 const VIGNETTE = 0.28;          // 0 = keine dunklen Ecken
 const KOERNCHEN = 1.6 / 255;    // Film-Körnchen (ganz fein!)

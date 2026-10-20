@@ -251,6 +251,11 @@ function spielSchleife() {
   himmel.aktualisiere(dt, tageszeit, kamera, pos);
   wasser.aktualisiere(dt);
   boote.aktualisiere(dt);
+  // Beim Rudern hat man beide Hände an den Rudern – Werkzeuge weg
+  const hand = boote.faehrt ? null : rucksack.inDerHand;
+  spieler.schaufel.visible = hand === 'schaufel';
+  spieler.schwert.visible = hand === 'schwert';
+  spieler.angel.visible = hand === 'angel';
   lagerfeuer.aktualisiere(dt);
   if (laeuft) ueberleben.aktualisiere();
   tiere.aktualisiere(dt, pos, himmel.helligkeit);

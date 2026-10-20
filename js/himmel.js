@@ -9,7 +9,7 @@ const zufall = zufallMitSeed(7);
 
 // Farben für Tag, Sonnenuntergang und Nacht (für den Dunst am Horizont)
 const FARBEN = {
-  tagHorizont: new THREE.Color('#a8cbe8'),
+  tagHorizont: new THREE.Color('#9fc3e6'),
   abendHorizont: new THREE.Color('#f0a273'),
   nachtHorizont: new THREE.Color('#141f3d'),
   nachtOben: new THREE.Color('#040814'),
@@ -26,10 +26,10 @@ const FARBEN = {
 
 // Zahlen zum Drehen
 const DUNST = {
-  boden: 0.006,   // wie dicht der Dunst unten am Boden ist
+  boden: 0.004,   // wie dicht der Dunst unten am Boden ist
   abfall: 0.09,   // wie schnell er nach oben dünner wird
   hoeheNull: 0.0, // ab welcher Höhe gemessen wird (Meeresspiegel)
-  maximal: 0.42,  // nie mehr als so viel Dunst
+  maximal: 0.32,  // nie mehr als so viel Dunst
 };
 const SCHATTEN_GROESSE = 45; // so viele Meter um die Figur herum gibt es Schatten
 
@@ -131,7 +131,7 @@ function baueAtmosphaere() {
       // Am Horizont geht der Himmel weich in den Dunst über
       float sonnig = pow(max(dot(direction, vSunDirection), 0.0), 5.0);
       vec3 dunst = dunstFarbe + nebelGlanz * sonnig;
-      float band = 1.0 - smoothstep(-0.04, 0.22, direction.y);
+      float band = 1.0 - smoothstep(-0.03, 0.13, direction.y);
       farbe = mix(farbe, dunst, band * band * (1.0 - nacht * 0.5));
       gl_FragColor = vec4( farbe, 1.0 );`);
   return himmel;
