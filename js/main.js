@@ -28,6 +28,7 @@ import { Nachbearbeitung } from './nachbearbeitung.js';
 import { Fernrohr } from './fernrohr.js';
 import { Pferde } from './pferde.js';
 import { Pilze } from './pilze.js';
+import { Base } from './base.js';
 import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
@@ -130,10 +131,15 @@ spieler.angel.add(baueAngel());
 const angeln = new Angeln(szene, { rucksack, meldung, musik, spieler });
 objekte.interaktionen.push(...angeln.interaktionen);
 
-const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld });
+// ---------- Die Base (Zelt → Hütte → Haus) ----------
+const base = new Base(szene, hindernisse, { rucksack, meldung, musik, tageszeit, spieler, angeln, schlafen, elternElement: spielfeld });
+base.beiNeuerInteraktion = (ia) => objekte.interaktionen.push(ia);
+objekte.interaktionen.push(...base.interaktionen);
+
+const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen || base.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);
@@ -142,7 +148,7 @@ const tiere = new Tiere(szene, hindernisse);
 
 // ---------- Karte & Navigation ----------
 const karte = new Karte(spielfeld);
-karte.punkt('zelt', { name: 'Zelt', bild: '⛺', x: 5, z: -2 });
+karte.punkt('zelt', { name: 'Base', bild: '🏠', x: base.ort.x, z: base.ort.z });
 karte.punkt('werkbank', { name: 'Werkbank', bild: '🔨', x: werkbank.ort.x, z: werkbank.ort.z });
 karte.punkt('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z });
 karte.beiZielErreicht = (ziel) => meldung(`${ziel.bild} Du bist da: ${ziel.name}!`, 4);
@@ -151,9 +157,11 @@ angeln.positionen.forEach((p, i) => karte.punkt(`angel${i}`, { name: 'Angelstell
 boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: false }));
 // ---------- Pferde ----------
 // Die Base (mit dem Pferdestall) kommt später dazu – bis dahin gibt es keinen Stall
-const baseHalter = { base: null, get stall() { return this.base?.stall ?? null; } };
+const baseHalter = { base, get stall() { return this.base?.stall ?? null; } };
 const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter });
 objekte.interaktionen.push(...pferde.interaktionen);
+aufgaben.spiel.base = base;
+aufgaben.spiel.pferde = pferde;
 
 // ---------- Zauberpilze & Fliegen ----------
 const pilze = new Pilze(szene, { rucksack, meldung, musik, tageszeit, hindernisse });
@@ -283,6 +291,7 @@ function spielSchleife() {
       if (werkbank.offen) werkbank.schliessen();
       else if (haendler.offen) haendler.schliessen();
       else if (aufgaben.offen) aufgaben.schliessen();
+      else if (base.offen) base.schliessen();
       else rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
     }
     if (karte.offen && rucksack.offen) rucksack.schliessen();
@@ -335,6 +344,7 @@ function spielSchleife() {
   pilze.aktualisiere(dt, pos);
   aktualisiereNatur(dt, pos);
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
+  base.aktualisiere(dt, himmel.helligkeit);
   spieler.laterne.intensity = (1 - himmel.helligkeit) * 14;
 
   karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
@@ -392,6 +402,7 @@ function sammleSpielstand() {
     pilze: pilze.alsDaten(),
     aufgaben: aufgaben.alsDaten(),
     objekte: objekte.alsDaten(),
+    base: base.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
     boote: boote.liste.map((b) => ({ x: b.gruppe.position.x, z: b.gruppe.position.z, w: b.gruppe.rotation.y, entdeckt: b.entdeckt })),
@@ -410,6 +421,7 @@ function wendeSpielstandAn(s) {
     pilze.ladeDaten(s.pilze || {});
     aufgaben.ladeDaten(s.aufgaben || {});
     objekte.ladeDaten(s.objekte || {});
+    base.ladeDaten(s.base || {});
     ladeGefaellte(s.gefaellt);
     lagerfeuer.brennt = s.feuer || 0;
     (s.boote || []).forEach((d, i) => {
@@ -500,7 +512,7 @@ spielSchleife();
 
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
-  spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr,
+  spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
   haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
