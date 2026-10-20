@@ -22,6 +22,13 @@ import { Werkbank } from './werkbank.js';
 import { Boote } from './boote.js';
 import { Tiere } from './tiere.js';
 import { setzeAnisotropie } from './texturen.js';
+import { Haendler } from './haendler.js';
+import { Angeln, baueAngel } from './angeln.js';
+import { Lagerfeuer } from './feuer.js';
+import { Ueberleben } from './ueberleben.js';
+import { ladeSpielstand, speichereSpielstand, loescheSpielstand } from './speicher.js';
+import { zeigeVorgeschichte } from './vorgeschichte.js';
+import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
 
@@ -66,6 +73,7 @@ const rucksack = new Rucksack(meldung);
 rucksack.beiAenderung = () => {
   spieler.schaufel.visible = rucksack.inDerHand === 'schaufel';
   spieler.schwert.visible = rucksack.inDerHand === 'schwert';
+  spieler.angel.visible = rucksack.inDerHand === 'angel';
 };
 rucksack.zeichnen();
 knopf(document.getElementById('rucksack-zu'), () => rucksack.schliessen());
@@ -77,6 +85,7 @@ const schlafBild = document.getElementById('schlafen');
 let schlaeft = false;
 function schlafen() {
   schlaeft = true;
+  ueberleben.schlaeftJetzt();
   schlafBild.classList.add('sichtbar');
   musik.schlaflied();
   setTimeout(() => {
@@ -90,11 +99,29 @@ function schlafen() {
   }, 3600);
 }
 
-const objekte = new Objekte(szene, hindernisse, { rucksack, musik, meldung, tageszeit, spieler, dorf, schlafen });
+const objekte = new Objekte(szene, hindernisse, {
+  rucksack, musik, meldung, tageszeit, spieler, dorf, schlafen,
+  haendlerOeffnen: () => haendler.oeffnen(),
+});
 
 // ---------- Werkbank ----------
 const werkbank = new Werkbank(szene, hindernisse, { rucksack, meldung, musik, elternElement: spielfeld });
 objekte.interaktionen.push(werkbank.interaktion);
+
+// ---------- Händler, Lagerfeuer, Essen & Schlafen ----------
+const haendler = new Haendler({ rucksack, meldung, musik, elternElement: spielfeld });
+const lagerfeuer = new Lagerfeuer(szene, hindernisse, { rucksack, meldung, musik });
+objekte.interaktionen.push(lagerfeuer.interaktion);
+const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
+rucksack.beimEssen = () => ueberleben.gegessen();
+
+// ---------- Angeln ----------
+spieler.angel.add(baueAngel());
+const angeln = new Angeln(szene, { rucksack, meldung, musik, spieler });
+objekte.interaktionen.push(...angeln.interaktionen);
+
+// Fenster, die das Spiel anhalten
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);
@@ -107,6 +134,7 @@ karte.punkt('zelt', { name: 'Zelt', bild: '⛺', x: 5, z: -2 });
 karte.punkt('werkbank', { name: 'Werkbank', bild: '🔨', x: werkbank.ort.x, z: werkbank.ort.z });
 karte.punkt('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z });
 karte.beiZielErreicht = (ziel) => meldung(`${ziel.bild} Du bist da: ${ziel.name}!`, 4);
+angeln.positionen.forEach((p, i) => karte.punkt(`angel${i}`, { name: 'Angelstelle', bild: '🎣', x: p.x, z: p.z }));
 // Boote erscheinen erst auf der Karte, wenn man sie entdeckt hat
 boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: false }));
 boote.beiEntdeckt = (boot) => {
@@ -117,7 +145,7 @@ boote.beiEntdeckt = (boot) => {
 };
 
 // ---------- Anzeigen ----------
-document.getElementById('muenzen').textContent = EINSTELLUNGEN.startGeld;
+rucksack.aendereMuenzen(0);
 const uhrFeld = document.getElementById('uhr');
 const aktionsKnopf = document.getElementById('aktion-knopf');
 const aktionsBild = document.getElementById('aktion-bild');
@@ -189,18 +217,21 @@ function spielSchleife() {
     const eingabe = steuerung.lies();
     if (eingabe.rucksack && !karte.offen) {
       if (werkbank.offen) werkbank.schliessen();
+      else if (haendler.offen) haendler.schliessen();
       else rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
     }
     if (karte.offen && rucksack.offen) rucksack.schliessen();
-    const pausiert = rucksack.offen || schlaeft || karte.offen || werkbank.offen;
+    const pausiert = fensterOffen() || schlaeft;
     if (!pausiert) {
       tageszeit.aktualisiere(dt);
       if (eingabe.aktion) {
         if (objekte.aktuelle) objekte.aktion();
-        else if (rucksack.inDerHand === 'schwert') spieler.schwingen();
+        else if (rucksack.inDerHand === 'schwert') schwertSchlag();
       }
       if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
+      else if (angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, kameraWinkel);
       else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel);
+      angeln.aktualisiere(dt); // nach dem Spieler, damit die Arm-Haltung stimmt
     }
     bewegeKamera(dt, eingabe.kameraDrehung, eingabe.kameraNeigung);
   } else {
@@ -220,6 +251,13 @@ function spielSchleife() {
   himmel.aktualisiere(dt, tageszeit, kamera, pos);
   wasser.aktualisiere(dt);
   boote.aktualisiere(dt);
+  // Beim Rudern hat man beide Hände an den Rudern – Werkzeuge weg
+  const hand = boote.faehrt ? null : rucksack.inDerHand;
+  spieler.schaufel.visible = hand === 'schaufel';
+  spieler.schwert.visible = hand === 'schwert';
+  spieler.angel.visible = hand === 'angel';
+  lagerfeuer.aktualisiere(dt);
+  if (laeuft) ueberleben.aktualisiere();
   tiere.aktualisiere(dt, pos, himmel.helligkeit);
   aktualisiereNatur(dt, pos);
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
@@ -227,8 +265,11 @@ function spielSchleife() {
 
   karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
   let naechste = objekte.aktualisiere(dt, pos);
-  if (!naechste && rucksack.inDerHand === 'schwert') naechste = { bild: '⚔️', text: 'Schwingen' };
-  const zeigen = laeuft && naechste && !rucksack.offen && !karte.offen && !werkbank.offen;
+  if (!naechste && rucksack.inDerHand === 'schwert') {
+    const holz = holzInDerNaehe(pos.x, pos.z);
+    naechste = holz ? { bild: '🪓', text: holz.art === 'baum' ? 'Fällen' : 'Zerschlagen' } : { bild: '⚔️', text: 'Schwingen' };
+  }
+  const zeigen = laeuft && naechste && !fensterOffen();
   aktionsKnopf.classList.toggle('sichtbar', !!zeigen);
   if (zeigen) {
     aktionsBild.innerHTML = naechste.bild;
@@ -238,15 +279,114 @@ function spielSchleife() {
   renderer.render(szene, kamera);
 }
 
+// ---------- Mit dem Schwert Bäume fällen ----------
+let schlagSperre = 0;
+function schwertSchlag() {
+  const jetzt = performance.now();
+  if (jetzt < schlagSperre) return;
+  schlagSperre = jetzt + 450;
+  const pos = spieler.figur.position;
+  const holz = holzInDerNaehe(pos.x, pos.z);
+  if (holz) spieler.figur.rotation.y = Math.atan2(holz.x - pos.x, holz.z - pos.z); // zum Baum drehen
+  spieler.schwingen();
+  if (!holz) return;
+  setTimeout(() => {
+    const bekommen = schlagen(holz);
+    musik.graben();
+    if (bekommen > 0) {
+      const passt = rucksack.hinein('holz', bekommen);
+      meldung(passt ? `🪵 +${bekommen} Holz!` : 'Der Rucksack ist voll – das Holz bleibt liegen.', 3);
+    }
+    if (rucksack.verbrauche('schwert')) meldung('💥 Dein Schwert ist kaputt! Bau dir an der Werkbank ein neues.', 5);
+  }, 220);
+}
+
+// ---------- Speichern & Laden ----------
+function sammleSpielstand() {
+  const p = spieler.figur.position;
+  return {
+    version: 1,
+    rucksack: rucksack.alsDaten(),
+    tageszeit: { zeit: tageszeit.zeit, tag: tageszeit.tag },
+    spieler: { x: p.x, z: p.z, winkel: spieler.figur.rotation.y },
+    ueberleben: ueberleben.alsDaten(),
+    objekte: objekte.alsDaten(),
+    gefaellt: gefaellteHolzStellen(),
+    feuer: lagerfeuer.brennt,
+    boote: boote.liste.map((b) => ({ x: b.gruppe.position.x, z: b.gruppe.position.z, w: b.gruppe.rotation.y, entdeckt: b.entdeckt })),
+    vorgeschichteGesehen: true,
+  };
+}
+
+function wendeSpielstandAn(s) {
+  try {
+    rucksack.ladeDaten(s.rucksack || {});
+    tageszeit.zeit = s.tageszeit?.zeit ?? 0;
+    tageszeit.tag = s.tageszeit?.tag ?? 1;
+    ueberleben.ladeDaten(s.ueberleben || {});
+    objekte.ladeDaten(s.objekte || {});
+    ladeGefaellte(s.gefaellt);
+    lagerfeuer.brennt = s.feuer || 0;
+    (s.boote || []).forEach((d, i) => {
+      const b = boote.liste[i];
+      if (!b) return;
+      b.gruppe.position.x = d.x;
+      b.gruppe.position.z = d.z;
+      b.gruppe.rotation.y = d.w;
+      if (d.entdeckt && !b.entdeckt) boote.beiEntdeckt?.(b), (b.entdeckt = true);
+    });
+    if (s.spieler && spieler.kannStehen(s.spieler.x, s.spieler.z)) {
+      window.__spiel.teleport(s.spieler.x, s.spieler.z, kameraWinkel);
+      spieler.figur.rotation.y = s.spieler.winkel || 0;
+    }
+  } catch (fehler) {
+    console.warn('Spielstand konnte nicht geladen werden', fehler);
+  }
+}
+
+function speichern() {
+  if (laeuft && !boote.faehrt) speichereSpielstand(sammleSpielstand());
+}
+setInterval(speichern, 10000);
+// Entdeckte Boote auf der Karte dort zeigen, wo sie gerade liegen
+setInterval(() => {
+  boote.positionen.forEach((b, i) => b.entdeckt && karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: true }));
+}, 2000);
+window.addEventListener('pagehide', speichern);
+document.addEventListener('visibilitychange', () => document.hidden && speichern());
+
+const gespeichert = ladeSpielstand();
+
 // ---------- Startbildschirm ----------
 const startBildschirm = document.getElementById('start');
+if (gespeichert) {
+  startBildschirm.querySelector('.tippen').textContent = `Weiterspielen · Tag ${gespeichert.tageszeit?.tag ?? 1}`;
+  const neu = document.createElement('button');
+  neu.className = 'neues-spiel';
+  neu.textContent = '🔄 Neues Spiel anfangen';
+  startBildschirm.appendChild(neu);
+  knopf(neu, () => {
+    if (confirm('Wirklich ganz von vorn anfangen? Dein Spielstand wird gelöscht.')) {
+      loescheSpielstand();
+      location.reload();
+    }
+  });
+}
+
 function starte() {
   if (laeuft) return;
-  laeuft = true;
   musik.start();
   startBildschirm.classList.add('weg');
-  document.getElementById('hud').classList.add('sichtbar');
-  meldung('Finde die glitzernde Schaufel beim Zelt! ✨', 6);
+  const los = () => {
+    laeuft = true;
+    document.getElementById('hud').classList.add('sichtbar');
+    if (gespeichert) meldung(`👋 Willkommen zurück, Forscher! Tag ${tageszeit.tag}.`, 4);
+    else meldung('Finde die glitzernde Schaufel beim Zelt! ✨', 6);
+  };
+  if (gespeichert) {
+    wendeSpielstandAn(gespeichert);
+    los();
+  } else zeigeVorgeschichte(spielfeld, los);
 }
 startBildschirm.addEventListener('click', starte);
 startBildschirm.addEventListener('touchend', (e) => {
@@ -268,6 +408,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere,
+  haendler, lagerfeuer, ueberleben, speichern, sammleSpielstand,
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {
     spieler.figur.position.set(x, bodenHoehe(x, z), z);

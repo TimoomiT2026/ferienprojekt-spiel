@@ -25,3 +25,14 @@
 ## Hinweis Musik auf dem iPad
 Die Musik ist ruhiges Klavier, vom Computer selbst ausgerechnet (keine Musikdatei, darum garantiert lizenzfrei).
 Wenn nichts zu hören ist: Lautstärke hochdrehen und prüfen, ob das iPad auf **lautlos** steht.
+
+## Neu an Tag 2
+- **Rucksack:** Ding antippen = auswählen. Dann gibt es Knöpfe: *In die Hand*, *Essen*, *1 wegwerfen*, *Alle*. Gleiche Dinge liegen auf einem Platz (die kleine Zahl zeigt, wie viele). Der grüne Balken zeigt, wie lange Schwert oder Feuerzeug noch halten.
+- **Händler im Dorf:** *Handeln* drücken. Oben *Kaufen* (Köder, Holz, Brot, Angel) oder *Verkaufen* (alles, was du gefunden, gefangen oder gebaut hast).
+- **Essen:** Einmal am Tag. Oben links steht, ob du satt bist. Wer einen ganzen Tag nichts isst, hat Hunger und läuft halb so schnell.
+- **Schlafen:** Spätestens jede zweite Nacht, sonst verlierst du 50 Münzen.
+- **Holz:** Schwert in die Hand, vor einen Baum oder Busch stellen, *Fällen* drücken (3 Schläge pro Baum). Jeder Schlag nutzt das Schwert ab.
+- **Lagerfeuer** (neben dem Zelt): *Anzünden* braucht 1 Holz + Feuerzeug. Brennt es, kannst du Tofu-Fische *grillen* oder Holz nachlegen.
+- **Werkbank:** Schwert, Feuerzeug (2 Steine + 1 Eisenerz + 1 Kohle) und Angel (3 Holz).
+- **Angeln:** Angel in die Hand, Köder im Rucksack, an eine Angelstelle stellen (dort kräuselt sich das Wasser).
+- **Speichern:** passiert automatisch. Beim Start steht dann *Weiterspielen*. Achtung: Der Spielstand liegt nur auf dem jeweiligen Gerät.

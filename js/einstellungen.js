@@ -54,7 +54,53 @@ export const EINSTELLUNGEN = {
   // Was braucht man, um etwas zu bauen? (Ding: Anzahl)
   rezepte: {
     schwert: { eisenerz: 2, stein: 3 },
+    feuerzeug: { stein: 2, eisenerz: 1, kohle: 1 },
+    angel: { holz: 3 },
   },
+
+  // Wie oft kann man etwas benutzen, bevor es kaputt / leer ist?
+  haltbarkeit: {
+    schwert: 12, // 12 Schläge
+    feuerzeug: 3, // 3 Mal Feuer machen
+  },
+
+  // ---------- Händler ----------
+  // So viele Münzen bekommt man, wenn man etwas VERKAUFT
+  verkaufsPreise: {
+    stein: 2,
+    kohle: 4,
+    holz: 3,
+    tofufisch: 6,
+    gegrillterFisch: 8,
+    eisenerz: 8,
+    gold: 20,
+    schwert: 25,
+    feuerzeug: 10,
+    angel: 12,
+    edelstein: 60,
+  },
+  // So viele Münzen kostet es, etwas zu KAUFEN
+  kaufPreise: {
+    koeder: 3,
+    holz: 6,
+    brot: 10,
+    angel: 30,
+  },
+
+  // ---------- Essen & Schlafen ----------
+  // Wie schnell läuft man mit Hunger? (0.5 = halb so schnell)
+  hungerTempo: 0.5,
+  // Wie viele Nächte darf man durchmachen, bevor es Ärger gibt?
+  naechteOhneSchlaf: 2,
+  // So viele Münzen verliert man dann
+  schlafStrafe: 50,
+  // Wie lange brennt das Lagerfeuer? (Minuten)
+  feuerMinuten: 4,
+  // Wie viele Schläge braucht ein Baum, bis er umfällt?
+  schlaegeProBaum: 3,
+  // Wie viel Holz gibt ein Baum / ein Busch?
+  holzProBaum: 3,
+  holzProBusch: 1,
 
   // ---------- Musik ----------
   // Wie laut ist die Musik? (0 = aus, 1 = ganz laut)

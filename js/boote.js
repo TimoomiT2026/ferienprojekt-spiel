@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { zufallMitSeed } from './rauschen.js';
 import { bodenHoehe, WASSER_HOEHE } from './gelaende.js';
+import { wellenHoehe, wasserZeit } from './wasser.js';
 
 // ---------- Zahlen zum Rumprobieren ----------
 // Wie viele Boote liegen am Ufer?
@@ -23,6 +24,11 @@ const BREMSEN = 3;
 const DRIFT_BREMSE = 1.6;
 // Wie weit darf man aufs Meer raus? (Meter vom Inselmittelpunkt)
 const MEER_GRENZE = EINSTELLUNGEN.inselGroesse + 160;
+// Wie viel Wasser braucht das Boot unter dem Bug mindestens? (Meter)
+// Klein = man kann bis ganz nah an den Strand fahren.
+const BUG_MIN_TIEFE = 0.05;
+// Wie stark schaukelt das Boot mit den Wellen? (1 = genau wie die Wellen)
+const SCHAUKELN = 1;
 // Ab wie viel Metern Nähe gilt ein Boot als "entdeckt"? (für die Karte)
 const ENTDECKT_ABSTAND = 30;
 // Eigener Zufall nur für die Boote: immer dieselben Plätze
@@ -30,7 +36,7 @@ const zufall = zufallMitSeed(2024);
 
 // Ist hier genug Wasser für ein Boot? (tiefe = wie tief es mindestens sein muss)
 function istWasser(x, z, tiefe = 0.35) {
-  return bodenHoehe(x, z) < -tiefe && Math.hypot(x, z) < MEER_GRENZE;
+  return bodenHoehe(x, z) < WASSER_HOEHE - tiefe && Math.hypot(x, z) < MEER_GRENZE;
 }
 
 // ---------- Holz-Bild malen (statt einer Bilddatei) ----------
@@ -305,10 +311,6 @@ function waehleBootsplaetze() {
   return gewaehlt;
 }
 
-// Kleine Wellen: wie hoch ist das Wasser hier gerade?
-function welle(x, z, zeit) {
-  return Math.sin(zeit * 1.3 + x * 0.15) * 0.06 + Math.sin(zeit * 0.9 + z * 0.2 + 1) * 0.05;
-}
 
 export class Boote {
   constructor(szene, spieler) {
@@ -360,6 +362,7 @@ export class Boote {
         ruderEinsatz: 0, // 0 = Ruder eingezogen, 1 = rudern
         entdeckt: false,
         wackelVersatz: zufall() * 10,
+        boden: { x: Infinity, z: Infinity, h: 0 }, // gemerkte Bodenhöhe unter dem Boot
       };
       this.liste.push(boot);
     }
@@ -367,7 +370,7 @@ export class Boote {
     // ---------- Die Aktionen für den Aktions-Knopf ----------
     this._interaktionen = this.liste.map((boot) => ({
       pos: boot.gruppe.position, // wandert mit, wenn das Boot woanders liegt
-      radius: 3.6,
+      radius: 4.2, // etwas mehr als die 4 m beim Aussteigen – so kommt man immer wieder rein
       bild: '🚣',
       text: 'Einsteigen',
       aktiv: () => !this.faehrt,
@@ -475,10 +478,10 @@ export class Boote {
     const schnell = boot.tempo.length();
     if (schnell > 0.01) {
       const ok = (x, z) => {
-        // Die Mitte muss im Wasser sein. Ein Stück voraus darf es flacher sein,
-        // die Bootsspitze ist ja schmal und schaut aus dem Wasser.
-        const ax = x + (boot.tempo.x / schnell) * 0.8, az = z + (boot.tempo.y / schnell) * 0.8;
-        return istWasser(x, z) && istWasser(ax, az, 0.15);
+        // Unter der Mitte und vorne am Bug muss noch ein kleines bisschen Wasser sein.
+        // So kann man bis ganz an den Strand fahren – auch durch flaches Wasser.
+        const bx = x + (boot.tempo.x / schnell) * LAENGE * 0.9, bz = z + (boot.tempo.y / schnell) * LAENGE * 0.9;
+        return istWasser(x, z, BUG_MIN_TIEFE) && istWasser(bx, bz, BUG_MIN_TIEFE);
       };
       if (ok(pos.x + tx, pos.z + tz)) {
         pos.x += tx;
@@ -522,11 +525,41 @@ export class Boote {
     s.armR.rotation.set(-1.15 - w * 0.35 * boot.ruderEinsatz, 0, 0.35);
     s.fussL.position.z = s.fussR.position.z = 0.3;
     s.koerper.position.y = 1.05;
+    // Der Junge sitzt auf der Bank: Oberschenkel nach vorn, Knie gebeugt
+    const k = s.k;
+    if (k) {
+      k.beinL.rotation.set(-1.45, 0, -0.08);
+      k.beinR.rotation.set(-1.45, 0, 0.08);
+      k.knieL.rotation.x = k.knieR.rotation.x = 1.5;
+      k.huefte.position.y = 0.42;
+      k.huefte.rotation.set(0, 0, 0);
+      if (k.ellbogenL) k.ellbogenL.rotation.x = k.ellbogenR.rotation.x = -0.6 + w * 0.3 * boot.ruderEinsatz;
+    }
   }
 
   // ---------- Jedes Bild: Boote schaukeln auf den Wellen ----------
+  // Wie liegt das Boot gerade auf den Wellen? Wir messen die Wasserhöhe
+  // vorne, hinten, links, rechts und in der Mitte.
+  schaukeln(boot, zeit) {
+    const g = boot.gruppe;
+    const x = g.position.x, z = g.position.z;
+    const vx = Math.sin(boot.winkel), vz = Math.cos(boot.winkel); // nach vorne
+    const lang = LAENGE * 0.8;
+    const vorne = wellenHoehe(x + vx * lang, z + vz * lang, zeit);
+    const hinten = wellenHoehe(x - vx * lang, z - vz * lang, zeit);
+    const rechts = wellenHoehe(x + vz * BREITE, z - vx * BREITE, zeit);
+    const links = wellenHoehe(x - vz * BREITE, z + vx * BREITE, zeit);
+    const mitte = wellenHoehe(x, z, zeit);
+    return {
+      hoehe: ((vorne + hinten + rechts + links) / 4 + mitte) / 2 * SCHAUKELN,
+      nicken: -Math.atan((vorne - hinten) / (2 * lang)) * SCHAUKELN, // Spitze hoch oder runter
+      rollen: Math.atan((rechts - links) / (2 * BREITE)) * SCHAUKELN, // zur Seite kippen
+    };
+  }
+
   aktualisiere(dt) {
     this.zeit += dt;
+    const zeit = wasserZeit();
     const spielerPos = this.spieler.figur.position;
     for (const boot of this.liste) {
       const g = boot.gruppe;
@@ -534,11 +567,21 @@ export class Boote {
       const imBoot = boot === this.aktuelles;
       const tempo = imBoot ? boot.tempo.length() : 0;
 
-      // Auf und ab mit den Wellen, dazu leicht kippen
-      g.position.y = WASSER_HOEHE + welle(g.position.x, g.position.z, this.zeit) - (imBoot ? 0.06 : 0);
+      // Auf und ab mit den Wellen, dazu passend kippen (+ ein ganz kleines Wackeln)
+      const lage = this.schaukeln(boot, zeit);
+      let y = WASSER_HOEHE + lage.hoehe - (imBoot ? 0.06 : 0);
+      // Im ganz flachen Wasser sitzt das Boot auf dem Sand auf (statt darin zu versinken)
+      const b = boot.boden;
+      if (Math.abs(b.x - g.position.x) + Math.abs(b.z - g.position.z) > 0.05) {
+        b.x = g.position.x;
+        b.z = g.position.z;
+        b.h = bodenHoehe(b.x, b.z);
+      }
+      y = Math.max(y, b.h + 0.2);
+      g.position.y = y;
       g.rotation.y = boot.winkel;
-      g.rotation.x = Math.sin(t * 1.1) * 0.035 - tempo * 0.006; // beim Fahren hebt sich die Spitze
-      g.rotation.z = Math.sin(t * 0.8 + 1) * 0.05;
+      g.rotation.x = lage.nicken + Math.sin(t * 1.1) * 0.012 - tempo * 0.006; // beim Fahren hebt sich die Spitze
+      g.rotation.z = lage.rollen + Math.sin(t * 0.8 + 1) * 0.015;
 
       // Ruder: beim Fahren rudern, sonst eingezogen am Boot
       const ziel = imBoot ? 1 : 0;
