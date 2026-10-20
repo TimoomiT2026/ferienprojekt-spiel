@@ -15,8 +15,8 @@ import * as THREE from 'three';
 import { FullScreenQuad } from 'three/addons/postprocessing/Pass.js';
 
 // ---------- Zahlen zum Drehen ----------
-const LEUCHT_SCHWELLE = 1.15;   // ab welcher Helligkeit etwas leuchtet
-const LEUCHT_STAERKE = 0.22;    // wie stark das Leuchten ist
+const LEUCHT_SCHWELLE = 1.4;    // ab welcher Helligkeit etwas leuchtet
+const LEUCHT_STAERKE = 0.16;    // wie stark das Leuchten ist
 const WAERME = [1.035, 1.0, 0.955]; // Rot etwas mehr, Blau etwas weniger
 const SAETTIGUNG = 1.06;        // Farben etwas kräftiger (1 = normal)
 const KONTRAST = 1.05;          // 1 = normal
@@ -41,7 +41,7 @@ const HELL_FILTER = /* glsl */ `
   uniform float schwelle;
   varying vec2 vUv;
   float hell(vec3 c) { return dot(c, vec3(0.2126, 0.7152, 0.0722)); }
-  vec3 probe(vec2 o) { return min(texture2D(tBild, vUv + o * texel).rgb, vec3(24.0)); }
+  vec3 probe(vec2 o) { return min(texture2D(tBild, vUv + o * texel).rgb, vec3(10.0)); }
   vec3 gruppe(vec3 a, vec3 b, vec3 c, vec3 d) {
     vec3 m = (a + b + c + d) * 0.25;
     return m / (1.0 + hell(m));

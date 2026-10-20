@@ -135,6 +135,13 @@ export function baueGelaende() {
     waldboden: textur('waldboden.jpg'),
     fels: textur('fels.jpg'),
     pfad: textur('pfad.jpg'),
+    // "Normal Maps" = Beulen-Bilder: sie sagen dem Licht, wo kleine Hügelchen,
+    // Steinchen und Halme sind. Dann wirft der Boden winzige Schatten.
+    grasBeulen: textur('gras_normal.jpg', { farbe: false }),
+    sandBeulen: textur('sand_normal.jpg', { farbe: false }),
+    waldBeulen: textur('waldboden_normal.jpg', { farbe: false }),
+    pfadBeulen: textur('pfad_normal.jpg', { farbe: false }),
+    felsBeulen: textur('fels_normal.jpg', { farbe: false }),
   };
   const groesse = (R + 90) * 2;
   const unterteilung = 288;
@@ -156,10 +163,9 @@ export function baueGelaende() {
     gewA.set([g[0], g[1], g[2], g[3]], i * 4);
     gewB.set([g[4], g[5]], i * 2);
     // Große helle und dunkle Flecken, damit die Wiese nicht wie ein Teppich aussieht
-    const fleck = 0.82 + fbm(x * 0.02, z * 0.02, 3, 5) * 0.36;
+    const fleck = 0.84 + fbm(x * 0.02, z * 0.02, 3, 5) * 0.32;
     const gelb = fbm(x * 0.012 + 9, z * 0.012, 2, 6);
-    const nass = y < 0.6 ? 0.7 : 1; // nasser Sand ist dunkler
-    farben.set([fleck * nass * (0.96 + gelb * 0.1), fleck * nass, fleck * nass * (0.95 - gelb * 0.08)], i * 3);
+    farben.set([fleck * (0.96 + gelb * 0.12), fleck, fleck * (0.95 - gelb * 0.1)], i * 3);
   }
   // Merken für später: Pflanzen schauen hier schnell nach, statt alles neu zu rechnen
   GITTER.n = unterteilung + 1;
@@ -181,6 +187,11 @@ export function baueGelaende() {
       tWald: { value: texturen.waldboden },
       tFels: { value: texturen.fels },
       tPfad: { value: texturen.pfad },
+      tGrasN: { value: texturen.grasBeulen },
+      tSandN: { value: texturen.sandBeulen },
+      tWaldN: { value: texturen.waldBeulen },
+      tPfadN: { value: texturen.pfadBeulen },
+      tFelsN: { value: texturen.felsBeulen },
     });
     shader.vertexShader = shader.vertexShader
       .replace('#include <common>', `#include <common>
@@ -198,30 +209,101 @@ export function baueGelaende() {
     shader.fragmentShader = shader.fragmentShader
       .replace('#include <common>', `#include <common>
         uniform sampler2D tGras, tSand, tWald, tFels, tPfad;
+        uniform sampler2D tGrasN, tSandN, tWaldN, tPfadN, tFelsN;
         varying vec4 vGewichtA;
         varying vec2 vGewichtB;
         varying vec3 vWeltPos;
-        varying vec3 vWeltNormale;`)
+        varying vec3 vWeltNormale;
+        float helligkeitVon(vec3 c) { return dot(c, vec3(0.3, 0.5, 0.2)); }
+        // Beulen-Bild lesen: ergibt die Neigung (x, y) – 0 = ganz flach
+        vec2 beule(sampler2D t, vec2 uv) { return texture2D(t, uv).xy * 2.0 - 1.0; }`)
       .replace('#include <map_fragment>', `
-        // Jede Bodenart ist ein Foto, das sich wie eine Tapete wiederholt.
-        // Zwei Größen gemischt, damit man das Muster nicht erkennt.
+        // ---- Welche Bodenarten gibt es hier? (kommt aus gelaende.js) ----
+        vec3 nGeo = normalize(vWeltNormale);
+        float wSand = vGewichtA.x, wGras = vGewichtA.y, wWald = vGewichtA.z;
+        float wFels = vGewichtA.w, wPfad = vGewichtB.x, wSchnee = vGewichtB.y;
+        // Wie weit weg? Weit weg zeigen wir die Fotos größer, damit man
+        // das Tapeten-Muster nicht sieht.
+        float fern = smoothstep(18.0, 90.0, distance(vWeltPos, cameraPosition));
+        float nah = 1.0 - fern;
         vec2 uv = vWeltPos.xz / 4.0;
-        vec3 cGras = mix(texture2D(tGras, uv).rgb, texture2D(tGras, uv * 0.21 + 0.37).rgb, 0.45);
-        vec3 cSand = mix(texture2D(tSand, uv * 0.7).rgb, texture2D(tSand, uv * 0.13).rgb, 0.4);
-        vec3 cWald = texture2D(tWald, uv * 0.6).rgb;
-        vec3 cPfad = texture2D(tPfad, uv * 0.55).rgb;
-        // Fels von drei Seiten "projizieren", damit Klippen nicht verschmiert aussehen
-        vec3 nb = pow(abs(normalize(vWeltNormale)), vec3(3.0));
-        nb /= (nb.x + nb.y + nb.z);
-        vec3 cFels = texture2D(tFels, vWeltPos.zy / 9.0).rgb * nb.x
-                   + texture2D(tFels, vWeltPos.xz / 9.0).rgb * nb.y
-                   + texture2D(tFels, vWeltPos.xy / 9.0).rgb * nb.z;
+        // Große, weiche Flecken (aus dem Felsfoto, ganz groß gezogen)
+        float makro = texture2D(tFels, vWeltPos.xz / 190.0 + 0.3).g;
+
+        vec3 cSand = vec3(0.0), cGras = vec3(0.0), cWald = vec3(0.0), cPfad = vec3(0.0), cFels = vec3(0.0);
+        vec2 nSand = vec2(0.0), nGras = vec2(0.0), nWald = vec2(0.0), nPfad = vec2(0.0);
+        vec3 nFels = nGeo;
+        // Nur die Fotos lesen, die hier wirklich gebraucht werden (spart Arbeit!)
+        if (wGras > 0.002) {
+          cGras = mix(texture2D(tGras, uv).rgb, texture2D(tGras, uv * 0.21 + 0.37).rgb, 0.3 + 0.45 * fern);
+          cGras *= 0.88 + 0.3 * makro;
+          nGras = beule(tGrasN, uv) * nah;
+        }
+        if (wSand > 0.002) {
+          cSand = mix(texture2D(tSand, uv * 0.7).rgb, texture2D(tSand, uv * 0.13).rgb, 0.35 + 0.4 * fern);
+          nSand = beule(tSandN, uv * 0.7) * nah;
+        }
+        if (wWald > 0.002) {
+          cWald = mix(texture2D(tWald, uv * 0.6).rgb, texture2D(tWald, uv * 0.17 + 0.5).rgb, 0.5 * fern);
+          cWald *= 0.9 + 0.25 * makro;
+          nWald = beule(tWaldN, uv * 0.6) * nah;
+        }
+        if (wPfad > 0.002) {
+          cPfad = texture2D(tPfad, uv * 0.55).rgb;
+          nPfad = beule(tPfadN, uv * 0.55) * nah;
+        }
+        if (wFels + wSchnee > 0.002) {
+          // Fels von drei Seiten "projizieren", damit Klippen nicht verschmiert aussehen
+          vec3 nb = pow(abs(nGeo), vec3(4.0));
+          nb /= (nb.x + nb.y + nb.z);
+          vec2 uvX = vWeltPos.zy / 9.0, uvY = vWeltPos.xz / 9.0, uvZ = vWeltPos.xy / 9.0;
+          vec3 tx = vec3(0.0, 0.0, 1.0), ty = tx, tz = tx;
+          if (nb.x > 0.01) { cFels += texture2D(tFels, uvX).rgb * nb.x; tx = texture2D(tFelsN, uvX).xyz * 2.0 - 1.0; }
+          if (nb.y > 0.01) { cFels += texture2D(tFels, uvY).rgb * nb.y; ty = texture2D(tFelsN, uvY).xyz * 2.0 - 1.0; }
+          if (nb.z > 0.01) { cFels += texture2D(tFels, uvZ).rgb * nb.z; tz = texture2D(tFelsN, uvZ).xyz * 2.0 - 1.0; }
+          cFels /= max(nb.x * step(0.01, nb.x) + nb.y * step(0.01, nb.y) + nb.z * step(0.01, nb.z), 1e-3);
+          // Beulen von drei Seiten zusammenmischen ("Whiteout"-Trick)
+          tx = vec3(tx.xy * 1.3 + nGeo.zy, abs(tx.z) * nGeo.x);
+          ty = vec3(ty.xy * 1.3 + nGeo.xz, abs(ty.z) * nGeo.y);
+          tz = vec3(tz.xy * 1.3 + nGeo.xy, abs(tz.z) * nGeo.z);
+          nFels = normalize(mix(nGeo, normalize(tx.zyx * nb.x + ty.xzy * nb.y + tz.xyz * nb.z), 0.35 + 0.65 * nah));
+        }
         vec3 cSchnee = vec3(0.86, 0.89, 0.93) * (0.9 + 0.1 * cFels.r);
-        vec3 bodenFarbe = cSand * vGewichtA.x + cGras * vGewichtA.y * 1.1 + cWald * vGewichtA.z
-                        + cFels * vGewichtA.w + cPfad * vGewichtB.x + cSchnee * vGewichtB.y;
-        diffuseColor.rgb *= bodenFarbe;`);
+
+        // ---- Weiche, natürliche Übergänge ----
+        // Helle Steinchen im Foto sind "höher": An der Grenze gewinnt, was
+        // höher ist. So wächst Gras zwischen den Steinen, nicht als glatte Linie.
+        vec3 wA = vec3(wSand, wGras * 1.1, wWald);
+        vec3 wB = vec3(wFels, wPfad, wSchnee);
+        vec3 hA = wA + vec3(helligkeitVon(cSand), helligkeitVon(cGras) * 1.2, helligkeitVon(cWald)) * 0.45 * step(0.002, wA);
+        vec3 hB = wB + vec3(helligkeitVon(cFels) * 1.4, helligkeitVon(cPfad), 0.5) * 0.45 * step(0.002, wB);
+        float hoechste = max(max(max(hA.x, hA.y), hA.z), max(max(hB.x, hB.y), hB.z)) - 0.22;
+        wA = max(hA - hoechste, 0.0) * step(0.002, wA);
+        wB = max(hB - hoechste, 0.0) * step(0.002, wB);
+        float summe = max(wA.x + wA.y + wA.z + wB.x + wB.y + wB.z, 1e-4);
+        wA /= summe; wB /= summe;
+
+        vec3 bodenFarbe = cSand * wA.x + cGras * wA.y * 1.1 + cWald * wA.z
+                        + cFels * wB.x + cPfad * wB.y + cSchnee * wB.z;
+        vec2 beulen = nSand * wA.x * 0.9 + nGras * wA.y * 1.1 + nWald * wA.z + nPfad * wB.y * 1.2;
+        vec3 bodenNormale = normalize(nGeo + vec3(beulen.x, 0.0, beulen.y) * 0.9);
+        bodenNormale = normalize(mix(bodenNormale, nFels, wB.x + wB.z * 0.5));
+        float bodenRauheit = dot(wA, vec3(0.88, 0.93, 0.96)) + dot(wB, vec3(0.78, 0.95, 0.55));
+
+        // ---- Nasser Sand an der Wasserkante: dunkler und etwas glänzend ----
+        float nass = 1.0 - smoothstep(0.15, 0.85, vWeltPos.y + (makro - 0.5) * 0.4);
+        nass *= 1.0 - wB.x;
+        bodenFarbe *= mix(vec3(1.0), vec3(0.55, 0.56, 0.6), nass);
+        bodenRauheit = mix(bodenRauheit, 0.32, nass);
+        bodenNormale = normalize(mix(bodenNormale, nGeo, nass * 0.6));
+        diffuseColor.rgb *= bodenFarbe;`)
+      .replace('#include <roughnessmap_fragment>', `#include <roughnessmap_fragment>
+        roughnessFactor = bodenRauheit;`)
+      .replace('#include <normal_fragment_maps>', `
+        // Die Beulen-Richtung fürs Licht in "Kamera-Richtungen" umrechnen
+        normal = normalize((viewMatrix * vec4(bodenNormale, 0.0)).xyz);`);
   };
-  material.customProgramCacheKey = () => 'gelaende';
+  material.customProgramCacheKey = () => 'gelaende2';
 
   const boden = new THREE.Mesh(geo, material);
   boden.receiveShadow = true;

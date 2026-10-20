@@ -19,17 +19,17 @@ const FARBEN = {
   // Wolken
   wolkeLicht: new THREE.Color('#ffffff'),
   wolkeAbendLicht: new THREE.Color('#ffb27a'),
-  wolkeSchatten: new THREE.Color('#9aaccc'),
+  wolkeSchatten: new THREE.Color('#b4c2dc'),
   wolkeAbendSchatten: new THREE.Color('#8a6a8f'),
   wolkeNacht: new THREE.Color('#1a2238'),
 };
 
 // Zahlen zum Drehen
 const DUNST = {
-  boden: 0.010,   // wie dicht der Dunst unten am Boden ist
+  boden: 0.006,   // wie dicht der Dunst unten am Boden ist
   abfall: 0.09,   // wie schnell er nach oben dünner wird
   hoeheNull: 0.0, // ab welcher Höhe gemessen wird (Meeresspiegel)
-  maximal: 0.55,  // nie mehr als so viel Dunst
+  maximal: 0.42,  // nie mehr als so viel Dunst
 };
 const SCHATTEN_GROESSE = 45; // so viele Meter um die Figur herum gibt es Schatten
 
@@ -273,9 +273,9 @@ function baueWolken() {
         vec2 p = (fract(vUv * 2.0) - 0.5) * 2.0;
         float z = sqrt(max(0.0, 1.0 - dot(p, p)));
         vec3 n = normalize(vRechts * p.x + vOben * p.y + vZurKamera * z);
-        n = normalize(n * 0.55 + vNormaleWolke * 0.75);
+        n = normalize(n * 0.3 + vNormaleWolke);
         float licht = clamp(dot(n, sonne) * 0.5 + 0.5, 0.0, 1.0);
-        licht *= mix(0.55, 1.0, vHoehe);          // unten grauer
+        licht *= mix(0.7, 1.0, vHoehe);           // unten grauer
         licht = mix(licht, 1.0, (1.0 - a) * 0.35); // dünne Ränder lassen Licht durch
         // Silberrand: steht die Sonne hinter der Wolke, leuchten die Ränder
         float gegenlicht = pow(max(dot(-vZurKamera, sonne), 0.0), 6.0) * (1.0 - a) * 1.2;
@@ -442,7 +442,7 @@ export class Himmel {
 
     const u = this.kuppel.material.uniforms;
     u.sunPosition.value.copy(richtung);
-    u.hell.value = 0.62 * S(hoehe, -0.25, 0.1);
+    u.hell.value = 0.5 * S(hoehe, -0.25, 0.1);
     KUPPEL_WERTE.nacht.value = nacht;
 
     // Dunst-Farbe am Horizont: Tag → Abendrot → Nacht
@@ -450,7 +450,7 @@ export class Himmel {
     this.szene.fog.color.copy(this.horizont);
     KUPPEL_WERTE.dunstFarbe.value.copy(this.horizont);
     // Leuchtender Dunst in Sonnenrichtung (nachts aus)
-    hilfsFarbe.copy(FARBEN.tagGlanz).lerp(FARBEN.abendGlanz, abend).multiplyScalar(0.55 * S(hoehe, -0.1, 0.05) * (0.35 + abend * 0.9));
+    hilfsFarbe.copy(FARBEN.tagGlanz).lerp(FARBEN.abendGlanz, abend).multiplyScalar(0.3 * S(hoehe, -0.1, 0.05) * (0.25 + abend * 1.1));
     Object.assign(NEBEL.nebelGlanz.value, { x: hilfsFarbe.r, y: hilfsFarbe.g, z: hilfsFarbe.b });
     Object.assign(NEBEL.nebelSonne.value, { x: richtung.x, y: richtung.y, z: richtung.z });
     // Nachts weniger Bodendunst (sonst wird alles grau)
