@@ -525,6 +525,16 @@ export class Boote {
     s.armR.rotation.set(-1.15 - w * 0.35 * boot.ruderEinsatz, 0, 0.35);
     s.fussL.position.z = s.fussR.position.z = 0.3;
     s.koerper.position.y = 1.05;
+    // Der Junge sitzt auf der Bank: Oberschenkel nach vorn, Knie gebeugt
+    const k = s.k;
+    if (k) {
+      k.beinL.rotation.set(-1.45, 0, -0.08);
+      k.beinR.rotation.set(-1.45, 0, 0.08);
+      k.knieL.rotation.x = k.knieR.rotation.x = 1.5;
+      k.huefte.position.y = 0.42;
+      k.huefte.rotation.set(0, 0, 0);
+      if (k.ellbogenL) k.ellbogenL.rotation.x = k.ellbogenR.rotation.x = -0.6 + w * 0.3 * boot.ruderEinsatz;
+    }
   }
 
   // ---------- Jedes Bild: Boote schaukeln auf den Wellen ----------
