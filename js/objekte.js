@@ -114,7 +114,7 @@ export class Objekte {
       if (h < 1.8 || h > 18) continue;
       if (abstandZumDorf(x, z) < DORF.radius + 3 || abstandZumPfad(x, z) < 2.5) continue;
       if (hindernisse.trifft(x, z, 1.5)) continue;
-      this.grabestellen.push({ pos: new THREE.Vector3(x, h, z), da: true });
+      this.grabestellen.push({ pos: new THREE.Vector3(x, h, z), da: true, leerSeit: 0 });
     }
 
     const huegelGeo = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2);
@@ -199,6 +199,7 @@ export class Objekte {
     setTimeout(() => {
       rucksack.hinein(fund);
       stelle.da = false;
+      stelle.leerSeit = this.spiel.tageszeit.tag;
       this.zeigeGrabestellen();
       this.kruemelWerfen(stelle.pos);
       musik.pling();
@@ -231,11 +232,20 @@ export class Objekte {
 
   // Für den Spielstand
   alsDaten() {
-    return { grabestellen: this.grabestellen.map((s) => s.da), schaufelGefunden: !this.bodenSchaufel.visible };
+    // Für jede Grabestelle: -1 = voll, sonst der Tag, an dem sie leer gegraben wurde
+    return { grabestellen: this.grabestellen.map((s) => (s.da ? -1 : s.leerSeit)), schaufelGefunden: !this.bodenSchaufel.visible };
   }
 
   ladeDaten(d) {
-    (d.grabestellen || []).forEach((da, i) => this.grabestellen[i] && (this.grabestellen[i].da = da));
+    (d.grabestellen || []).forEach((wert, i) => {
+      const s = this.grabestellen[i];
+      if (!s) return;
+      if (typeof wert === 'boolean') s.da = wert; // alter Spielstand
+      else {
+        s.da = wert < 0;
+        s.leerSeit = wert;
+      }
+    });
     this.zeigeGrabestellen();
     if (d.schaufelGefunden && this.bodenSchaufel.visible) {
       this.bodenSchaufel.visible = false;
@@ -244,10 +254,17 @@ export class Objekte {
     }
   }
 
-  // Ein neuer Morgen: alle Grabestellen sind wieder voll
+  // Ein neuer Morgen: Grabestellen, die lange genug leer waren, sind wieder voll
   neuerTag() {
-    for (const s of this.grabestellen) s.da = true;
-    this.zeigeGrabestellen();
+    const heute = this.spiel.tageszeit.tag;
+    let geaendert = false;
+    for (const s of this.grabestellen) {
+      if (!s.da && heute - s.leerSeit >= EINSTELLUNGEN.nachwachsTage) {
+        s.da = true;
+        geaendert = true;
+      }
+    }
+    if (geaendert) this.zeigeGrabestellen();
   }
 
   aktion() {
@@ -256,6 +273,11 @@ export class Objekte {
 
   aktualisiere(dt, spielerPos) {
     this.zeit += dt;
+    // Neuer Tag (auch ohne Schlafen)? Dann wachsen Grabestellen nach
+    if (this.letzterTag !== this.spiel.tageszeit.tag) {
+      this.letzterTag = this.spiel.tageszeit.tag;
+      this.neuerTag();
+    }
     // Schaufel schwebt und glitzert
     if (this.bodenSchaufel.visible) {
       this.bodenSchaufel.rotation.y += dt;

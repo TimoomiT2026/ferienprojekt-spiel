@@ -37,7 +37,9 @@ export const EINSTELLUNGEN = {
   // Wie viele Felsen liegen herum?
   anzahlFelsen: 160,
   // Wie viele Grabestellen gibt es?
-  anzahlGrabestellen: 60,
+  anzahlGrabestellen: 30,
+  // Nach wie vielen Tagen ist eine leere Grabestelle wieder voll?
+  nachwachsTage: 2,
 
   // ---------- Graben ----------
   // Was findet man beim Graben, und wie oft?
@@ -68,26 +70,36 @@ export const EINSTELLUNGEN = {
 
   // ---------- Händler ----------
   // So viele Münzen bekommt man, wenn man etwas VERKAUFT
+  // (Das ist der Preis für das ERSTE Stück am Tag – siehe "Angebot & Nachfrage" unten)
   verkaufsPreise: {
     stein: 2,
-    kohle: 4,
-    holz: 3,
-    tofufisch: 6,
-    gegrillterFisch: 8,
-    eisenerz: 8,
-    gold: 20,
-    schwert: 25,
-    feuerzeug: 10,
-    angel: 12,
-    schnur: 4,
-    edelstein: 60,
+    kohle: 3,
+    holz: 2,
+    tofufisch: 5,
+    gegrillterFisch: 6,
+    eisenerz: 6,
+    gold: 15,
+    schwert: 15,
+    feuerzeug: 6,
+    angel: 8,
+    schnur: 3,
+    zauberpilz: 30,
+    edelstein: 40,
   },
+  // Angebot & Nachfrage: Jedes weitere Stück vom Gleichen bringt weniger.
+  // 0.8 heißt: 2. Stück = 80 %, 3. Stück = 64 %, … (am nächsten Morgen wieder voll)
+  preisNachlass: 0.8,
+  // Wie viele Sachen kauft der Händler höchstens an einem Tag?
+  haendlerKauftProTag: 10,
   // So viele Münzen kostet es, etwas zu KAUFEN
   // (Eine Angel gibt es beim Händler nicht – die baust du selbst!)
   kaufPreise: {
     koeder: 3,
     holz: 12,
-    brot: 15,
+    brot: 25,
+    apfel: 4, // Pferdefutter
+    rucksackGross: 60, // Rucksack mit 18 Plätzen
+    rucksackRiesig: 120, // Rucksack mit 24 Plätzen
   },
 
   // ---------- Essen & Schlafen ----------

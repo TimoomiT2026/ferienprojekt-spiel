@@ -35,9 +35,18 @@ export const DINGE = {
   schuh: { name: 'Alter Schuh', bild: '👞', text: 'Igitt, nass. Den willst du nicht anziehen.' },
   dose: { name: 'Alte Dose', bild: '🥫', text: 'Müll aus dem Meer. Wirf ihn lieber weg.' },
   alge: { name: 'Alge', bild: '🌿', text: 'Glitschig und grün.' },
+  apfel: { name: 'Apfel', bild: '🍎', text: 'Pferde lieben Äpfel! Damit kannst du ein Wildpferd zähmen.' },
+  zauberpilz: { name: 'Zauberpilz', bild: '🍄', zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
+  fernrohr: { name: 'Fernrohr', bild: '🔭', werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
+  reisezelt: { name: 'Reisezelt', bild: '⛺', plaetze: 3, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
+  // Diese beiden kommen nicht IN den Rucksack – sie ERSETZEN ihn
+  rucksackGross: { name: 'Großer Rucksack', bild: '🎒', upgradePlaetze: 18, text: '18 Plätze statt 12.' },
+  rucksackRiesig: { name: 'Riesen-Rucksack', bild: '🎒', upgradePlaetze: 24, text: '24 Plätze!' },
 };
 
 const haltbarkeit = (id) => (EINSTELLUNGEN.haltbarkeit || {})[id] || 0;
+// Wie viele Plätze braucht ein Ding? (Fast alles 1, das Reisezelt 3)
+const groesse = (id) => DINGE[id].plaetze || 1;
 
 export class Rucksack {
   constructor(meldung) {
@@ -55,6 +64,10 @@ export class Rucksack {
     this.offen = false;
     this.beiAenderung = () => {}; // wenn sich ändert, was man in der Hand hat
     this.beimEssen = () => {}; // wenn man etwas isst
+    this.beimBenutzen = () => {}; // wenn man ein Zauberding benutzt (z. B. Zauberpilz)
+    // Andere Teile des Spiels können eigene Knöpfe anbieten, z. B. "Reisezelt aufstellen"
+    // Rückgabe: Liste von [Text, Funktion]
+    this.extraKnoepfe = () => [];
   }
 
   // ---------- Münzen ----------
@@ -70,6 +83,20 @@ export class Rucksack {
 
   // Legt etwas in den Rucksack. Gibt false zurück, wenn kein Platz mehr ist.
   hinein(id, anzahl = 1) {
+    // Große Dinge (z. B. das Reisezelt) brauchen mehrere freie Plätze und stapeln nicht
+    if (groesse(id) > 1) {
+      for (let n = 0; n < anzahl; n++) {
+        const frei = this.plaetze.map((p, i) => (p ? -1 : i)).filter((i) => i >= 0);
+        if (frei.length < groesse(id)) {
+          this.zeichnen();
+          return n > 0;
+        }
+        this.plaetze[frei[0]] = { id, anzahl: 1, rest: haltbarkeit(id) };
+        for (let k = 1; k < groesse(id); k++) this.plaetze[frei[k]] = { block: id };
+      }
+      this.zeichnen();
+      return true;
+    }
     // Erst schauen, ob es schon einen Stapel davon gibt
     let rest = anzahl;
     for (const p of this.plaetze) {
@@ -96,6 +123,7 @@ export class Rucksack {
 
   // Passt das noch rein?
   passt(id, anzahl = 1) {
+    if (groesse(id) > 1) return this.plaetze.filter((p) => !p).length >= groesse(id) * anzahl;
     let frei = 0;
     for (const p of this.plaetze) {
       if (!p) frei += EINSTELLUNGEN.stapelGroesse;
@@ -117,7 +145,14 @@ export class Rucksack {
       const weg = Math.min(p.anzahl, anzahl);
       p.anzahl -= weg;
       anzahl -= weg;
-      if (p.anzahl === 0) this.plaetze[i] = null;
+      if (p.anzahl === 0) {
+        this.plaetze[i] = null;
+        // Bei großen Dingen auch die mitbelegten Plätze frei machen
+        for (let k = 1; k < groesse(id); k++) {
+          const b = this.plaetze.findIndex((pl) => pl && pl.block === id);
+          if (b >= 0) this.plaetze[b] = null;
+        }
+      }
     }
     if (this.inDerHand && !this.hat(this.inDerHand)) {
       this.inDerHand = null;
@@ -148,6 +183,12 @@ export class Rucksack {
     return !this.plaetze.includes(null);
   }
 
+  // Größerer Rucksack: mehr Plätze, alles darin bleibt
+  vergroessern(plaetze) {
+    while (this.plaetze.length < plaetze) this.plaetze.push(null);
+    this.zeichnen();
+  }
+
   oeffnen() {
     this.offen = true;
     this.gewaehlt = -1;
@@ -162,6 +203,9 @@ export class Rucksack {
 
   // Ein Platz wurde angetippt: auswählen (Werkzeuge kommen gleich in die Hand)
   antippen(index) {
+    // Mitbelegter Platz (z. B. vom Reisezelt)? Dann das Ding selbst auswählen
+    const block = this.plaetze[index] && this.plaetze[index].block;
+    if (block) index = this.plaetze.findIndex((p) => p && p.id === block);
     this.gewaehlt = index;
     const platz = this.plaetze[index];
     if (platz && DINGE[platz.id].werkzeug) this.handUmschalten(platz.id);
@@ -172,6 +216,13 @@ export class Rucksack {
     this.inDerHand = this.inDerHand === id ? null : id;
     this.beiAenderung();
     this.zeichnen();
+  }
+
+  // Zauberdinge (Pilz): nicht satt, aber etwas Besonderes passiert
+  benutzen(id) {
+    this.nehmen(id, 1);
+    this.beimBenutzen(id);
+    this.schliessen();
   }
 
   essen(id) {
@@ -193,7 +244,10 @@ export class Rucksack {
     this.plaetze.forEach((platz, i) => {
       const feld = document.createElement('button');
       feld.className = 'platz';
-      if (platz) {
+      if (platz && platz.block) {
+        feld.innerHTML = `<span class="bild blass">${DINGE[platz.block].bild}</span>`;
+        feld.classList.add('mitbelegt');
+      } else if (platz) {
         const ding = DINGE[platz.id];
         const h = haltbarkeit(platz.id);
         feld.innerHTML = `<span class="bild">${ding.bild}</span>` +
@@ -235,6 +289,8 @@ export class Rucksack {
       neuerKnopf(this.inDerHand === platz.id ? '✋ Einpacken' : '✋ In die Hand', 'gelb', () => this.handUmschalten(platz.id));
     }
     if (ding.essen) neuerKnopf('😋 Essen', 'gruen', () => this.essen(platz.id));
+    if (ding.zauber) neuerKnopf('✨ Essen', 'blau', () => this.benutzen(platz.id));
+    for (const [text, wasPassiert] of this.extraKnoepfe(platz.id)) neuerKnopf(text, 'blau', wasPassiert);
     neuerKnopf('🗑️ 1 wegwerfen', 'rot', () => this.wegwerfen(this.gewaehlt, false));
     if (platz.anzahl > 1) neuerKnopf('🗑️ Alle', 'rot', () => this.wegwerfen(this.gewaehlt, true));
   }
@@ -245,9 +301,10 @@ export class Rucksack {
   }
 
   ladeDaten(d) {
-    this.plaetze = new Array(EINSTELLUNGEN.rucksackPlaetze).fill(null);
+    const anzahl = Math.max(EINSTELLUNGEN.rucksackPlaetze, (d.plaetze || []).length);
+    this.plaetze = new Array(anzahl).fill(null);
     (d.plaetze || []).forEach((p, i) => {
-      if (p && DINGE[p.id] && i < this.plaetze.length) this.plaetze[i] = p;
+      if (p && (DINGE[p.id] || (p.block && DINGE[p.block]))) this.plaetze[i] = p;
     });
     this.inDerHand = d.inDerHand && this.hat(d.inDerHand) ? d.inDerHand : null;
     this.muenzen = d.muenzen ?? EINSTELLUNGEN.startGeld;

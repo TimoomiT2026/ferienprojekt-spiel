@@ -113,7 +113,7 @@ const werkbank = new Werkbank(szene, hindernisse, { rucksack, meldung, musik, el
 objekte.interaktionen.push(werkbank.interaktion);
 
 // ---------- Händler, Lagerfeuer, Essen & Schlafen ----------
-const haendler = new Haendler({ rucksack, meldung, musik, elternElement: spielfeld });
+const haendler = new Haendler({ rucksack, meldung, musik, tageszeit, elternElement: spielfeld });
 const lagerfeuer = new Lagerfeuer(szene, hindernisse, { rucksack, meldung, musik });
 objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
@@ -328,6 +328,7 @@ function sammleSpielstand() {
     tageszeit: { zeit: tageszeit.zeit, tag: tageszeit.tag },
     spieler: { x: p.x, z: p.z, winkel: spieler.figur.rotation.y },
     ueberleben: ueberleben.alsDaten(),
+    haendler: haendler.alsDaten(),
     aufgaben: aufgaben.alsDaten(),
     objekte: objekte.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
@@ -343,6 +344,7 @@ function wendeSpielstandAn(s) {
     tageszeit.zeit = s.tageszeit?.zeit ?? 0;
     tageszeit.tag = s.tageszeit?.tag ?? 1;
     ueberleben.ladeDaten(s.ueberleben || {});
+    haendler.ladeDaten(s.haendler || {});
     aufgaben.ladeDaten(s.aufgaben || {});
     objekte.ladeDaten(s.objekte || {});
     ladeGefaellte(s.gefaellt);

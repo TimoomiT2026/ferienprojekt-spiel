@@ -10,7 +10,7 @@ import { knopf } from './steuerung.js';
 
 export class Haendler {
   constructor(spiel) {
-    this.spiel = spiel; // { rucksack, meldung, musik, elternElement }
+    this.spiel = spiel; // { rucksack, meldung, musik, tageszeit, elternElement }
     this.seite = 'kaufen';
     this.fenster = document.createElement('div');
     this.fenster.id = 'haendler-fenster';
@@ -33,6 +33,9 @@ export class Haendler {
       })
     );
     this.offen = false;
+    this.tag = null;
+    this.verkauftHeute = {};
+    this.heuteGekauft = 0;
   }
 
   oeffnen() {
@@ -73,34 +76,80 @@ export class Haendler {
       liste.appendChild(z);
     };
 
+    this.neuerTagPruefen();
     if (this.seite === 'kaufen') {
       for (const [id, preis] of Object.entries(EINSTELLUNGEN.kaufPreise)) {
+        const ding = DINGE[id];
+        // Rucksack-Upgrades nur zeigen, wenn sie noch etwas bringen
+        if (ding.upgradePlaetze && rucksack.plaetze.length >= ding.upgradePlaetze) continue;
         zeile(id, `${preis} 🪙`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
       }
     } else {
+      const rest = EINSTELLUNGEN.haendlerKauftProTag - this.heuteGekauft;
+      const kopf = document.createElement('p');
+      kopf.className = 'haendler-hinweis';
+      kopf.textContent = rest > 0
+        ? `Heute kaufe ich noch ${rest} Sachen. Je mehr du mir vom Gleichen bringst, desto weniger zahle ich.`
+        : 'Für heute habe ich genug gekauft! Komm morgen wieder.';
+      liste.appendChild(kopf);
       // Nur Dinge zeigen, die man hat und die der Händler annimmt
       const gezeigt = new Set();
       for (const p of rucksack.plaetze) {
-        if (!p || gezeigt.has(p.id)) continue;
-        const preis = EINSTELLUNGEN.verkaufsPreise[p.id];
-        if (preis === undefined) continue;
+        if (!p || !p.id || gezeigt.has(p.id)) continue;
+        if (EINSTELLUNGEN.verkaufsPreise[p.id] === undefined) continue;
         gezeigt.add(p.id);
         const anzahl = rucksack.anzahl(p.id);
-        zeile(p.id, `${preis} 🪙 pro Stück · du hast ${anzahl}`, [
-          ['1 verkaufen', true, () => this.verkaufen(p.id, 1, preis)],
-          [`Alle (${anzahl * preis} 🪙)`, anzahl > 1, () => this.verkaufen(p.id, anzahl, preis)],
+        const jetzt = this.preis(p.id);
+        const maxStueck = Math.min(anzahl, rest);
+        const summe = this.summe(p.id, maxStueck);
+        zeile(p.id, `jetzt ${jetzt} 🪙 · du hast ${anzahl}`, [
+          ['1 verkaufen', rest > 0, () => this.verkaufen(p.id, 1)],
+          [`${maxStueck}× (${summe} 🪙)`, maxStueck > 1, () => this.verkaufen(p.id, maxStueck)],
         ]);
       }
       if (gezeigt.size === 0) {
-        liste.innerHTML = '<p class="leer">Du hast nichts, was ich kaufen würde. Geh graben, angeln oder Holz hacken!</p>';
+        liste.insertAdjacentHTML('beforeend', '<p class="leer">Du hast nichts, was ich kaufen würde. Geh graben, angeln oder Holz hacken!</p>');
       }
     }
+  }
+
+  // ---------- Angebot & Nachfrage ----------
+  // Jeden Morgen hat der Händler wieder Lust auf alles
+  neuerTagPruefen() {
+    const tag = this.spiel.tageszeit.tag;
+    if (this.tag === tag) return;
+    this.tag = tag;
+    this.verkauftHeute = {};
+    this.heuteGekauft = 0;
+  }
+
+  // Was zahlt der Händler JETZT für das nächste Stück?
+  preis(id, schonVerkauft = this.verkauftHeute[id] || 0) {
+    const grund = EINSTELLUNGEN.verkaufsPreise[id];
+    return Math.max(1, Math.round(grund * Math.pow(EINSTELLUNGEN.preisNachlass, schonVerkauft)));
+  }
+
+  summe(id, anzahl) {
+    let s = 0;
+    const schon = this.verkauftHeute[id] || 0;
+    for (let i = 0; i < anzahl; i++) s += this.preis(id, schon + i);
+    return s;
   }
 
   kaufen(id, preis) {
     const { rucksack, musik } = this.spiel;
     if (rucksack.muenzen < preis) {
       this.info('„Dafür hast du nicht genug Münzen. Verkauf mir doch etwas!“');
+      return;
+    }
+    // Ein größerer Rucksack kommt nicht IN den Rucksack – er ERSETZT ihn
+    const upgrade = DINGE[id].upgradePlaetze;
+    if (upgrade) {
+      rucksack.aendereMuenzen(-preis);
+      rucksack.vergroessern(upgrade);
+      musik.pling();
+      this.info(`„Bitte schön! Dein neuer Rucksack hat ${upgrade} Plätze.“`);
+      this.zeichnen();
       return;
     }
     if (!rucksack.passt(id)) {
@@ -114,12 +163,31 @@ export class Haendler {
     this.zeichnen();
   }
 
-  verkaufen(id, anzahl, preis) {
+  verkaufen(id, anzahl) {
     const { rucksack, musik } = this.spiel;
+    this.neuerTagPruefen();
+    anzahl = Math.min(anzahl, rucksack.anzahl(id), EINSTELLUNGEN.haendlerKauftProTag - this.heuteGekauft);
+    if (anzahl <= 0) {
+      this.info('„Für heute habe ich genug gekauft! Komm morgen wieder.“');
+      return;
+    }
+    const betrag = this.summe(id, anzahl);
     rucksack.nehmen(id, anzahl);
-    rucksack.aendereMuenzen(anzahl * preis);
+    rucksack.aendereMuenzen(betrag);
+    this.verkauftHeute[id] = (this.verkauftHeute[id] || 0) + anzahl;
+    this.heuteGekauft += anzahl;
     musik.pling();
-    this.info(`„Danke! Hier sind ${anzahl * preis} Münzen.“`);
+    this.info(`„Danke! Hier sind ${betrag} Münzen.“`);
     this.zeichnen();
+  }
+
+  alsDaten() {
+    return { tag: this.tag, verkauftHeute: this.verkauftHeute, heuteGekauft: this.heuteGekauft };
+  }
+
+  ladeDaten(d) {
+    this.tag = d.tag;
+    this.verkauftHeute = d.verkauftHeute || {};
+    this.heuteGekauft = d.heuteGekauft || 0;
   }
 }
