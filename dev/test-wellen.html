@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <base href="../">
+  <title>Test: Wellen und Boote</title>
+  <style>html,body{margin:0;height:100%;overflow:hidden;background:#000}</style>
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+<script type="module">
+  // Testseite: nur Gelände, Wasser, Himmel, Spieler und Boote
+  import * as THREE from 'three';
+  import { baueGelaende, bodenHoehe } from './js/gelaende.js';
+  import { Wasser, wellenHoehe, wasserZeit } from './js/wasser.js';
+  import { Himmel } from './js/himmel.js';
+  import { Hindernisse } from './js/hindernisse.js';
+  import { Spieler } from './js/spieler.js';
+  import { Boote } from './js/boote.js';
+  import { Tageszeit } from './js/tageszeit.js';
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(1);
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  document.body.appendChild(renderer.domElement);
+  const szene = new THREE.Scene();
+  const kamera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1200);
+  const hindernisse = new Hindernisse();
+  szene.add(baueGelaende());
+  const wasser = new Wasser(szene);
+  const himmel = new Himmel(szene, renderer);
+  const tageszeit = new Tageszeit();
+  tageszeit.zeit = 60; // Vormittag
+  const spieler = new Spieler(szene, hindernisse);
+  const boote = new Boote(szene, spieler);
+
+  function schritt(dt) {
+    wasser.aktualisiere(dt);
+    boote.aktualisiere(dt);
+    himmel.aktualisiere(dt, tageszeit, kamera, spieler.figur.position);
+  }
+  function male() {
+    renderer.info.reset();
+    renderer.render(szene, kamera);
+    return { ...renderer.info.render };
+  }
+  window.__test = { THREE, renderer, szene, kamera, wasser, himmel, tageszeit, spieler, boote, bodenHoehe, wellenHoehe, wasserZeit, schritt, male };
+  schritt(0.016);
+  window.__fertig = true;
+</script>
+</body>
+</html>

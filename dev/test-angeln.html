@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test: Angeln</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #87b8e0; font-family: sans-serif; }
+    #meldung { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); background: rgba(0,0,0,.6); color: #fff;
+      padding: 8px 14px; border-radius: 12px; font-size: 18px; }
+  </style>
+  <script type="importmap">
+    { "imports": {
+      "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+      "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+    } }
+  </script>
+</head>
+<body>
+  <div id="meldung"></div>
+  <script type="module">
+    import * as THREE from 'three';
+    import { baueGelaende, bodenHoehe } from './js/gelaende.js';
+    import { Wasser } from './js/wasser.js';
+    import { Hindernisse } from './js/hindernisse.js';
+    import { Spieler } from './js/spieler.js';
+    import { Angeln, baueAngel } from './js/angeln.js';
+
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(1);
+    renderer.setSize(innerWidth, innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    document.body.prepend(renderer.domElement);
+    const szene = new THREE.Scene();
+    szene.background = new THREE.Color('#9cc7ec');
+    const kamera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1200);
+    szene.add(new THREE.HemisphereLight('#dfefff', '#6b7b4a', 1.2));
+    const sonne = new THREE.DirectionalLight('#fff3dd', 2.4);
+    sonne.position.set(60, 90, 40);
+    szene.add(sonne);
+
+    const hindernisse = new Hindernisse();
+    szene.add(baueGelaende());
+    const wasser = new Wasser(szene);
+    const spieler = new Spieler(szene, hindernisse);
+    // Angel in die Hand (so wie es main.js machen soll)
+    const angel = baueAngel();
+    angel.position.set(0, -0.62, 0.05);
+    angel.rotation.x = Math.PI / 2;
+    angel.visible = false;
+    spieler.armR.add(angel);
+
+    // Mini-Rucksack-Attrappe
+    const rucksack = {
+      dinge: {}, plaetze: 12, inDerHand: null,
+      hinein(id, n = 1) { if (!this.dinge[id] && this.istVoll()) return false; this.dinge[id] = (this.dinge[id] || 0) + n; return true; },
+      nehmen(id, n) { this.dinge[id] -= n; if (this.dinge[id] <= 0) delete this.dinge[id]; },
+      anzahl(id) { return this.dinge[id] || 0; },
+      hat(id) { return !!this.dinge[id]; },
+      istVoll() { return Object.keys(this.dinge).length >= this.plaetze; },
+    };
+    const meldungen = [];
+    const feld = document.getElementById('meldung');
+    function meldung(text) { meldungen.push(text); feld.textContent = text; }
+    const musik = { plings: 0, pling() { this.plings++; } };
+
+    const t0 = performance.now();
+    const angeln = new Angeln(szene, { rucksack, meldung, musik, spieler });
+    const bauzeit = performance.now() - t0;
+
+    function schritt(dt) {
+      if (!angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, 0);
+      else spieler.aktualisiere(dt, { x: 0, y: 0 }, false, 0);
+      angel.visible = rucksack.inDerHand === 'angel';
+      angeln.aktualisiere(dt);
+      wasser.aktualisiere(dt);
+    }
+    function kameraAuf(x, z, winkel, abstand = 9, hoehe = 4) {
+      const p = spieler.figur.position;
+      kamera.position.set(p.x + Math.sin(winkel) * abstand, p.y + hoehe, p.z + Math.cos(winkel) * abstand);
+      kamera.lookAt(x, p.y + 0.8, z);
+    }
+    function render() { renderer.render(szene, kamera); }
+
+    window.__test = { bauzeit, THREE, angeln, spieler, rucksack, meldungen, musik, schritt, render, kameraAuf, bodenHoehe, kamera, renderer, szene, angel };
+    window.__bereit = true;
+  </script>
+</body>
+</html>

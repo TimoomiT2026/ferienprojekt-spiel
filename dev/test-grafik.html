@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+  <title>Grafik-Test</title>
+  <style>
+    html, body { margin: 0; height: 100%; overflow: hidden; background: #000; }
+    #info { position: fixed; left: 8px; top: 8px; color: #fff; font: 12px monospace; text-shadow: 0 0 3px #000; pointer-events: none; }
+  </style>
+  <!-- gleiche Importmap wie index.html -->
+  <script type="importmap">
+    {
+      "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+      }
+    }
+  </script>
+</head>
+<body>
+  <div id="info"></div>
+  <script type="module">
+    // =============================================================
+    //  TESTSEITE FÜR DIE GRAFIK
+    //  Baut nur die Welt (ohne Spiel), damit man Licht, Himmel,
+    //  Boden und Nachbearbeitung in Ruhe anschauen kann.
+    //  Adresse:  dev/test-grafik.html?nach=2&zeit=290&x=5&z=3&winkel=0.3
+    //  nach = 0 (aus), 1 (günstig), 2 (alles)
+    // =============================================================
+    import * as THREE from 'three';
+    import { baueGelaende, bodenHoehe } from './js/gelaende.js';
+    import { Himmel } from './js/himmel.js';
+    import { Tageszeit } from './js/tageszeit.js';
+    import { Hindernisse } from './js/hindernisse.js';
+    import { setzeAnisotropie } from './js/texturen.js';
+    import { Nachbearbeitung } from './js/nachbearbeitung.js';
+
+    const p = new URLSearchParams(location.search);
+    const zahl = (n, std) => (p.has(n) ? Number(p.get(n)) : std);
+
+    // Renderer genauso wie in main.js
+    const renderer = new THREE.WebGLRenderer({ antialias: true });
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setSize(window.innerWidth, window.innerHeight);
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    renderer.toneMappingExposure = 1.05;
+    document.body.prepend(renderer.domElement);
+    setzeAnisotropie(Math.min(8, renderer.capabilities.getMaxAnisotropy()));
+
+    const szene = new THREE.Scene();
+    const kamera = new THREE.PerspectiveCamera(60, window.innerWidth / window.innerHeight, 0.1, 1200);
+    const hindernisse = new Hindernisse();
+    szene.add(baueGelaende());
+
+    // Die anderen Teile bauen andere gerade um – wenn eins kaputt ist, geht der Test trotzdem
+    async function optional(datei, bauen) {
+      try { return bauen(await import(datei)); } catch (e) { console.warn('übersprungen:', datei, e.message); return null; }
+    }
+    const natur = await optional('./js/natur.js', (m) => { m.baueNatur(szene, hindernisse); return m; });
+    const wasser = await optional('./js/wasser.js', (m) => new m.Wasser(szene));
+    const dorf = await optional('./js/dorf.js', (m) => new m.Dorf(szene, hindernisse));
+    const feuer = await optional('./js/feuer.js', (m) => {
+      const f = new m.Lagerfeuer(szene, hindernisse, { rucksack: {}, meldung() {}, musik: {} });
+      f.brennt = 1e6;
+      return f;
+    });
+    const himmel = new Himmel(szene, renderer);
+    const tageszeit = new Tageszeit();
+    tageszeit.zeit = zahl('zeit', 70);
+
+    // Platzhalter-Figur mit Laterne (wie spieler.js)
+    const figur = new THREE.Group();
+    const koerper = new THREE.Mesh(new THREE.CapsuleGeometry(0.35, 0.9, 4, 12), new THREE.MeshStandardMaterial({ color: '#c0392b', roughness: 0.8 }));
+    koerper.position.y = 0.8;
+    koerper.castShadow = true;
+    figur.add(koerper);
+    const laterne = new THREE.PointLight('#ffcf8a', 0, 18, 1.4);
+    laterne.position.set(0.4, 1.4, 0.3);
+    figur.add(laterne);
+    szene.add(figur);
+
+    let nach = null;
+    const stufe = zahl('nach', 2);
+    nach = new Nachbearbeitung(renderer, szene, kamera);
+    nach.stufe = stufe;
+
+    let winkel = zahl('winkel', 0.3);
+    function teleport(x, z, w = winkel) {
+      figur.position.set(x, bodenHoehe(x, z), z);
+      winkel = w;
+    }
+    teleport(zahl('x', 5), zahl('z', 3));
+
+    function kameraSetzen() {
+      const pos = figur.position, abstand = 9, neigung = 0.35;
+      kamera.position.set(
+        pos.x + Math.sin(winkel) * Math.cos(neigung) * abstand,
+        pos.y + 1.5 + Math.sin(neigung) * abstand,
+        pos.z + Math.cos(winkel) * Math.cos(neigung) * abstand
+      );
+      kamera.position.y = Math.max(kamera.position.y, bodenHoehe(kamera.position.x, kamera.position.z) + 1);
+      kamera.lookAt(pos.x, pos.y + 1.6, pos.z);
+    }
+
+    const uhr = new THREE.Clock();
+    const info = document.getElementById('info');
+    let bilder = 0, messZeit = 0, fps = 0;
+    function schleife() {
+      requestAnimationFrame(schleife);
+      const echt = uhr.getDelta();
+      const dt = Math.min(echt, 0.05);
+      bilder++; messZeit += echt;
+      if (messZeit > 1) { fps = bilder / messZeit; bilder = 0; messZeit = 0; }
+      kameraSetzen();
+      himmel.aktualisiere(dt, tageszeit, kamera, figur.position);
+      wasser?.aktualisiere(dt);
+      natur?.aktualisiereNatur(dt, figur.position);
+      dorf?.aktualisiere(dt, himmel.helligkeit, figur.position);
+      feuer?.aktualisiere(dt);
+      laterne.intensity = (1 - himmel.helligkeit) * 14;
+      if (nach) nach.render(dt);
+      else renderer.render(szene, kamera);
+      if (p.has('info')) info.textContent = `${fps.toFixed(1)} fps · ${renderer.info.render.calls} Draw Calls · Stufe ${nach.stufe}`;
+    }
+    schleife();
+
+    window.addEventListener('resize', () => {
+      kamera.aspect = window.innerWidth / window.innerHeight;
+      kamera.updateProjectionMatrix();
+      renderer.setSize(window.innerWidth, window.innerHeight);
+      nach.setSize(window.innerWidth, window.innerHeight);
+    });
+
+    window.__grafik = { renderer, szene, kamera, tageszeit, himmel, teleport, nach, figur, bodenHoehe, get fps() { return fps; } };
+  </script>
+</body>
+</html>

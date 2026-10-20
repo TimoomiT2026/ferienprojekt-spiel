@@ -179,6 +179,68 @@ function zufallsPunkt() {
   return [(zufall() - 0.5) * 2 * R, (zufall() - 0.5) * 2 * R];
 }
 
+// ---------- Holz: Bäume und Büsche, die man fällen kann ----------
+const holzStellen = [];
+const holzGitter = new Map();
+const nullMatrix = new THREE.Matrix4().makeScale(0, 0, 0);
+
+function holzGitterBauen() {
+  holzStellen.forEach((h) => {
+    const k = `${Math.floor(h.x / 10)},${Math.floor(h.z / 10)}`;
+    if (!holzGitter.has(k)) holzGitter.set(k, []);
+    holzGitter.get(k).push(h);
+  });
+}
+
+// Welcher Baum oder Busch steht ganz nah? (oder null)
+export function holzInDerNaehe(x, z) {
+  const kx = Math.floor(x / 10), kz = Math.floor(z / 10);
+  let beste = null, besterAbstand = Infinity;
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dz = -1; dz <= 1; dz++) {
+      for (const h of holzGitter.get(`${kx + dx},${kz + dz}`) || []) {
+        if (h.weg) continue;
+        const d = Math.hypot(h.x - x, h.z - z);
+        const reichweite = h.art === 'baum' ? 2.4 : 2.0;
+        if (d < reichweite && d < besterAbstand) {
+          beste = h;
+          besterAbstand = d;
+        }
+      }
+    }
+  }
+  return beste;
+}
+
+// Ein Schlag mit dem Schwert. Gibt zurück, wie viel Holz man bekommt (0 = noch nicht umgefallen)
+export function schlagen(h) {
+  h.schlaege++;
+  const noetig = h.art === 'baum' ? EINSTELLUNGEN.schlaegeProBaum : 1;
+  if (h.schlaege < noetig) return 0;
+  verschwinden(h);
+  return h.art === 'baum' ? EINSTELLUNGEN.holzProBaum : EINSTELLUNGEN.holzProBusch;
+}
+
+function verschwinden(h) {
+  h.weg = true;
+  for (const { mesh, index } of h.ziele) {
+    mesh.setMatrixAt(index, nullMatrix);
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+  if (h.hindernis) naturHindernisse.entfernen(h.hindernis);
+}
+
+// Für den Spielstand: welche Nummern sind gefällt?
+export function gefaellteHolzStellen() {
+  return holzStellen.map((h, i) => (h.weg ? i : -1)).filter((i) => i >= 0);
+}
+
+export function ladeGefaellte(liste) {
+  for (const i of liste || []) if (holzStellen[i] && !holzStellen[i].weg) verschwinden(holzStellen[i]);
+}
+
+let naturHindernisse = null;
+
 // ---------- Stücke ----------
 const alleStuecke = []; // { mesh, mitte, sichtweite }
 
@@ -196,6 +258,9 @@ function inStuecken(geo, material, eintraege, { sichtweite = 190, schatten = tru
     liste.forEach((e, i) => {
       mesh.setMatrixAt(i, e.matrix);
       if (e.farbe) mesh.setColorAt(i, e.farbe);
+      // Merken, wo dieses Ding gemalt wird (damit man es später fällen kann)
+      const besitzer = e.besitzer || e;
+      if (besitzer.ziele) besitzer.ziele.push({ mesh, index: i });
     });
     mesh.computeBoundingSphere();
     mesh.castShadow = schatten;
@@ -240,7 +305,7 @@ function baueBaeume(gruppe, hindernisse) {
     if (!istWald(x, z) && zufall() > 0.12) continue; // außerhalb vom Wald nur wenige Bäume
     const s = 0.75 + zufall() * 0.7;
     const baum = {
-      x, z,
+      x, z, ziele: [], art: 'baum', schlaege: 0, weg: false,
       matrix: m4().compose(
         v3(x, h - 0.15, z),
         new THREE.Quaternion().setFromAxisAngle(hochAchse, zufall() * Math.PI * 2),
@@ -249,12 +314,13 @@ function baueBaeume(gruppe, hindernisse) {
     };
     if (h > 11 || zufall() < 0.22) tannen.push(baum);
     else laub.push(baum);
-    hindernisse.hinzufuegen(x, z, 0.45 * s);
+    baum.hindernis = hindernisse.hinzufuegen(x, z, 0.45 * s);
+    holzStellen.push(baum);
   }
 
   // Jeder Baum bekommt eine etwas andere Blattfarbe (Frühling, Sommer, dunkel)
-  const laubFarben = laub.map((b) => ({ ...b, farbe: new THREE.Color().setHSL(0.17 + zufall() * 0.12, 0.35 + zufall() * 0.2, 0.74 + zufall() * 0.2) }));
-  const tannenFarben = tannen.map((b) => ({ ...b, farbe: new THREE.Color().setHSL(0.3 + zufall() * 0.05, 0.25, 0.7 + zufall() * 0.15) }));
+  const laubFarben = laub.map((b) => ({ ...b, besitzer: b, farbe: new THREE.Color().setHSL(0.17 + zufall() * 0.12, 0.35 + zufall() * 0.2, 0.74 + zufall() * 0.2) }));
+  const tannenFarben = tannen.map((b) => ({ ...b, besitzer: b, farbe: new THREE.Color().setHSL(0.3 + zufall() * 0.05, 0.25, 0.7 + zufall() * 0.15) }));
 
   const laubForm = baueLaubbaumForm(zufallMitSeed(5));
   const tannenForm = baueTannenForm(zufallMitSeed(9));
@@ -331,11 +397,13 @@ function baueBuesche(gruppe) {
     const h = bodenHoehe(x, zz);
     if (h < 1.8 || h > 18 || !istFrei(x, zz)) continue;
     const s = 0.6 + zufall() * 0.8;
-    liste.push({
-      x, z: zz,
+    const busch = {
+      x, z: zz, ziele: [], art: 'busch', schlaege: 0, weg: false,
       matrix: m4().compose(v3(x, h - 0.1, zz), new THREE.Quaternion().setFromAxisAngle(hochAchse, zufall() * 6.3), v3(s * 1.2, s, s * 1.2)),
       farbe: new THREE.Color().setHSL(0.2 + zufall() * 0.1, 0.35, 0.62 + zufall() * 0.15),
-    });
+    };
+    liste.push(busch);
+    holzStellen.push(busch);
   }
   gruppe.add(inStuecken(form, blattMaterial('blaetter.png', 0.04, 0.2, 'busch'), liste, { sichtweite: 130 }));
 }
@@ -417,12 +485,14 @@ function baueGras(gruppe) {
 }
 
 export function baueNatur(szene, hindernisse) {
+  naturHindernisse = hindernisse;
   const gruppe = new THREE.Group();
   baueBaeume(gruppe, hindernisse);
   baueFelsen(gruppe, hindernisse);
   baueBuesche(gruppe);
   baueBlumen(gruppe);
   baueGras(gruppe);
+  holzGitterBauen();
   szene.add(gruppe);
 }
 

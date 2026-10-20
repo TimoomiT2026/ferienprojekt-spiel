@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <base href="../">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Test: der Junge</title>
+  <style>html,body{margin:0;height:100%;overflow:hidden;background:#9cc8ee}#info{position:fixed;left:8px;top:8px;font:13px sans-serif;background:#fff9;padding:4px 8px;border-radius:6px}</style>
+  <script type="importmap">
+    { "imports": {
+        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/" } }
+  </script>
+</head>
+<body>
+<div id="info">Testseite Junge – Pfeiltasten laufen, Leertaste springen, 1/2/3 Werkzeug, G graben, S schwingen, R rudern-Pose</div>
+<script type="module">
+  // Kleine Testbühne: Gelände, Licht wie im Spiel und der Junge
+  import * as THREE from 'three';
+  import { baueGelaende, bodenHoehe } from './js/gelaende.js';
+  import { Hindernisse } from './js/hindernisse.js';
+  import { Spieler } from './js/spieler.js';
+  import { baueFigur } from './js/figur.js';
+
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  renderer.setSize(innerWidth, innerHeight);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  renderer.toneMapping = THREE.ACESFilmicToneMapping;
+  renderer.toneMappingExposure = 1.05;
+  document.body.prepend(renderer.domElement);
+
+  const szene = new THREE.Scene();
+  szene.background = new THREE.Color('#9cc8ee');
+  szene.fog = new THREE.Fog('#bcd6ee', 60, 260);
+  const kamera = new THREE.PerspectiveCamera(60, innerWidth / innerHeight, 0.1, 1200);
+  szene.add(new THREE.HemisphereLight('#cfe6ff', '#6b5a3a', 1.1));
+  const sonne = new THREE.DirectionalLight('#fff3dc', 2.6);
+  sonne.position.set(30, 50, 20);
+  sonne.castShadow = true;
+  sonne.shadow.mapSize.set(2048, 2048);
+  Object.assign(sonne.shadow.camera, { left: -15, right: 15, top: 15, bottom: -15, near: 1, far: 150 });
+  sonne.shadow.bias = -0.0005;
+  sonne.shadow.normalBias = 0.03;
+  szene.add(sonne, sonne.target);
+
+  szene.add(baueGelaende());
+  const hindernisse = new Hindernisse();
+  const spieler = new Spieler(szene, hindernisse);
+  const haendler = baueFigur({ shirt: '#3c8d4a', hose: '#5a4632', haare: '#2b2b2b', haut: '#d9a77c', hut: '#7a5236' }).figur;
+  const hp = spieler.figur.position;
+  haendler.position.set(hp.x + 4, bodenHoehe(hp.x + 4, hp.z), hp.z);
+  szene.add(haendler);
+  haendler.visible = false;
+
+  // Kamera: winkel = um die Figur herum (0 = hinter ihr), abstand, hoehe
+  const kam = { winkel: 0, abstand: 9, neigung: 0.35, blickHoehe: 1.6 };
+  function setzeKamera() {
+    const p = spieler.figur.position;
+    const w = spieler.figur.rotation.y + Math.PI + kam.winkel;
+    kamera.position.set(
+      p.x + Math.sin(w) * Math.cos(kam.neigung) * kam.abstand,
+      p.y + 1.5 + Math.sin(kam.neigung) * kam.abstand,
+      p.z + Math.cos(w) * Math.cos(kam.neigung) * kam.abstand);
+    kamera.lookAt(p.x, p.y + kam.blickHoehe, p.z);
+    sonne.position.set(p.x + 30, p.y + 50, p.z + 20);
+    sonne.target.position.copy(p);
+  }
+  function male() { setzeKamera(); renderer.render(szene, kamera); }
+
+  // Zählt Draw Calls und Dreiecke nur der Figur
+  function zaehle() {
+    let calls = 0, dreiecke = 0;
+    spieler.figur.traverse((o) => {
+      if (!o.isMesh) return;
+      const g = o.geometry;
+      const n = g.index ? g.index.count : g.attributes.position.count;
+      dreiecke += n / 3;
+      calls += Array.isArray(o.material) ? g.groups.length : 1;
+    });
+    return { calls, dreiecke };
+  }
+  window.test = { THREE, spieler, kamera, kam, renderer, szene, male, zaehle, haendler };
+
+  // Zum Ausprobieren im Browser
+  const tasten = new Set();
+  addEventListener('keydown', (e) => {
+    tasten.add(e.key);
+    if (e.key === '1') { spieler.schaufel.visible = !spieler.schaufel.visible; spieler.schwert.visible = false; }
+    if (e.key === '2') { spieler.schwert.visible = !spieler.schwert.visible; spieler.schaufel.visible = false; }
+    if (e.key === 'g') spieler.graben();
+    if (e.key === 's') spieler.schwingen();
+  });
+  addEventListener('keyup', (e) => tasten.delete(e.key));
+  const uhr = new THREE.Clock();
+  window.test.anhalten = false;
+  function schleife() {
+    requestAnimationFrame(schleife);
+    const dt = Math.min(uhr.getDelta(), 0.05);
+    if (window.test.anhalten) return;
+    const r = { x: 0, y: 0 };
+    if (tasten.has('ArrowUp')) r.y = -1;
+    if (tasten.has('ArrowDown')) r.y = 1;
+    if (tasten.has('ArrowLeft')) r.x = -1;
+    if (tasten.has('ArrowRight')) r.x = 1;
+    spieler.aktualisiere(dt, r, tasten.has(' '), 0);
+    male();
+  }
+  schleife();
+  window.bereit = true;
+</script>
+</body>
+</html>

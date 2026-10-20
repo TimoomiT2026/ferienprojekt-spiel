@@ -316,3 +316,59 @@ button { font-family: inherit; cursor: pointer; }
 }
 .rezept .bauen:disabled { background: #cbbfae; box-shadow: 0 5px 0 #a89c8a; }
 .werkbank-info { margin-top: 16px; min-height: 2.6em; color: #4a3a28; font-size: 19px; text-align: center; }
+
+/* ---------- Rucksack: Auswahl, Haltbarkeit, Knöpfe ---------- */
+.platz.ausgewaehlt { outline: 4px solid #3d7bff; outline-offset: 2px; }
+.platz .haltbar { position: absolute; left: 10%; right: 10%; bottom: 6px; height: 6px; border-radius: 3px; background: rgba(0,0,0,0.15); }
+.platz .haltbar span { display: block; height: 100%; border-radius: 3px; background: #4caf50; }
+#rucksack-knoepfe, .knopf-reihe { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
+.fenster-knopf {
+  min-height: 56px; padding: 0 20px; border: none; border-radius: 28px;
+  font-size: 19px; font-weight: bold; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+}
+.fenster-knopf.gelb { background: #ffb02e; }
+.fenster-knopf.gruen { background: #4caf50; }
+.fenster-knopf.rot { background: #d9534f; }
+.fenster-knopf.blau { background: #3d7bff; }
+.fenster-knopf:disabled { background: #cbbfae; }
+.gegrillt { filter: sepia(1) saturate(2.5) hue-rotate(-15deg) brightness(0.8); display: inline-block; }
+#hunger-anzeige {
+  padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.9);
+  font-size: 18px; font-weight: bold; color: #3a5a10; box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+}
+#hunger-anzeige.hunger { background: #ffdcd6; color: #8a1f12; animation: pulsieren 1.2s infinite; }
+#muenz-anzeige.wackeln { animation: wackeln 0.4s; }
+@keyframes wackeln { 25% { transform: rotate(-6deg) scale(1.1); } 75% { transform: rotate(6deg) scale(1.1); } }
+
+/* ---------- Händler ---------- */
+#haendler-fenster { border-color: #3c8d4a; width: min(640px, 94vw); }
+#haendler-fenster .geld { font-size: 24px; font-weight: bold; color: #7a4b00; margin-left: auto; margin-right: 16px; }
+.reiter { display: flex; gap: 10px; margin-bottom: 12px; }
+.reiter-knopf { flex: 1; height: 56px; border: 3px solid #cfe3c4; border-radius: 18px; background: #f1f7ec; font-size: 20px; font-weight: bold; color: #2d5a22; }
+.reiter-knopf.aktiv { background: #3c8d4a; border-color: #3c8d4a; color: #fff; }
+.waren { max-height: min(46vh, 380px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; touch-action: pan-y; }
+.ware { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; background: #f3e6cf; border: 3px solid #e2cfae; }
+.ware-bild { font-size: 42px; width: 56px; text-align: center; }
+.ware-mitte { flex: 1; font-size: 20px; color: #3a2a18; }
+.ware-preis { font-size: 16px; color: #7a5a30; margin-top: 2px; }
+.ware-knoepfe { display: flex; gap: 8px; }
+.waren .leer { text-align: center; color: #6a5a48; font-size: 19px; padding: 20px; }
+.haendler-info { margin-top: 12px; min-height: 2.4em; text-align: center; font-size: 19px; color: #2d4a22; font-style: italic; }
+
+/* ---------- Vorgeschichte (Tagebuch) ---------- */
+#vorgeschichte {
+  position: absolute; inset: 0; z-index: 30; display: flex; align-items: center; justify-content: center;
+  background: rgba(10, 20, 35, 0.55);
+}
+.tagebuch {
+  width: min(620px, 90vw); padding: 30px 34px 22px; border-radius: 22px;
+  background: #fbf3df; border: 6px solid #8a5a34; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
+  font-family: Georgia, 'Times New Roman', serif; color: #3a2a18; text-align: center;
+}
+.tb-bild { font-size: 64px; }
+.tb-text { font-size: 22px; line-height: 1.5; margin: 14px 0 8px; }
+.tb-punkte { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
+.tb-punkte span { width: 10px; height: 10px; border-radius: 50%; background: #d8c6a4; }
+.tb-punkte span.an { background: #8a5a34; }
+#start .neues-spiel { margin-top: 18px; font-size: 16px; padding: 8px 18px; border: none; border-radius: 20px; background: rgba(255,255,255,0.25); color: #fff; }
+#start .willkommen { font-size: 20px; }

@@ -88,10 +88,9 @@ export class Objekte {
     this.interaktionen.push({
       pos: spiel.dorf.haendlerWelt,
       radius: 4.5,
-      bild: '💬',
-      text: 'Reden',
-      ausfuehren: () =>
-        spiel.meldung('Händler: „Willkommen im Dorf! Mein Laden macht bald auf. Ich warte noch auf eure Preisliste! 📜“', 6),
+      bild: '🧑‍🌾',
+      text: 'Handeln',
+      ausfuehren: () => spiel.haendlerOeffnen(),
     });
 
     this.baueGrabestellen(szene, hindernisse);
@@ -188,8 +187,9 @@ export class Objekte {
         : 'Zum Graben brauchst du eine Schaufel! Vielleicht liegt eine beim Zelt? ✨', 5);
       return;
     }
-    if (rucksack.istVoll()) {
-      meldung('Dein Rucksack ist voll! 🎒');
+    const fund = this.zufallsFund();
+    if (!rucksack.passt(fund)) {
+      meldung('Dein Rucksack ist voll! 🎒 Wirf etwas weg oder verkauf es im Dorf.', 4);
       return;
     }
     this.beschaeftigt = true;
@@ -197,7 +197,6 @@ export class Objekte {
     musik.graben();
     this.kruemelWerfen(stelle.pos);
     setTimeout(() => {
-      const fund = this.zufallsFund();
       rucksack.hinein(fund);
       stelle.da = false;
       this.zeigeGrabestellen();
@@ -228,6 +227,21 @@ export class Objekte {
       return;
     }
     this.spiel.schlafen();
+  }
+
+  // Für den Spielstand
+  alsDaten() {
+    return { grabestellen: this.grabestellen.map((s) => s.da), schaufelGefunden: !this.bodenSchaufel.visible };
+  }
+
+  ladeDaten(d) {
+    (d.grabestellen || []).forEach((da, i) => this.grabestellen[i] && (this.grabestellen[i].da = da));
+    this.zeigeGrabestellen();
+    if (d.schaufelGefunden && this.bodenSchaufel.visible) {
+      this.bodenSchaufel.visible = false;
+      const i = this.interaktionen.indexOf(this.schaufelInteraktion);
+      if (i >= 0) this.interaktionen.splice(i, 1);
+    }
   }
 
   // Ein neuer Morgen: alle Grabestellen sind wieder voll

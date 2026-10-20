@@ -19,7 +19,17 @@ export class Hindernisse {
   hinzufuegen(x, z, radius) {
     const k = this.schluessel(Math.floor(x / KAESTCHEN), Math.floor(z / KAESTCHEN));
     if (!this.gitter.has(k)) this.gitter.set(k, []);
-    this.gitter.get(k).push({ x, z, radius });
+    const h = { x, z, radius, k };
+    this.gitter.get(k).push(h);
+    return h;
+  }
+
+  // Ein Hindernis wieder wegnehmen (z. B. wenn ein Baum gefällt wurde)
+  entfernen(h) {
+    const liste = h && this.gitter.get(h.k);
+    if (!liste) return;
+    const i = liste.indexOf(h);
+    if (i >= 0) liste.splice(i, 1);
   }
 
   // Stößt etwas mit diesem Radius an der Stelle (x, z) irgendwo an?

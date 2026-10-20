@@ -17,4 +17,9 @@
 | **Blätter-Karte** | Eine Fläche mit einem Bild von vielen Blättern. Das Durchsichtige wird weggeschnitten. Ein Baum hat ca. 46 davon. Viel schneller als jedes Blatt einzeln! |
 | **CC0** | Eine Erlaubnis: Diese Bilder darf jeder kostenlos benutzen. Unsere Texturen sind CC0 (von ambientCG). |
 | **Rezept** | Eine Bauanleitung: Was man an der Werkbank braucht, um etwas zu bauen. Steht in `einstellungen.js`. |
+| **Story** (Geschichte) | Gibt dem Spiel ein Ziel. Bei uns: Ein Forscher sucht ein geheimes Material auf einer Inselgruppe. |
+| **Wirtschaft** | Wie Geld im Spiel fließt: verkaufen → Münzen → kaufen. Stimmen die Preise nicht, ist das Spiel zu leicht oder zu schwer. |
+| **Haltbarkeit** | Wie oft man etwas benutzen kann, bevor es kaputtgeht. |
+| **Spielstand** | Alles, was man erreicht hat, wird gespeichert, damit man weiterspielen kann. |
+| **Etappe** (Meilenstein) | Ein großes Stück Arbeit, das man fertig macht, bevor man das nächste anfängt. |
 | **Seed** | Eine Zahl, aus der die Welt „zufällig“ gebaut wird. Gleicher Seed = gleiche Welt. Unser Seed: 42. |
