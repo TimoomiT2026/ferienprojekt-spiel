@@ -143,6 +143,20 @@ export const EINSTELLUNGEN = {
   stallAbStufe: 3,
   stallAbTag: 3,
 
+  // ---------- Pferde ----------
+  // Wie viele Äpfel braucht ein Wildpferd, bis es dir vertraut?
+  aepfelZumZaehmen: 3,
+  // Wie schnell galoppiert dein Pferd höchstens? (Meter pro Sekunde – zu Fuß: 7)
+  reitTempo: 18,
+  // Wie nah darf man an Wildpferde ranrennen, bevor sie weglaufen? (Meter)
+  scheuAbstand: 12,
+  // Ab welchem Tempo erschrecken Wildpferde? (Meter pro Sekunde – langsam gehen ist ok)
+  scheuTempo: 4,
+  // Wie weit bleibt dein Pferd hinter dir, wenn es dir folgt? (Meter)
+  folgeAbstand: 4,
+  // Wie schnell kann man beim Reiten lenken? (größer = wendiger)
+  reitLenkung: 2.4,
+
   // ---------- Musik ----------
   // Wie laut ist die Musik? (0 = aus, 1 = ganz laut)
   musikLautstaerke: 0.5,
