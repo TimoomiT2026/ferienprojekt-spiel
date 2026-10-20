@@ -9,7 +9,7 @@ const zufall = zufallMitSeed(7);
 
 // Farben für Tag, Sonnenuntergang und Nacht (für den Dunst am Horizont)
 const FARBEN = {
-  tagHorizont: new THREE.Color('#b9d7ee'),
+  tagHorizont: new THREE.Color('#a8cbe8'),
   abendHorizont: new THREE.Color('#f0a273'),
   nachtHorizont: new THREE.Color('#141f3d'),
   nachtOben: new THREE.Color('#040814'),
@@ -19,7 +19,7 @@ const FARBEN = {
   // Wolken
   wolkeLicht: new THREE.Color('#ffffff'),
   wolkeAbendLicht: new THREE.Color('#ffb27a'),
-  wolkeSchatten: new THREE.Color('#b4c2dc'),
+  wolkeSchatten: new THREE.Color('#c3cfe3'),
   wolkeAbendSchatten: new THREE.Color('#8a6a8f'),
   wolkeNacht: new THREE.Color('#1a2238'),
 };
@@ -111,8 +111,8 @@ function baueAtmosphaere() {
   const himmel = new Sky();
   himmel.scale.setScalar(1000);
   const u = himmel.material.uniforms;
-  u.turbidity.value = 3.2;
-  u.rayleigh.value = 1.35;
+  u.turbidity.value = 2.6;
+  u.rayleigh.value = 2.0;
   u.mieCoefficient.value = 0.0035;
   u.mieDirectionalG.value = 0.86;
   Object.assign(u, KUPPEL_WERTE, { nebelGlanz: NEBEL.nebelGlanz });
@@ -276,9 +276,10 @@ function baueWolken() {
         n = normalize(n * 0.3 + vNormaleWolke);
         float licht = clamp(dot(n, sonne) * 0.5 + 0.5, 0.0, 1.0);
         licht *= mix(0.7, 1.0, vHoehe);           // unten grauer
-        licht = mix(licht, 1.0, (1.0 - a) * 0.35); // dünne Ränder lassen Licht durch
+        licht = mix(licht, 1.0, (1.0 - a) * 0.2);  // dünne Ränder lassen Licht durch
+        licht = 0.35 + 0.65 * licht;               // auch die Schattenseite bleibt hell (Himmelslicht)
         // Silberrand: steht die Sonne hinter der Wolke, leuchten die Ränder
-        float gegenlicht = pow(max(dot(-vZurKamera, sonne), 0.0), 6.0) * (1.0 - a) * 1.2;
+        float gegenlicht = pow(max(dot(-vZurKamera, sonne), 0.0), 8.0) * (1.0 - a) * 0.6;
         vec3 farbe = mix(schattenFarbe, lichtFarbe, licht) + lichtFarbe * gegenlicht;
         // In der Ferne verschwinden Wolken im Dunst
         farbe = mix(farbe, dunstFarbe, vFerne * 0.7);
@@ -483,7 +484,7 @@ export class Himmel {
     wu.lichtFarbe.value.multiplyScalar(0.35 + 0.75 * tagLicht);
     wu.schattenFarbe.value.copy(FARBEN.wolkeNacht).multiplyScalar(0.6)
       .lerp(hilfsFarbe.copy(FARBEN.wolkeSchatten).lerp(FARBEN.wolkeAbendSchatten, abend * 0.7), tagLicht);
-    wu.schattenFarbe.value.multiplyScalar(0.3 + 0.55 * tagLicht);
+    wu.schattenFarbe.value.multiplyScalar(0.3 + 0.62 * tagLicht);
     this.sortierZeit += dt;
     if (this.sortierZeit > 0.5) {
       this.sortierZeit = 0;
