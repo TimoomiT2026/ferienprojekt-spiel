@@ -27,6 +27,7 @@ import { Aufgaben } from './aufgaben.js';
 import { Nachbearbeitung } from './nachbearbeitung.js';
 import { Fernrohr } from './fernrohr.js';
 import { Pferde } from './pferde.js';
+import { Pilze } from './pilze.js';
 import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
@@ -154,6 +155,22 @@ const baseHalter = { base: null, get stall() { return this.base?.stall ?? null; 
 const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter });
 objekte.interaktionen.push(...pferde.interaktionen);
 
+// ---------- Zauberpilze & Fliegen ----------
+const pilze = new Pilze(szene, { rucksack, meldung, musik, tageszeit, hindernisse });
+objekte.interaktionen.push(...pilze.interaktionen);
+rucksack.beimBenutzen = (id) => {
+  if (id !== 'zauberpilz') return;
+  if (boote.faehrt || pferde.reitet) {
+    rucksack.hinein('zauberpilz'); // geht gerade nicht – zurück in den Rucksack
+    meldung('Steig erst aus, dann kannst du fliegen!', 4);
+    return;
+  }
+  spieler.fliegen();
+  meldung('✨ Du kannst fliegen! Sprungknopf festhalten = höher.', 5);
+};
+spieler.beiFlugWarnung = (s) => meldung(`⏳ Noch ${s} Sekunden, dann landest du!`, 4);
+spieler.beiFlugEnde = () => meldung('🍄 Der Zauber ist vorbei – du schwebst runter.', 4);
+
 // ---------- Fernrohr ----------
 const fernrohr = new Fernrohr(kamera, spielfeld);
 fernrohr.meldung = meldung;
@@ -197,6 +214,7 @@ function zeigeUhr() {
 
 // ---------- Die Kamera schwebt hinter der Figur ----------
 let kameraWinkel = 0;
+let flugZoom = 0;
 let kameraNeigung = 0.35;
 const kameraPos = new THREE.Vector3(0, 30, 40);
 const blickZiel = new THREE.Vector3();
@@ -205,7 +223,9 @@ function bewegeKamera(dt, drehung, neigung) {
   kameraWinkel += drehung;
   kameraNeigung = THREE.MathUtils.clamp(kameraNeigung + neigung, 0.08, 1.2);
   const p = spieler.figur.position;
-  const abstand = EINSTELLUNGEN.kameraAbstand;
+  // Beim Fliegen geht die Kamera weich etwas weiter weg
+  flugZoom += ((spieler.fliegt ? 1 : 0) - flugZoom) * Math.min(1, dt * 2);
+  const abstand = EINSTELLUNGEN.kameraAbstand * (1 + 0.45 * flugZoom);
   const ziel = new THREE.Vector3(
     p.x + Math.sin(kameraWinkel) * Math.cos(kameraNeigung) * abstand,
     p.y + 1.5 + Math.sin(kameraNeigung) * abstand,
@@ -270,14 +290,15 @@ function spielSchleife() {
     if (!pausiert) {
       tageszeit.aktualisiere(dt);
       if (eingabe.aktion) {
-        if (objekte.aktuelle) objekte.aktion();
+        if (spieler.fliegt) { /* in der Luft: nichts */ }
+        else if (objekte.aktuelle) objekte.aktion();
         else if (rucksack.inDerHand === 'schwert') schwertSchlag();
         else if (rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) fernrohr.starten(spieler.figur.position, kameraWinkel);
       }
       if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (pferde.reitet) pferde.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, kameraWinkel);
-      else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel);
+      else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel, eingabe.springenGehalten);
       angeln.aktualisiere(dt); // nach dem Spieler, damit die Arm-Haltung stimmt
     }
     bewegeKamera(dt, eingabe.kameraDrehung, eingabe.kameraNeigung);
@@ -311,12 +332,15 @@ function spielSchleife() {
   }
   tiere.aktualisiere(dt, pos, himmel.helligkeit);
   pferde.aktualisiere(dt, pos, himmel.helligkeit);
+  pilze.aktualisiere(dt, pos);
   aktualisiereNatur(dt, pos);
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
   spieler.laterne.intensity = (1 - himmel.helligkeit) * 14;
 
   karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
+  // Aus der Luft kann man nichts anfassen
   let naechste = objekte.aktualisiere(dt, pos);
+  if (spieler.fliegt) naechste = null;
   if (!naechste && rucksack.inDerHand === 'schwert') {
     const holz = holzInDerNaehe(pos.x, pos.z);
     naechste = holz ? { bild: '🪓', text: holz.art === 'baum' ? 'Fällen' : 'Zerschlagen' } : { bild: '⚔️', text: 'Schwingen' };
@@ -365,6 +389,7 @@ function sammleSpielstand() {
     ueberleben: ueberleben.alsDaten(),
     haendler: haendler.alsDaten(),
     pferde: pferde.alsDaten(),
+    pilze: pilze.alsDaten(),
     aufgaben: aufgaben.alsDaten(),
     objekte: objekte.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
@@ -382,6 +407,7 @@ function wendeSpielstandAn(s) {
     ueberleben.ladeDaten(s.ueberleben || {});
     haendler.ladeDaten(s.haendler || {});
     if (s.pferde) pferde.ladeDaten(s.pferde);
+    pilze.ladeDaten(s.pilze || {});
     aufgaben.ladeDaten(s.aufgaben || {});
     objekte.ladeDaten(s.objekte || {});
     ladeGefaellte(s.gefaellt);
