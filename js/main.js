@@ -26,6 +26,7 @@ import { Haendler } from './haendler.js';
 import { Aufgaben } from './aufgaben.js';
 import { Nachbearbeitung } from './nachbearbeitung.js';
 import { Fernrohr } from './fernrohr.js';
+import { Pferde } from './pferde.js';
 import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
@@ -147,6 +148,12 @@ karte.beiZielErreicht = (ziel) => meldung(`${ziel.bild} Du bist da: ${ziel.name}
 angeln.positionen.forEach((p, i) => karte.punkt(`angel${i}`, { name: 'Angelstelle', bild: '🎣', x: p.x, z: p.z }));
 // Boote erscheinen erst auf der Karte, wenn man sie entdeckt hat
 boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: false }));
+// ---------- Pferde ----------
+// Die Base (mit dem Pferdestall) kommt später dazu – bis dahin gibt es keinen Stall
+const baseHalter = { base: null, get stall() { return this.base?.stall ?? null; } };
+const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter });
+objekte.interaktionen.push(...pferde.interaktionen);
+
 // ---------- Fernrohr ----------
 const fernrohr = new Fernrohr(kamera, spielfeld);
 fernrohr.meldung = meldung;
@@ -265,9 +272,10 @@ function spielSchleife() {
       if (eingabe.aktion) {
         if (objekte.aktuelle) objekte.aktion();
         else if (rucksack.inDerHand === 'schwert') schwertSchlag();
-        else if (rucksack.inDerHand === 'fernrohr' && !boote.faehrt) fernrohr.starten(spieler.figur.position, kameraWinkel);
+        else if (rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) fernrohr.starten(spieler.figur.position, kameraWinkel);
       }
       if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
+      else if (pferde.reitet) pferde.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, kameraWinkel);
       else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel);
       angeln.aktualisiere(dt); // nach dem Spieler, damit die Arm-Haltung stimmt
@@ -291,7 +299,7 @@ function spielSchleife() {
   wasser.aktualisiere(dt);
   boote.aktualisiere(dt);
   // Beim Rudern hat man beide Hände an den Rudern – Werkzeuge weg
-  const hand = boote.faehrt ? null : rucksack.inDerHand;
+  const hand = boote.faehrt || pferde.reitet ? null : rucksack.inDerHand;
   spieler.schaufel.visible = hand === 'schaufel';
   spieler.schwert.visible = hand === 'schwert';
   // (Das Fernrohr hält man nicht sichtbar in der Hand – man schaut nur hindurch)
@@ -302,6 +310,7 @@ function spielSchleife() {
     aufgaben.aktualisiere(dt);
   }
   tiere.aktualisiere(dt, pos, himmel.helligkeit);
+  pferde.aktualisiere(dt, pos, himmel.helligkeit);
   aktualisiereNatur(dt, pos);
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
   spieler.laterne.intensity = (1 - himmel.helligkeit) * 14;
@@ -312,7 +321,7 @@ function spielSchleife() {
     const holz = holzInDerNaehe(pos.x, pos.z);
     naechste = holz ? { bild: '🪓', text: holz.art === 'baum' ? 'Fällen' : 'Zerschlagen' } : { bild: '⚔️', text: 'Schwingen' };
   }
-  if (!naechste && rucksack.inDerHand === 'fernrohr' && !boote.faehrt) naechste = { bild: '🔭', text: 'Durchschauen' };
+  if (!naechste && rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) naechste = { bild: '🔭', text: 'Durchschauen' };
   const zeigen = laeuft && naechste && !fensterOffen() && !fernrohr.aktiv;
   aktionsKnopf.classList.toggle('sichtbar', !!zeigen);
   if (zeigen) {
@@ -355,6 +364,7 @@ function sammleSpielstand() {
     spieler: { x: p.x, z: p.z, winkel: spieler.figur.rotation.y },
     ueberleben: ueberleben.alsDaten(),
     haendler: haendler.alsDaten(),
+    pferde: pferde.alsDaten(),
     aufgaben: aufgaben.alsDaten(),
     objekte: objekte.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
@@ -371,6 +381,7 @@ function wendeSpielstandAn(s) {
     tageszeit.tag = s.tageszeit?.tag ?? 1;
     ueberleben.ladeDaten(s.ueberleben || {});
     haendler.ladeDaten(s.haendler || {});
+    if (s.pferde) pferde.ladeDaten(s.pferde);
     aufgaben.ladeDaten(s.aufgaben || {});
     objekte.ladeDaten(s.objekte || {});
     ladeGefaellte(s.gefaellt);
@@ -393,7 +404,7 @@ function wendeSpielstandAn(s) {
 }
 
 function speichern() {
-  if (laeuft && !boote.faehrt) speichereSpielstand(sammleSpielstand());
+  if (laeuft && !boote.faehrt && !pferde.reitet) speichereSpielstand(sammleSpielstand());
 }
 setInterval(speichern, 10000);
 // Entdeckte Boote auf der Karte dort zeigen, wo sie gerade liegen
@@ -463,7 +474,7 @@ spielSchleife();
 
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
-  spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere,
+  spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr,
   haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },

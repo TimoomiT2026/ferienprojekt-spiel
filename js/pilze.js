@@ -43,11 +43,11 @@ function eingefaerbt(geo, farbe) {
 function baueStielForm() {
   // (Punkte von oben nach unten, damit die Flächen nach außen zeigen)
   const stiel = drehkoerper([
-    [0.0, 0.42], [0.058, 0.41], [0.061, 0.33], [0.064, 0.26], [0.071, 0.16], [0.084, 0.07], [0.09, 0.03], [0.078, 0.004], [0.0, 0.0],
+    [0.0, 0.35], [0.068, 0.34], [0.071, 0.27], [0.075, 0.2], [0.083, 0.12], [0.097, 0.055], [0.102, 0.025], [0.088, 0.004], [0.0, 0.0],
   ], 20);
   // Ein kleiner Ring (Manschette) am Stiel – typisch für Fliegenpilze
-  const ring = drehkoerper([[0.064, 0.315], [0.085, 0.3], [0.098, 0.275], [0.07, 0.285]], 20);
-  const lamellen = drehkoerper([[0.055, 0.405], [0.15, 0.372], [0.255, 0.345], [0.27, 0.343]], 28);
+  const ring = drehkoerper([[0.073, 0.255], [0.094, 0.242], [0.106, 0.22], [0.078, 0.228]], 20);
+  const lamellen = drehkoerper([[0.065, 0.335], [0.15, 0.302], [0.255, 0.275], [0.27, 0.273]], 28);
   return mergeGeometries([
     eingefaerbt(stiel.toNonIndexed(), '#f4ead3'),
     eingefaerbt(ring.toNonIndexed(), '#efe2c4'),
@@ -57,7 +57,7 @@ function baueStielForm() {
 
 // Der runde Hut (von der Spitze nach außen und unten)
 const HUT_PUNKTE = [
-  [0.0, 0.575], [0.07, 0.571], [0.135, 0.556], [0.195, 0.528], [0.245, 0.488], [0.28, 0.44], [0.3, 0.395], [0.305, 0.365], [0.296, 0.346], [0.272, 0.34],
+  [0.0, 0.505], [0.07, 0.501], [0.135, 0.486], [0.195, 0.458], [0.245, 0.418], [0.28, 0.37], [0.3, 0.325], [0.305, 0.295], [0.296, 0.276], [0.272, 0.27],
 ];
 function baueHutForm() {
   return drehkoerper(HUT_PUNKTE, 36);
@@ -78,7 +78,7 @@ function baueTupfenForm() {
     const winkel = w + (z() - 0.5) * 0.5;
     const pos = new THREE.Vector3(Math.sin(winkel) * r, y, Math.cos(winkel) * r);
     // So steht der Hut an dieser Stelle schräg (ungefähr von der Hut-Mitte weg)
-    const normale = new THREE.Vector3(pos.x, (y - 0.33) * 1.3, pos.z).normalize();
+    const normale = new THREE.Vector3(pos.x, (y - 0.26) * 1.3, pos.z).normalize();
     const g = 0.03 + z() * 0.022;
     const tupfen = new THREE.SphereGeometry(1, 10, 6);
     tupfen.applyMatrix4(new THREE.Matrix4().compose(

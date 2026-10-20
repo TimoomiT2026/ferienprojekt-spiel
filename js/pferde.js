@@ -52,7 +52,7 @@ const R = E.inselGroesse;
 const FARBEN = [
   ['braun', '#6e4026', '#22150e'],
   ['fuchs', '#b0602a', '#d49a58'],
-  ['schimmel', '#e9e5dc', '#c9c3b8'],
+  ['schimmel', '#d6d1c7', '#b3ada3'],
   ['rappe', '#2a2523', '#121010'],
 ];
 
@@ -60,7 +60,10 @@ const FARBEN = [
 // Der Boden ist bei y = 0. Ein Pferd ist etwa 2,1 m hoch am Rücken.
 const VORNE_BEIN = { x: 0.2, y: 1.42, z: 0.78 }; // Schulter
 const HINTEN_BEIN = { x: 0.21, y: 1.4, z: -0.8 }; // Hüfte
-const OBER_LAENGE = 0.62; // Länge vom oberen Bein-Stück
+const OBER_LAENGE = 0.5; // Länge vom oberen Bein-Stück
+// Die Beine sind etwas kürzer als beim echten Pferd (sieht knuffiger aus):
+// darum sitzt der ganze Körper um so viel tiefer
+const TIEFER = 0.2;
 const HALS_PUNKT = { y: 1.55, z: 0.78 }; // hier dreht sich der Hals (zum Grasen)
 const SCHWEIF_PUNKT = { y: 1.98, z: -1.16 };
 const SATTEL = { y: 2.16, z: 0.02 }; // oben auf dem Sattel
@@ -123,36 +126,73 @@ const fellVerlauf = (unten, oben, hell = 1.06, dunkel = 0.9) => (x, y) => {
   return new THREE.Color(w, w, w);
 };
 
+// Eine weiche Röhre entlang einer Kurve, die dicker und dünner werden kann
+// (für Hals, Mähne und Schweif). dicke(t) = Radius bei t (0 = Anfang, 1 = Ende)
+function roehre(punkte, dicke, laengs = 16, rund = 10, breiteX = 1) {
+  const kurve = new THREE.CatmullRomCurve3(punkte);
+  const geo = new THREE.TubeGeometry(kurve, laengs, 1, rund, false);
+  const pos = geo.attributes.position;
+  const mitte = new THREE.Vector3(), v = new THREE.Vector3();
+  for (let i = 0; i <= laengs; i++) {
+    const t = i / laengs;
+    kurve.getPointAt(t, mitte);
+    const r = dicke(t);
+    for (let j = 0; j <= rund; j++) {
+      const k = i * (rund + 1) + j;
+      v.fromBufferAttribute(pos, k).sub(mitte).multiplyScalar(r);
+      v.x *= breiteX;
+      v.add(mitte);
+      pos.setXYZ(k, v.x, v.y, v.z);
+    }
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+const beule = (z, mitte, breite) => Math.exp(-(((z - mitte) / breite) ** 2));
+
 // --- Der Körper (mit Sattel) ---
+// Ein einziges, weich verformtes Ei: vorne die Brust, oben der Widerrist,
+// hinten die runde Kruppe, unten der Bauch.
+function rumpfGeo() {
+  const geo = new THREE.SphereGeometry(1, 32, 20);
+  const p = geo.attributes.position;
+  for (let i = 0; i < p.count; i++) {
+    const x = p.getX(i), y = p.getY(i), z = p.getZ(i);
+    // Vorne und hinten etwas stumpfer als eine Kugel
+    const Z = Math.sign(z) * Math.pow(Math.abs(z), 0.8) * (z > 0 ? 1.2 : 1.28);
+    const oben = 2.03 + 0.08 * beule(Z, 0.62, 0.32) + 0.08 * beule(Z, -0.8, 0.38) - 0.03 * beule(Z, -0.1, 0.4);
+    const unten = 1.22 + 0.2 * glatt(0.2, 1.2, Z) + 0.3 * glatt(-0.5, -1.3, Z) - 0.03 * beule(Z, -0.1, 0.5);
+    const breit = 0.4 + 0.05 * beule(Z, -0.78, 0.4) - 0.02 * beule(Z, 0.95, 0.3);
+    p.setXYZ(i, x * breit, (oben + unten) / 2 + y * (oben - unten) / 2, Z);
+  }
+  geo.computeVertexNormals();
+  return geo;
+}
+
 function koerperForm() {
   const verlauf = fellVerlauf(1.2, 2.2);
-  const teile = [
-    stueck(kugel(22, 14), FELL, verlauf, { s: [0.4, 0.44, 0.95], p: [0, 1.62, 0] }), // Bauch
-    stueck(kugel(16, 12), FELL, verlauf, { s: [0.39, 0.47, 0.46], p: [0, 1.7, 0.72] }), // Brust
-    stueck(kugel(18, 12), FELL, verlauf, { s: [0.43, 0.47, 0.52], p: [0, 1.73, -0.72] }), // Po
-    stueck(kugel(12, 8), FELL, verlauf, { s: [0.24, 0.24, 0.42], p: [0, 1.95, 0.6] }), // Widerrist (Schulterbuckel)
-  ];
-  // Schultern vorne und dicke Oberschenkel hinten (da hängen die Beine dran)
+  const teile = [stueck(rumpfGeo(), FELL, verlauf)];
+  // Schultern vorne und kräftige Oberschenkel hinten (da hängen die Beine dran)
   for (const sx of [1, -1]) {
-    teile.push(stueck(kugel(12, 8), FELL, verlauf, { s: [0.2, 0.36, 0.27], p: [sx * 0.22, 1.5, 0.78], r: [0.25, 0, 0] }));
-    teile.push(stueck(kugel(12, 8), FELL, verlauf, { s: [0.22, 0.42, 0.33], p: [sx * 0.24, 1.55, -0.8], r: [-0.2, 0, 0] }));
+    teile.push(stueck(kugel(12, 8), FELL, verlauf, { s: [0.15, 0.3, 0.22], p: [sx * 0.22, 1.52, 0.8], r: [0.3, 0, 0] }));
+    teile.push(stueck(kugel(12, 8), FELL, verlauf, { s: [0.17, 0.36, 0.27], p: [sx * 0.23, 1.56, -0.8], r: [-0.25, 0, 0] }));
   }
 
   // ---- Sattel & Zaumzeug (nur beim eigenen Pferd sichtbar) ----
-  const decke = '#2f6db5', leder = '#7a4422', lederDunkel = '#4f2a14', metall = '#b8c0c8';
+  const decke = '#2a5d9e', leder = '#7a4422', lederDunkel = '#4f2a14', metall = '#b8c0c8';
   // Die Satteldecke: ein Band, das sich um den Bauch legt
   const band = (breite, phiVon, phiLaenge, ringe = 6) => {
     const g = new THREE.SphereGeometry(1, 28, ringe, phiVon, phiLaenge, Math.PI / 2 - breite, breite * 2);
     g.rotateX(Math.PI / 2); // Pole zeigen jetzt nach vorne und hinten
     return g;
   };
-  teile.push(stueck(band(0.5, Math.PI - 0.55, Math.PI + 1.1), AUSRUESTUNG, decke, { s: [0.42, 0.455, 0.97], p: [0, 1.62, 0.04] }));
+  teile.push(stueck(band(0.42, Math.PI - 0.55, Math.PI + 1.1), AUSRUESTUNG, decke, { s: [0.425, 0.43, 1.0], p: [0, 1.625, 0.04] }));
   // Der Sattel selbst: Sitz, vorne der Knauf, hinten die Lehne
-  teile.push(stueck(kugel(16, 10), AUSRUESTUNG, leder, { s: [0.3, 0.09, 0.42], p: [0, 2.08, 0.06] }));
-  teile.push(stueck(kugel(10, 8), AUSRUESTUNG, lederDunkel, { s: [0.13, 0.1, 0.1], p: [0, 2.15, 0.44] }));
-  teile.push(stueck(kugel(12, 8), AUSRUESTUNG, lederDunkel, { s: [0.24, 0.11, 0.09], p: [0, 2.16, -0.3] }));
+  teile.push(stueck(kugel(16, 10), AUSRUESTUNG, leder, { s: [0.3, 0.09, 0.42], p: [0, 2.07, 0.04] }));
+  teile.push(stueck(kugel(10, 8), AUSRUESTUNG, lederDunkel, { s: [0.13, 0.1, 0.1], p: [0, 2.15, 0.42] }));
+  teile.push(stueck(kugel(12, 8), AUSRUESTUNG, lederDunkel, { s: [0.24, 0.11, 0.09], p: [0, 2.15, -0.32] }));
   // Der Bauchgurt
-  teile.push(stueck(band(0.06, 0, Math.PI * 2, 1), AUSRUESTUNG, lederDunkel, { s: [0.41, 0.45, 0.955], p: [0, 1.62, 0.32] }));
+  teile.push(stueck(band(0.05, 0, Math.PI * 2, 1), AUSRUESTUNG, lederDunkel, { s: [0.415, 0.43, 1.0], p: [0, 1.625, 0.3] }));
   // Steigbügel: Riemen und Bügel an beiden Seiten
   for (const sx of [1, -1]) {
     teile.push(stueck(new THREE.CylinderGeometry(0.018, 0.018, 0.62, 4, 1), AUSRUESTUNG, lederDunkel, { p: [sx * 0.43, 1.74, 0.12], r: [0, 0, sx * 0.08] }));
@@ -165,71 +205,69 @@ function koerperForm() {
 function halsKopfForm() {
   const teile = [];
   const verlauf = fellVerlauf(0, 1.4, 1.02, 0.94);
-  // Der Hals: eine dicke Röhre schräg nach vorne oben
-  const unten = V(0, 0.05, 0), oben = V(0, 1.22, 0.72);
-  const richtung = oben.clone().sub(unten);
-  const laenge = richtung.length();
-  const neigung = Math.atan2(richtung.z, richtung.y);
-  const mitte = unten.clone().lerp(oben, 0.5);
-  const hals = new THREE.CylinderGeometry(0.2, 0.36, laenge, 16, 4, true);
-  teile.push(stueck(hals, FELL, verlauf, { s: [0.72, 1, 1], r: [neigung, 0, 0], p: [mitte.x, mitte.y, mitte.z] }));
-  teile.push(stueck(kugel(14, 8), FELL, verlauf, { s: [0.26, 0.36, 0.36], p: [0, 0.05, 0] }));
-  teile.push(stueck(kugel(12, 8), FELL, verlauf, { s: [0.15, 0.21, 0.21], p: [oben.x, oben.y, oben.z] }));
+  // Der Hals: eine dicke, leicht gebogene Röhre schräg nach vorne oben
+  const halsPunkte = [V(0, -0.1, -0.08), V(0, 0.5, 0.26), V(0, 0.98, 0.58), V(0, 1.27, 0.78)];
+  const halsDicke = (t) => mische(0.44, 0.24, Math.pow(t, 0.8));
+  teile.push(stueck(roehre(halsPunkte, halsDicke, 14, 14, 0.68), FELL, verlauf));
+  teile.push(stueck(kugel(12, 8), FELL, verlauf, { s: [0.17, 0.24, 0.24], p: [0, 1.27, 0.78] }));
 
-  // Der Kopf: lang und schräg nach unten, mit Backe und weicher Schnauze
-  const kopfNeigung = 0.58;
-  teile.push(stueck(kugel(18, 12), FELL, verlauf, { s: [0.165, 0.19, 0.4], r: [kopfNeigung, 0, 0], p: [0, 1.05, 1.03] }));
-  teile.push(stueck(kugel(12, 10), FELL, verlauf, { s: [0.18, 0.21, 0.21], p: [0, 1.06, 0.84] })); // Backe
-  teile.push(stueck(kugel(12, 10), FELL, (x, y) => verlauf(x, y).multiplyScalar(0.82), { s: [0.15, 0.15, 0.17], p: [0, 0.85, 1.32] })); // Schnauze
+  // Der Kopf: lang, schräg nach unten, zur Schnauze hin schmaler
+  const kopfNeigung = 0.62;
+  const kopf = new THREE.SphereGeometry(1, 20, 14);
+  const kp = kopf.attributes.position;
+  for (let i = 0; i < kp.count; i++) {
+    const t = (kp.getZ(i) + 1) / 2; // 0 = hinten, 1 = Schnauze
+    kp.setXYZ(i, kp.getX(i) * mische(1, 0.74, t), kp.getY(i) * mische(1.05, 0.78, t), kp.getZ(i));
+  }
+  kopf.computeVertexNormals();
+  teile.push(stueck(kopf, FELL, verlauf, { s: [0.2, 0.235, 0.45], r: [kopfNeigung, 0, 0], p: [0, 1.07, 1.1] }));
+  teile.push(stueck(kugel(12, 10), FELL, verlauf, { s: [0.2, 0.22, 0.22], p: [0, 1.09, 0.9] })); // Backe
+  teile.push(stueck(kugel(12, 10), FELL, (x, y) => verlauf(x, y).multiplyScalar(0.8), { s: [0.165, 0.16, 0.18], p: [0, 0.86, 1.4] })); // Schnauze
   // Nüstern
   for (const sx of [1, -1]) {
-    teile.push(stueck(kugel(6, 4), EIGEN, '#1c1512', { s: [0.03, 0.035, 0.02], p: [sx * 0.065, 0.86, 1.47] }));
+    teile.push(stueck(kugel(6, 4), EIGEN, '#1c1512', { s: [0.032, 0.04, 0.02], p: [sx * 0.07, 0.87, 1.565] }));
   }
   // Augen (dunkel mit kleinem Glanzpunkt)
   for (const sx of [1, -1]) {
-    teile.push(stueck(kugel(8, 6), EIGEN, '#1a1210', { s: [0.045, 0.05, 0.05], p: [sx * 0.15, 1.13, 0.96] }));
-    teile.push(stueck(kugel(4, 3), EIGEN, '#ffffff', { s: [0.013, 0.013, 0.013], p: [sx * 0.185, 1.15, 0.99] }));
+    teile.push(stueck(kugel(8, 6), EIGEN, '#1a1210', { s: [0.05, 0.055, 0.055], p: [sx * 0.17, 1.19, 1.0] }));
+    teile.push(stueck(kugel(4, 3), EIGEN, '#ffffff', { s: [0.015, 0.015, 0.015], p: [sx * 0.21, 1.21, 1.03] }));
   }
   // Ohren: spitz und nach vorne gestellt
   for (const sx of [1, -1]) {
-    const ohr = new THREE.ConeGeometry(0.06, 0.22, 7);
-    ohr.translate(0, 0.11, 0);
-    teile.push(stueck(ohr, FELL, verlauf, { s: [1, 1, 0.6], r: [0.25, 0, -sx * 0.2], p: [sx * 0.08, 1.33, 0.73] }));
+    const ohr = new THREE.ConeGeometry(0.065, 0.24, 7);
+    ohr.translate(0, 0.12, 0);
+    teile.push(stueck(ohr, FELL, verlauf, { s: [1, 1, 0.6], r: [0.2, 0, -sx * 0.22], p: [sx * 0.09, 1.36, 0.8] }));
   }
   // Ein kleiner weißer Stern auf der Stirn
-  teile.push(stueck(kugel(8, 6), EIGEN, '#f4efe6', { s: [0.06, 0.07, 0.02], r: [kopfNeigung - 0.9, 0, 0], p: [0, 1.2, 1.0] }));
+  teile.push(stueck(kugel(8, 6), EIGEN, '#f4efe6', { s: [0.065, 0.075, 0.02], r: [kopfNeigung - 0.95, 0, 0], p: [0, 1.25, 1.075] }));
 
-  // Die Mähne: viele flache Büschel oben am Hals entlang
-  const zz = zufallMitSeed(31);
-  const nach = V(0, Math.sin(neigung), -Math.cos(neigung)); // zeigt vom Hals nach hinten-oben
-  for (let i = 0; i <= 11; i++) {
-    const t = 0.18 + (i / 11) * 0.82;
-    const achse = unten.clone().lerp(oben, t);
-    const radius = mische(0.36, 0.2, t);
-    const p = achse.addScaledVector(nach, radius * 0.95);
-    const gr = mische(1.1, 0.75, t) * (0.9 + zz() * 0.25);
-    teile.push(stueck(kugel(7, 5), MAEHNE, '#ffffff', {
-      s: [0.06, 0.15 * gr, 0.12 * gr],
-      r: [neigung - 0.5 + zz() * 0.3, 0, (i % 2 ? 1 : -1) * 0.25],
-      p: [(i % 2 ? 1 : -1) * 0.035, p.y, p.z],
-    }));
+  // Die Mähne: ein weicher Kamm oben am Hals entlang, mit ein paar Büscheln
+  const kurve = new THREE.CatmullRomCurve3(halsPunkte);
+  const maehnenPunkte = [];
+  const tangente = new THREE.Vector3(), nach = new THREE.Vector3();
+  for (let i = 0; i <= 6; i++) {
+    const t = 0.12 + (i / 6) * 0.86;
+    const p = kurve.getPointAt(t);
+    kurve.getTangentAt(t, tangente);
+    nach.set(0, tangente.z, -tangente.y); // zeigt vom Hals nach hinten-oben
+    maehnenPunkte.push(p.addScaledVector(nach, halsDicke(t) * 0.98 + 0.02));
   }
+  teile.push(stueck(roehre(maehnenPunkte, (t) => mische(0.15, 0.09, t) * (0.75 + 0.25 * Math.sin(t * Math.PI)), 16, 8, 0.5), MAEHNE, '#ffffff'));
   // Schopf (die Haare vorne auf der Stirn)
-  teile.push(stueck(kugel(7, 5), MAEHNE, '#ffffff', { s: [0.07, 0.12, 0.09], r: [1.1, 0, 0], p: [0, 1.32, 0.86] }));
+  teile.push(stueck(kugel(7, 5), MAEHNE, '#ffffff', { s: [0.075, 0.13, 0.09], r: [1.0, 0, 0], p: [0, 1.36, 0.93] }));
 
   // ---- Zaumzeug ----
   const leder = '#4f2a14';
-  const nasenRiemen = new THREE.TorusGeometry(1, 0.11, 5, 18);
-  teile.push(stueck(nasenRiemen, AUSRUESTUNG, leder, { s: [0.165, 0.16, 0.16], r: [kopfNeigung, 0, 0], p: [0, 0.94, 1.2] }));
+  teile.push(stueck(new THREE.TorusGeometry(1, 0.1, 5, 18), AUSRUESTUNG, leder, { s: [0.19, 0.175, 0.18], r: [kopfNeigung, 0, 0], p: [0, 0.96, 1.28] }));
   const ueberKopf = new THREE.CatmullRomCurve3([
-    V(-0.16, 0.95, 1.18), V(-0.185, 1.12, 0.95), V(-0.13, 1.3, 0.74), V(0, 1.36, 0.68),
-    V(0.13, 1.3, 0.74), V(0.185, 1.12, 0.95), V(0.16, 0.95, 1.18),
+    V(-0.18, 0.98, 1.26), V(-0.2, 1.17, 1.0), V(-0.15, 1.33, 0.8), V(0, 1.4, 0.74),
+    V(0.15, 1.33, 0.8), V(0.2, 1.17, 1.0), V(0.18, 0.98, 1.26),
   ]);
-  teile.push(stueck(new THREE.TubeGeometry(ueberKopf, 20, 0.018, 4, false), AUSRUESTUNG, leder));
+  teile.push(stueck(new THREE.TubeGeometry(ueberKopf, 20, 0.02, 4, false), AUSRUESTUNG, leder));
   // Die Zügel: vom Maul am Hals entlang bis zu den Händen
   const zuegel = new THREE.CatmullRomCurve3([
-    V(-0.17, 0.88, 1.3), V(-0.25, 0.78, 0.85), V(-0.22, 0.74, 0.35), V(-0.1, 0.78, -0.15), V(0, 0.82, -0.32),
-    V(0.1, 0.78, -0.15), V(0.22, 0.74, 0.35), V(0.25, 0.78, 0.85), V(0.17, 0.88, 1.3),
+    V(-0.19, 0.9, 1.36), V(-0.29, 0.8, 0.9), V(-0.27, 0.74, 0.35), V(-0.12, 0.8, -0.15), V(0, 0.84, -0.32),
+    V(0.12, 0.8, -0.15), V(0.27, 0.74, 0.35), V(0.29, 0.8, 0.9), V(0.19, 0.9, 1.36),
   ]);
   teile.push(stueck(new THREE.TubeGeometry(zuegel, 40, 0.016, 4, false), AUSRUESTUNG, '#3a1f10'));
   return mergeGeometries(teile);
@@ -237,17 +275,17 @@ function halsKopfForm() {
 
 // --- Der Schweif (Drehpunkt oben, damit er wedeln kann) ---
 function schweifForm() {
-  const teile = [stueck(kugel(10, 6), FELL, '#ffffff', { s: [0.09, 0.09, 0.2], r: [-0.5, 0, 0], p: [0, -0.05, -0.1] })];
-  const kurve = new THREE.CatmullRomCurve3([V(0, -0.05, -0.16), V(0, -0.35, -0.32), V(0, -0.75, -0.36), V(0, -1.1, -0.3)]);
+  const punkte = [V(0, 0.02, 0.05), V(0, -0.12, -0.2), V(0, -0.48, -0.34), V(0, -0.88, -0.36), V(0, -1.2, -0.28)];
+  const dicke = (t) => (t < 0.15 ? mische(0.1, 0.075, t / 0.15) : Math.sin(Math.min(1, (t - 0.1) / 0.92) * Math.PI) * 0.12 + 0.03);
+  const teile = [stueck(roehre(punkte, dicke, 18, 10, 0.75), MAEHNE, '#ffffff')];
+  // Ein paar lose Haarsträhnen außen dran
   const zz = zufallMitSeed(12);
-  for (let i = 0; i < 8; i++) {
-    const t = i / 7;
-    const p = kurve.getPoint(t);
-    const dick = Math.sin(0.25 + t * 2.6) * 0.13 + 0.05;
-    teile.push(stueck(kugel(8, 6), MAEHNE, '#ffffff', {
-      s: [dick * 0.85, 0.2, dick],
-      r: [-0.3 + t * 0.3, 0, (zz() - 0.5) * 0.3],
-      p: [(zz() - 0.5) * 0.04, p.y, p.z],
+  for (let i = 0; i < 4; i++) {
+    const sx = i % 2 ? 1 : -1;
+    teile.push(stueck(kugel(7, 5), MAEHNE, '#ffffff', {
+      s: [0.05, 0.3, 0.06],
+      r: [0.15 + zz() * 0.1, 0, sx * 0.12],
+      p: [sx * 0.05, -0.62 - i * 0.1, -0.36 + zz() * 0.05],
     }));
   }
   return mergeGeometries(teile);
@@ -255,10 +293,10 @@ function schweifForm() {
 
 // --- Bein oben (Drehpunkt oben an Schulter/Hüfte) ---
 function oberBeinForm() {
-  const g = new THREE.CylinderGeometry(0.15, 0.095, OBER_LAENGE, 10, 2, true);
+  const g = new THREE.CylinderGeometry(0.165, 0.095, OBER_LAENGE, 10, 2, true);
   g.translate(0, -OBER_LAENGE / 2, 0);
   return mergeGeometries([
-    stueck(g, FELL, '#f2f2f2', { s: [1, 1, 1.25] }),
+    stueck(g, FELL, '#f2f2f2', { s: [1, 1, 1.3] }),
     stueck(kugel(10, 6), FELL, '#eeeeee', { s: [0.105, 0.11, 0.11], p: [0, -OBER_LAENGE, 0] }), // Knie
   ]);
 }
@@ -266,18 +304,18 @@ function oberBeinForm() {
 // --- Bein unten mit Huf (Drehpunkt = Knie) ---
 function unterBeinForm() {
   const dunkler = (x, y) => {
-    const w = mische(0.62, 0.86, THREE.MathUtils.clamp((y + 0.7) / 0.7, 0, 1));
+    const w = mische(0.62, 0.86, THREE.MathUtils.clamp((y + 0.62) / 0.62, 0, 1));
     return new THREE.Color(w, w, w);
   };
-  const roehre = new THREE.CylinderGeometry(0.07, 0.068, 0.5, 8, 2, true);
-  roehre.translate(0, -0.25, 0);
+  const roehre = new THREE.CylinderGeometry(0.072, 0.068, 0.42, 8, 2, true);
+  roehre.translate(0, -0.21, 0);
   const fessel = new THREE.CylinderGeometry(0.065, 0.075, 0.16, 8, 1, true);
-  fessel.translate(0, -0.6, 0.015);
-  const huf = new THREE.CylinderGeometry(0.088, 0.115, 0.13, 10, 1);
-  huf.translate(0, -0.735, 0.03);
+  fessel.translate(0, -0.52, 0.015);
+  const huf = new THREE.CylinderGeometry(0.09, 0.118, 0.13, 10, 1);
+  huf.translate(0, -0.655, 0.03);
   return mergeGeometries([
     stueck(roehre, FELL, dunkler),
-    stueck(kugel(8, 6), FELL, dunkler, { s: [0.085, 0.09, 0.1], p: [0, -0.5, 0.005] }), // Fesselgelenk
+    stueck(kugel(8, 6), FELL, dunkler, { s: [0.085, 0.09, 0.1], p: [0, -0.42, 0.005] }), // Fesselgelenk
     stueck(fessel, FELL, dunkler),
     stueck(huf, EIGEN, '#3a2e27'),
   ]);
@@ -643,7 +681,7 @@ export class Pferde {
     for (let i = 0; i < anzahl; i++) {
       if (this.herzDaten.length >= 24) this.herzDaten.shift();
       this.herzDaten.push({
-        pos: V(p.x + s * 1.6 + (zufall() - 0.5) * 0.8, p.wy + 2.6 + zufall() * 0.4, p.z + c * 1.6 + (zufall() - 0.5) * 0.8),
+        pos: V(p.x + s * 1.6 + (zufall() - 0.5) * 0.8, p.wy + 2.4 + zufall() * 0.4, p.z + c * 1.6 + (zufall() - 0.5) * 0.8),
         v: V((zufall() - 0.5) * 0.8, 1.2 + zufall() * 0.8, (zufall() - 0.5) * 0.8),
         leben: 1.4 + zufall() * 0.8,
         verzoegerung: i * 0.08,
@@ -773,21 +811,38 @@ export class Pferde {
     return false;
   }
 
-  // Läuft zu einem Ziel: dreht sich hin, wird schneller oder langsamer
+  // Läuft zu einem Ziel: dreht sich hin, wird schneller oder langsamer.
+  // Steht ein Baum im Weg, sucht es sich einen Umweg (erst links oder rechts probieren).
   laufeZu(p, zx, zz, tempoMax, dt, darf) {
     const dx = zx - p.x, dz = zz - p.z;
-    const zielWinkel = Math.atan2(dx, dz);
+    const weit = Math.hypot(dx, dz);
+    let zielWinkel = Math.atan2(dx, dz);
+    const frei = (w) => darf(p.x + Math.sin(w) * 1.6, p.z + Math.cos(w) * 1.6);
+    if (weit > 1.6 && !frei(zielWinkel)) {
+      p.umwegZeit = (p.umwegZeit || 0) - dt;
+      if (!p.umweg || p.umwegZeit <= 0) p.umweg = zufall() < 0.5 ? 1 : -1;
+      for (const schritt of [0.5, 1, 1.5, 2.1, 2.7]) {
+        if (frei(zielWinkel + p.umweg * schritt)) {
+          zielWinkel += p.umweg * schritt;
+          p.umwegZeit = 1.2;
+          break;
+        }
+        if (frei(zielWinkel - p.umweg * schritt)) {
+          p.umweg = -p.umweg;
+          zielWinkel += p.umweg * schritt;
+          p.umwegZeit = 1.2;
+          break;
+        }
+      }
+    }
     p.drehung = dreheZu(p.drehung, zielWinkel, dt * mische(2.6, 1.4, Math.min(1, p.tempo / 10)));
     const vorne = Math.max(0, Math.cos(winkelDiff(zielWinkel, p.drehung)));
     const ziel = tempoMax * (0.25 + 0.75 * vorne);
-    p.tempo += THREE.MathUtils.clamp(ziel - p.tempo, -6 * dt, 4 * dt);
+    p.tempo += THREE.MathUtils.clamp(ziel - p.tempo, -9 * dt, 4 * dt);
     const ok = this.schiebe(p, dt, darf);
-    // Bleibt es irgendwo hängen? Dann einen Schritt zur Seite probieren
-    if (!ok) {
-      p.steckZeit += dt;
-      p.drehung += dt * 2.5;
-    } else p.steckZeit = Math.max(0, p.steckZeit - dt);
-    return Math.hypot(dx, dz);
+    if (!ok || p.tempo < 0.3) p.steckZeit += dt;
+    else p.steckZeit = Math.max(0, p.steckZeit - dt);
+    return weit;
   }
 
   bremse(p, dt, staerke = 3) {
@@ -928,14 +983,20 @@ export class Pferde {
         // Hinterher! Je weiter weg, desto schneller (bis zum Galopp)
         const r = Math.atan2(p.x - spieler.x, p.z - spieler.z);
         const zx = spieler.x + Math.sin(r) * folge, zz = spieler.z + Math.cos(r) * folge;
-        const tempo = THREE.MathUtils.clamp((abstand - folge) * 1.3, 1.2, 14);
+        const tempo = THREE.MathUtils.clamp((abstand - folge) * 2, 1.2, 14);
         this.laufeZu(p, zx, zz, tempo, dt, darf);
+        // Ganz festgesteckt und weit weg? Dann findet es den Weg schon (es taucht hinter dir auf)
+        if (p.steckZeit > 4 && abstand > 25 && darf(zx, zz)) {
+          p.x = zx;
+          p.z = zz;
+          p.steckZeit = 0;
+        }
         p.kopf += (0 - p.kopf) * Math.min(1, dt * 3);
         p.kopfSeite *= 1 - Math.min(1, dt * 3);
         return;
       }
       // Nah genug: stehen bleiben und zu dir schauen
-      this.bremse(p, dt, 5);
+      this.bremse(p, dt, 9);
       const zuDir = Math.atan2(spieler.x - p.x, spieler.z - p.z);
       if (p.tempo < 0.5 && Math.abs(winkelDiff(zuDir, p.drehung)) > 0.6) p.drehung = dreheZu(p.drehung, zuDir, dt * 1.2);
       const zielKopf = Math.sin(this.zeit * 0.4 + p.wedeln) > 0.3 ? 0.9 : 0;
@@ -1071,13 +1132,13 @@ export class Pferde {
     _e.set(p.nicken, p.drehung, p.rollen, 'YXZ');
     _tier.compose(_p.set(p.x, p.wy, p.z), _q.setFromEuler(_e), _s.set(g, g, g));
     // Der Körper hüpft und schaukelt beim Laufen
-    _koerper.multiplyMatrices(_tier, teil(0, p.hub, 0, p.gangNicken, 0, 0));
+    _koerper.multiplyMatrices(_tier, teil(0, p.hub - TIEFER, 0, p.gangNicken, 0, 0));
     setze(t.koerper, i, _koerper, p);
 
     // Hals & Kopf: nickt zum Grasen (Kopf runter) und schaut zur Seite
     const kauen = p.kopf > 0.7 ? Math.sin(this.zeit * 6 + p.nr) * 0.03 : 0;
     const galoppNick = -Math.sin(p.phase + 0.3) * 0.12 * p.galopp - Math.cos(p.phase * 2) * 0.03 * p.trab;
-    const nick = -0.08 + p.kopf * 1.62 + kauen + galoppNick - 0.12 * p.galopp;
+    const nick = -0.08 + p.kopf * 1.68 + kauen + galoppNick - 0.12 * p.galopp;
     _a.multiplyMatrices(_koerper, teil(0, HALS_PUNKT.y, HALS_PUNKT.z, nick, p.kopfSeite * 0.8, 0));
     setze(t.halsKopf, i, _a, p);
 
@@ -1129,7 +1190,7 @@ export class Pferde {
       h.pos.addScaledVector(h.v, dt);
       h.v.multiplyScalar(1 - Math.min(1, dt * 0.8));
       h.dreh += dt * 3;
-      const gr = 0.32 * Math.min(1, h.leben * 2) * (1 + Math.sin(h.leben * 12) * 0.08);
+      const gr = 0.42 * Math.min(1, h.leben * 2) * (1 + Math.sin(h.leben * 12) * 0.08);
       _e.set(0, h.dreh, Math.sin(h.dreh) * 0.2, 'YXZ');
       _a.compose(h.pos, _q.setFromEuler(_e), _s.set(gr, gr, gr));
       this.herzen.setMatrixAt(n++, _a);
@@ -1150,7 +1211,7 @@ export class Pferde {
     const g = p.groesse;
     _e.set(p.nicken, p.drehung, p.rollen, 'YXZ');
     _tier.compose(_p.set(p.x, p.wy, p.z), _q.setFromEuler(_e), _s.set(g, g, g));
-    _koerper.multiplyMatrices(_tier, teil(0, p.hub, 0, p.gangNicken, 0, 0));
+    _koerper.multiplyMatrices(_tier, teil(0, p.hub - TIEFER, 0, p.gangNicken, 0, 0));
     const sitz = _p.set(0, SATTEL.y - SITZ_TIEFE / g, SATTEL.z).applyMatrix4(_koerper);
     s.figur.position.copy(sitz);
     s.figur.rotation.set(p.nicken + p.gangNicken, p.drehung, p.rollen);
