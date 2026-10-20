@@ -22,4 +22,11 @@
 | **Haltbarkeit** | Wie oft man etwas benutzen kann, bevor es kaputtgeht. |
 | **Spielstand** | Alles, was man erreicht hat, wird gespeichert, damit man weiterspielen kann. |
 | **Etappe** (Meilenstein) | Ein großes Stück Arbeit, das man fertig macht, bevor man das nächste anfängt. |
+| **Balancing** | Ein Spiel so einstellen, dass es nicht zu leicht und nicht zu schwer ist. Zum Beispiel: Startgeld 30 statt 100. |
+| **Quest-Kette** | Aufgaben, die aufeinander aufbauen. Unser Aufgabenbuch 📋 ist eine. |
+| **Skelett & Skinning** | Unser Junge hat unsichtbare Knochen. Die Haut (Pulli, Hose) biegt sich mit, wenn sich Knie und Ellbogen bewegen. |
+| **Bloom** | Helle Dinge (Feuer, Mond, Sonne) leuchten weich über ihren Rand hinaus – wie in echt in der Kamera. |
+| **Nachbearbeitung** | Das fertige Bild wird noch einmal „gefiltert“: Farben, Leuchten, dunkle Ecken (Vignette). Wie ein Instagram-Filter fürs Spiel. |
+| **Atlas** | Viele kleine Bilder (z. B. 4 Laubsorten) in einem großen Bild. Spart Arbeit für das iPad. |
+| **Gerstner-Wellen** | Eine Rechenformel für echte Meereswellen, benannt nach einem Forscher von vor über 200 Jahren. |
 | **Seed** | Eine Zahl, aus der die Welt „zufällig“ gebaut wird. Gleicher Seed = gleiche Welt. Unser Seed: 42. |
