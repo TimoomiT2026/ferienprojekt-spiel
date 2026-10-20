@@ -89,6 +89,7 @@
     nach.stufe = stufe;
 
     let winkel = zahl('winkel', 0.3);
+    let neigung = zahl('neigung', 0.35);
     function teleport(x, z, w = winkel) {
       figur.position.set(x, bodenHoehe(x, z), z);
       winkel = w;
@@ -96,7 +97,7 @@
     teleport(zahl('x', 5), zahl('z', 3));
 
     function kameraSetzen() {
-      const pos = figur.position, abstand = 9, neigung = 0.35;
+      const pos = figur.position, abstand = 9;
       kamera.position.set(
         pos.x + Math.sin(winkel) * Math.cos(neigung) * abstand,
         pos.y + 1.5 + Math.sin(neigung) * abstand,
@@ -135,7 +136,7 @@
       nach.setSize(window.innerWidth, window.innerHeight);
     });
 
-    window.__grafik = { renderer, szene, kamera, tageszeit, himmel, teleport, nach, figur, bodenHoehe, get fps() { return fps; } };
+    window.__grafik = { renderer, szene, kamera, tageszeit, himmel, teleport, nach, figur, bodenHoehe, set neigung(n) { neigung = n; }, get fps() { return fps; } };
   </script>
 </body>
 </html>

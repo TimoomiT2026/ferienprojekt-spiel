@@ -343,6 +343,10 @@ function speichern() {
   if (laeuft && !boote.faehrt) speichereSpielstand(sammleSpielstand());
 }
 setInterval(speichern, 10000);
+// Entdeckte Boote auf der Karte dort zeigen, wo sie gerade liegen
+setInterval(() => {
+  boote.positionen.forEach((b, i) => b.entdeckt && karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: true }));
+}, 2000);
 window.addEventListener('pagehide', speichern);
 document.addEventListener('visibilitychange', () => document.hidden && speichern());
 

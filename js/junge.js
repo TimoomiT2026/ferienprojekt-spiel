@@ -335,8 +335,8 @@ export function baueJunge(farben = {}) {
     for (const p of wangen) m = Math.max(m, 1 - w.distanceTo(p) / 0.032);
     return haut.clone().lerp(rot, Math.max(0, m) * 0.4);
   };
-  plan.add('haut', kugel(0.116, 28, 20), matrix(kopfMitte, [0, 0, 0], [0.98, 1, 1]), kk, hautMitWangen);
-  plan.add('haut', kugel(0.094, 24, 16), matrix(gesicht, [0, 0, 0], [1.04, 0.94, 0.98]), kk, hautMitWangen);
+  plan.add('haut', kugel(0.116, 24, 16), matrix(kopfMitte, [0, 0, 0], [0.98, 1, 1]), kk, hautMitWangen);
+  plan.add('haut', kugel(0.094, 20, 14), matrix(gesicht, [0, 0, 0], [1.04, 0.94, 0.98]), kk, hautMitWangen);
   // Ohren (fast ganz unter den Haaren versteckt)
   for (const s of [-1, 1]) {
     plan.add('haut', kugel(1, 12, 10), matrix(V(s * 0.111, 1.212, 0.004), [0, s * 0.3, 0], [0.014, 0.032, 0.024]), kk, haut);
@@ -381,7 +381,7 @@ export function baueJunge(farben = {}) {
       const t = i / 9;
       return [0.5 * Math.sqrt(Math.max(0, 1 - Math.pow(t, 2.4))) * (0.75 + 0.25 * Math.sin(t * Math.PI)), -t];
     }),
-    8
+    6
   );
   const zufall = zufallMitStart(42);
   const richtung = (a, e) => V(Math.sin(a) * Math.cos(e), Math.sin(e), Math.cos(a) * Math.cos(e));

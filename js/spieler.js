@@ -36,20 +36,21 @@ export class Spieler {
     const schaufelModell = baueSchaufel();
     schaufelModell.position.y = -0.95;
     this.schaufel.add(schaufelModell);
-    this.schaufel.rotation.x = 0.1;
+    // (die Hand ist etwas nach vorne geknickt, darum hier zurückdrehen)
+    this.schaufel.rotation.x = 0.95;
     this.schaufel.visible = false;
     this.handR.add(this.schaufel);
 
     // Das Schwert (wird an der Werkbank gebaut)
     this.schwert = baueSchwert();
-    this.schwert.rotation.x = Math.PI / 2 - 0.4;
+    this.schwert.rotation.x = 2.17;
     this.schwert.visible = false;
     this.handR.add(this.schwert);
     this.schwungZeit = 0;
 
     // Halter für die Angel (die Angel selbst kommt aus angeln.js)
     this.angel = new THREE.Group();
-    this.angel.rotation.x = 0.6;
+    this.angel.rotation.x = 1.75;
     this.angel.visible = false;
     this.handR.add(this.angel);
 
@@ -164,7 +165,7 @@ export class Spieler {
       let ober = -s * schwung - 0.12 * renn * bewegt;
       // Das Knie beugt sich, wenn das Bein nach vorne schwingt
       const vorschwung = Math.max(0, Math.cos(phase + 0.35 * renn));
-      let knie = (mische(0.12, 0.22, renn) + vorschwung * mische(0.75, 1.55, renn)) * bewegt;
+      let knie = (mische(0.12, 0.22, renn) + vorschwung * mische(0.75, 1.3, renn)) * bewegt;
       knie += Math.max(0, -s) * 0.15 * bewegt; // hinten etwas einknicken
       // In der Luft: Beine anziehen
       ober = mische(ober, -0.75 + s * 0.25, this.luft);
