@@ -386,3 +386,20 @@ button { font-family: inherit; cursor: pointer; }
   .platz .bild { font-size: 34px; }
   .fenster-kopf { margin-bottom: 8px; }
 }
+
+/* ---------- Aufgabenbuch ---------- */
+#aufgabe-anzeige {
+  max-width: min(320px, 40vw); padding: 8px 14px; border: none; border-radius: 16px;
+  background: rgba(255, 248, 225, 0.95); color: #5a3a10; font-size: 16px; font-weight: bold; text-align: left;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+#aufgaben-fenster { border-color: #c98a2a; }
+.aufgaben-liste { list-style: none; display: flex; flex-direction: column; gap: 8px; }
+.aufgabe { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; background: #f3e6cf; font-size: 18px; color: #3a2a18; }
+.aufgabe.fertig { opacity: 0.6; }
+.aufgabe.jetzt { background: #fff1cf; border: 3px solid #ffb02e; }
+.aufgabe.spaeter { opacity: 0.45; }
+.aufgabe > div { flex: 1; }
+.aufgabe-zeichen { font-size: 24px; }
+.aufgabe-tipp { font-size: 16px; color: #6a4a20; margin-top: 4px; font-weight: normal; }
+.aufgabe-lohn { font-size: 16px; font-weight: bold; color: #7a4b00; white-space: nowrap; }

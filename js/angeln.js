@@ -443,11 +443,11 @@ export class Angeln {
     if (rucksack.inDerHand !== 'angel') {
       meldung(rucksack.hat('angel')
         ? 'Nimm erst die Angel in die Hand: Rucksack 🎒 öffnen und die Angel antippen.'
-        : 'Zum Angeln brauchst du eine Angel 🎣. Die kauft man beim Händler – oder du baust sie an der Werkbank aus Holz.', 5);
+        : 'Zum Angeln brauchst du eine Angel 🎣. Bau sie an der Werkbank: 2 Holz + 1 Schnur (Schnur = 2 Holz).', 5);
       return;
     }
     if (!rucksack.hat('koeder')) {
-      meldung('Du brauchst Köder vom Händler 🪱', 4);
+      meldung('Du brauchst Würmer als Köder 🪱. Die findest du beim Graben oder beim Händler.', 5);
       return;
     }
     if (rucksack.istVoll()) {

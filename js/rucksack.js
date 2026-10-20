@@ -19,7 +19,7 @@ export const SCHAUFEL_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hid
 export const DINGE = {
   schaufel: { name: 'Schaufel', bild: SCHAUFEL_BILD, werkzeug: true, text: 'Damit kannst du an Grabestellen graben.' },
   schwert: { name: 'Schwert', bild: '🗡️', werkzeug: true, text: 'Damit kannst du Bäume und Büsche fällen. Nutzt sich ab!' },
-  angel: { name: 'Angel', bild: '🎣', werkzeug: true, text: 'Stell dich an eine Angelstelle. Du brauchst Köder.' },
+  angel: { name: 'Angel', bild: '🎣', werkzeug: true, text: 'Stell dich an eine Angelstelle. Du brauchst Würmer als Köder.' },
   feuerzeug: { name: 'Feuerzeug', bild: '🔥', text: 'Damit zündest du das Lagerfeuer an. Hält 3 Mal.' },
   stein: { name: 'Stein', bild: '🪨', text: 'Ein ganz normaler Stein. Kann man im Dorf verkaufen.' },
   kohle: { name: 'Kohle', bild: '⚫', text: 'Schwarz und staubig. Brennt gut!' },
@@ -28,7 +28,8 @@ export const DINGE = {
   edelstein: { name: 'Edelstein', bild: '💎', text: 'Super selten! Du hast Glück gehabt.' },
   holz: { name: 'Holz', bild: '🪵', text: 'Fürs Lagerfeuer oder zum Bauen.' },
   brot: { name: 'Brot', bild: '🍞', essen: true, text: 'Eine Mahlzeit für einen Tag.' },
-  koeder: { name: 'Köder', bild: '🪱', text: 'Den brauchst du zum Angeln.' },
+  koeder: { name: 'Würmer', bild: '🪱', text: 'Köder zum Angeln. Findet man beim Graben oder beim Händler.' },
+  schnur: { name: 'Schnur', bild: '🧵', text: 'Aus dünnem Holz gebunden. Damit baust du eine Angel.' },
   tofufisch: { name: 'Tofu-Fisch', bild: '🐟', text: 'Roh schmeckt er nicht. Grill ihn am Lagerfeuer!' },
   gegrillterFisch: { name: 'Gegrillter Tofu-Fisch', bild: '<span class="gegrillt">🐟</span>', essen: true, text: 'Lecker! Eine Mahlzeit für einen Tag.' },
   schuh: { name: 'Alter Schuh', bild: '👞', text: 'Igitt, nass. Den willst du nicht anziehen.' },
@@ -176,6 +177,7 @@ export class Rucksack {
   essen(id) {
     this.nehmen(id, 1);
     this.beimEssen(id);
+    this.zeichnen();
   }
 
   wegwerfen(index, alle) {
