@@ -187,11 +187,12 @@ function zweig(von, nach, radius, seiten = 5) {
 
 // Stamm mit Wurzelansatz: unten wird er breiter und bekommt "Wurzel-Beulen"
 function baueStamm(oben, unten, hoehe, seiten, wurzeln, krumm, z) {
-  const stamm = new THREE.CylinderGeometry(oben, unten, hoehe, seiten, 7, true);
+  const stamm = new THREE.CylinderGeometry(oben, unten, hoehe, seiten, 4, true);
   const sp = stamm.attributes.position;
   const dreh = z() * 6.28;
   for (let i = 0; i < sp.count; i++) {
-    const y = sp.getY(i) + hoehe / 2;
+    // Die Ringe liegen unten dichter (da ist der Wurzelansatz)
+    const y = Math.pow(Math.max(0, (sp.getY(i) + hoehe / 2) / hoehe), 1.9) * hoehe;
     let x = sp.getX(i), zz = sp.getZ(i);
     const w = Math.atan2(zz, x);
     const fuss = Math.max(0, 1 - y / 1.1);
@@ -200,6 +201,7 @@ function baueStamm(oben, unten, hoehe, seiten, wurzeln, krumm, z) {
     x *= f;
     zz *= f;
     sp.setXYZ(i, x + Math.sin(y * 0.9) * krumm, y < 0.01 ? -0.3 : y, zz + Math.cos(y * 0.7) * krumm * 0.5);
+    stamm.attributes.uv.setY(i, y / hoehe); // Rinde nicht verzerren
   }
   stamm.computeVertexNormals();
   return stamm;
@@ -219,7 +221,7 @@ function holzFertig(teile, rindeMal) {
 function baueLaubbaumForm(z, art) {
   const hoch = art === 'hoch';
   const stammHoehe = hoch ? 4.4 : 3.3;
-  const holz = [baueStamm(hoch ? 0.15 : 0.2, hoch ? 0.3 : 0.38, stammHoehe, 10, hoch ? 4 : 5, 0.08, z)];
+  const holz = [baueStamm(hoch ? 0.15 : 0.2, hoch ? 0.3 : 0.38, stammHoehe, 8, hoch ? 4 : 5, 0.08, z)];
   const kronenMitte = new THREE.Vector3(0, hoch ? 6.0 : 4.7, 0);
   const radien = hoch ? new THREE.Vector3(1.9, 2.9, 1.9) : new THREE.Vector3(3.0, 2.2, 3.0);
   // Ein paar dicke Hauptäste, an denen kleinere Äste hängen.
@@ -234,7 +236,7 @@ function baueLaubbaumForm(z, art) {
       kronenMitte.y + (z() - 0.35) * radien.y * 0.9,
       Math.sin(w) * radien.z * (0.5 + z() * 0.2)
     );
-    holz.push(zweig(start, ende, hoch ? 0.1 : 0.13, 6));
+    holz.push(zweig(start, ende, hoch ? 0.1 : 0.13, 5));
     klumpen.push(ende);
     for (let j = 0; j < 2; j++) {
       const von = start.clone().lerp(ende, 0.45 + j * 0.3);
@@ -282,11 +284,11 @@ function baueLaubbaumForm(z, art) {
 function baueTannenForm(z, art) {
   const schlank = art === 'schlank';
   const H = schlank ? 9.2 : 7.5;
-  const stamm = baueStamm(0.07, schlank ? 0.26 : 0.3, H, 8, 4, 0.02, z);
+  const stamm = baueStamm(0.07, schlank ? 0.26 : 0.3, H, 7, 4, 0.02, z);
   const zweige = [];
   const kronenMitte = new THREE.Vector3(0, H * 0.48, 0);
   const q = new THREE.Quaternion(), e = new THREE.Euler();
-  const etagen = schlank ? 14 : 17;
+  const etagen = schlank ? 12 : 15;
   const unten = schlank ? 2.4 : 1.0;
   const breite = schlank ? 1.75 : 2.8;
   for (let et = 0; et < etagen; et++) {
@@ -589,11 +591,11 @@ function baueBuesche(gruppe) {
 function baueFarne(gruppe) {
   const z = zufallMitSeed(303);
   const wedel = [];
-  const anzahl = 7;
+  const anzahl = 5;
   for (let k = 0; k < anzahl; k++) {
     const w = (k / anzahl) * Math.PI * 2 + z() * 0.5;
     const laenge = 1.0 + z() * 0.35;
-    const geo = new THREE.PlaneGeometry(0.42, laenge, 1, 4);
+    const geo = new THREE.PlaneGeometry(0.46, laenge, 1, 2);
     geo.translate(0, laenge / 2, 0);
     const p = geo.attributes.position;
     const neigung = 0.55 + z() * 0.35; // wie schräg der Wedel startet
@@ -622,7 +624,7 @@ function baueFarne(gruppe) {
   }), 0.06, 0, 'farn', 0.015)), 34, 55, 0.5);
   const liste = [];
   const zz = zufallMitSeed(404);
-  for (let versuch = 0; versuch < 30000 && liste.length < 4500; versuch++) {
+  for (let versuch = 0; versuch < 30000 && liste.length < 3000; versuch++) {
     const [x, y] = zufallsPunkt(zz);
     const boden = gitterWerte(x, y);
     if (boden.hoehe < 2 || boden.hoehe > 16 || boden.wald < 0.45 || !istFrei(x, y, 2.5)) continue;
@@ -633,7 +635,7 @@ function baueFarne(gruppe) {
       farbe: new THREE.Color().setHSL(0.24 + zz() * 0.06, 0.4, 0.7 + zz() * 0.2),
     });
   }
-  gruppe.add(inStuecken(form, material, liste, { sichtweite: 60, schatten: false }));
+  gruppe.add(inStuecken(form, material, liste, { sichtweite: 30, schatten: false }));
 }
 
 // Kleine Steinchen im Gras und am Wegrand
@@ -650,7 +652,7 @@ function baueSteinchen(gruppe) {
   geo.computeVertexNormals();
   const z = zufallMitSeed(505);
   const liste = [];
-  for (let versuch = 0; versuch < 40000 && liste.length < 5000; versuch++) {
+  for (let versuch = 0; versuch < 40000 && liste.length < 2500; versuch++) {
     const [x, y] = zufallsPunkt(z);
     const boden = gitterWerte(x, y);
     if (boden.hoehe < 1.2 || boden.hoehe > 22 || !istFrei(x, y, 0)) continue;
@@ -663,7 +665,7 @@ function baueSteinchen(gruppe) {
       farbe: new THREE.Color().setScalar(0.75 + z() * 0.35),
     });
   }
-  gruppe.add(inStuecken(geo, felsMat, liste, { sichtweite: 45, schatten: false }));
+  gruppe.add(inStuecken(geo, felsMat, liste, { sichtweite: 25, schatten: false }));
 }
 
 // Blumen: Stiel, zwei Blättchen und eine flache Blüte mit Blütenblättern
@@ -768,7 +770,7 @@ function baueGras(gruppe) {
   };
   material.customProgramCacheKey = () => 'gras2';
   const liste = [];
-  for (let k = 0; k < 400000 && liste.length < 150000; k++) {
+  for (let k = 0; k < 400000 && liste.length < 138000; k++) {
     const [x, z] = zufallsPunkt();
     const boden = gitterWerte(x, z);
     const h = boden.hoehe;

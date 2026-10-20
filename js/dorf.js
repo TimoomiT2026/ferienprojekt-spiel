@@ -30,15 +30,22 @@ class Bausatz {
     this.teile = new Map();
   }
   // geo = Form, matrix = wohin, farbe = Tönung, uv = wie oft das Bild wiederholt wird
-  add(material, geo, matrix, { farbe = '#ffffff', uv = [1, 1] } = {}) {
+  // verlauf = [unten, oben]: unten dunkler, z. B. Schmutz und Schatten an der Hauswand
+  add(material, geo, matrix, { farbe = '#ffffff', uv = [1, 1], verlauf = null } = {}) {
     const g = geo.clone();
     for (const name of Object.keys(g.attributes)) if (!['position', 'normal', 'uv'].includes(name)) g.deleteAttribute(name);
     if (!g.attributes.uv) g.setAttribute('uv', new THREE.BufferAttribute(new Float32Array(g.attributes.position.count * 2), 2));
     const t = g.attributes.uv;
     for (let i = 0; i < t.count; i++) t.setXY(i, t.getX(i) * uv[0], t.getY(i) * uv[1]);
     const c = new THREE.Color(farbe);
-    const f = new Float32Array(g.attributes.position.count * 3);
-    for (let i = 0; i < f.length; i += 3) f.set([c.r, c.g, c.b], i);
+    const p = g.attributes.position;
+    const f = new Float32Array(p.count * 3);
+    if (!g.boundingBox) g.computeBoundingBox();
+    const { min, max } = g.boundingBox;
+    for (let i = 0; i < p.count; i++) {
+      const h = verlauf ? THREE.MathUtils.lerp(verlauf[0], verlauf[1], Math.sqrt((p.getY(i) - min.y) / (max.y - min.y || 1))) : 1;
+      f.set([c.r * h, c.g * h, c.b * h], i * 3);
+    }
     g.setAttribute('color', new THREE.BufferAttribute(f, 3));
     if (!g.index) g.setIndex([...Array(g.attributes.position.count).keys()]);
     g.applyMatrix4(matrix);
@@ -148,9 +155,9 @@ function huette(bs, m, platz, art, z) {
   const add = (material, geo, lokal, extra) => bs.add(material, geo, platz.clone().multiply(lokal), extra);
   const r = 2.65;
   // Steinsockel
-  add(m.stein, new THREE.CylinderGeometry(r + 0.12, r + 0.22, 0.45, 28, 1, true), M(V(0, 0.12, 0)), { farbe: '#b8b0a4', uv: [6, 0.3] });
+  add(m.stein, new THREE.CylinderGeometry(r + 0.12, r + 0.22, 0.45, 28, 1, true), M(V(0, 0.12, 0)), { farbe: '#b8b0a4', uv: [6, 0.3], verlauf: [0.6, 1] });
   // Wand aus hellem Putz (jede Hütte etwas anders getönt)
-  add(m.putz, new THREE.CylinderGeometry(r - 0.05, r, 2.7, 28, 1, true), M(V(0, 1.65, 0)), { farbe: art.wand, uv: [5, 1.4] });
+  add(m.putz, new THREE.CylinderGeometry(r - 0.05, r, 2.7, 28, 3, true), M(V(0, 1.65, 0)), { farbe: art.wand, uv: [5, 1.4], verlauf: [0.62, 1] });
   // Fachwerk: senkrechte Balken, Ringbalken oben und in der Mitte
   const balkenFarbe = '#8a6a50';
   const luecken = [0, 0.9, -0.9, Math.PI]; // da sind Tür und Fenster
