@@ -1,0 +1,68 @@
+/* =============================================================
+   DAS GROSSE FINALE – Konfetti + Dankeschön-Fenster
+   ============================================================= */
+
+/* Die Konfetti-Malfläche liegt über ALLEM, lässt aber Fingertipps durch */
+#finale-konfetti {
+  position: fixed; inset: 0; width: 100vw; height: 100vh; height: 100dvh;
+  z-index: 60; pointer-events: none;
+}
+
+/* Abgedunkelter Hintergrund wie bei der Vorgeschichte */
+#finale-fenster {
+  position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center;
+  padding: 12px; background: rgba(10, 20, 35, 0.55);
+  opacity: 0; transition: opacity 0.6s ease;
+}
+#finale-fenster.sichtbar { opacity: 1; }
+
+/* Das Tagebuch-Blatt (Grundform kommt aus .tagebuch in style.css) */
+#finale-fenster .finale-buch {
+  width: min(640px, 92vw);
+  max-height: calc(100vh - 24px); max-height: calc(100dvh - 24px);
+  overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+  border-color: #b8322a;
+  transform: scale(0.85); transition: transform 0.6s cubic-bezier(0.2, 1.4, 0.4, 1);
+}
+#finale-fenster.sichtbar .finale-buch { transform: scale(1); }
+
+/* Der rote, grell leuchtende Insadorium-Stein */
+.insadorium-stein {
+  width: 96px; height: 96px; margin: 4px auto 10px; border-radius: 50%; position: relative;
+  background: radial-gradient(circle at 35% 30%, #fff1ec 0%, #ff6b5a 18%, #e3121f 52%, #7a0010 100%);
+  box-shadow: 0 0 18px 6px rgba(255, 40, 40, 0.75), 0 0 50px 18px rgba(255, 60, 30, 0.45), inset -8px -10px 18px rgba(80, 0, 0, 0.55);
+  animation: insadorium-gluehen 1.6s ease-in-out infinite;
+}
+/* Ein kleiner Glanzpunkt, damit der Stein glitzert */
+.insadorium-stein span {
+  position: absolute; left: 24%; top: 18%; width: 22%; height: 16%; border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85); filter: blur(1px);
+}
+@keyframes insadorium-gluehen {
+  0%, 100% { box-shadow: 0 0 18px 6px rgba(255, 40, 40, 0.75), 0 0 50px 18px rgba(255, 60, 30, 0.45), inset -8px -10px 18px rgba(80, 0, 0, 0.55); transform: scale(1); }
+  50% { box-shadow: 0 0 28px 12px rgba(255, 70, 50, 0.95), 0 0 80px 30px rgba(255, 80, 40, 0.6), inset -8px -10px 18px rgba(80, 0, 0, 0.55); transform: scale(1.06); }
+}
+
+.finale-titel { font-size: 32px; line-height: 1.2; color: #b8322a; margin: 0 0 4px; }
+#finale-fenster .tb-text { font-size: 22px; }
+.finale-danke {
+  margin: 10px auto 6px; padding: 12px 18px; border-radius: 22px; max-width: 520px;
+  background: #ffe9a8; color: #6b3f17; font-size: 24px; font-weight: bold;
+}
+.finale-hinweis { font-size: 20px; color: #6a5a48; font-style: italic; margin: 6px 0 2px; }
+#finale-fenster .fenster-knopf { min-height: 64px; padding: 0 30px; font-size: 24px; border-radius: 32px; }
+
+/* Kleine Bildschirme (iPad quer mit Leisten): alles etwas kompakter */
+@media (max-height: 600px) {
+  .insadorium-stein { width: 64px; height: 64px; margin-bottom: 6px; }
+  .finale-titel { font-size: 26px; }
+  #finale-fenster .finale-buch { padding: 16px 22px 14px; }
+  #finale-fenster .tb-text { font-size: 20px; margin: 8px 0 4px; line-height: 1.4; }
+  .finale-danke { font-size: 21px; padding: 8px 14px; margin: 6px auto 4px; }
+}
+
+/* Wer wenig Bewegung mag: der Stein glüht ruhig, ohne Pulsieren */
+@media (prefers-reduced-motion: reduce) {
+  .insadorium-stein { animation: none; }
+  #finale-fenster .finale-buch { transition: none; transform: none; }
+}
