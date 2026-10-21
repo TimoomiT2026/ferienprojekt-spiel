@@ -328,6 +328,7 @@ button { font-family: inherit; cursor: pointer; }
 }
 .fenster-knopf.gelb { background: #ffb02e; }
 .fenster-knopf.gruen { background: #4caf50; }
+.fenster-knopf.gesperrt { background: #cbbfae !important; }
 .fenster-knopf.rot { background: #d9534f; }
 .fenster-knopf.blau { background: #3d7bff; }
 .fenster-knopf:disabled { background: #cbbfae; }

@@ -181,6 +181,25 @@ export const EINSTELLUNGEN = {
   // ---------- Musik ----------
   // Wie laut ist die Musik? (0 = aus, 1 = ganz laut)
   musikLautstaerke: 0.5,
+  // Nach wie vielen Minuten kommt tagsüber das nächste Klavierstück? (es gibt 3)
+  musikStueckMinuten: 3,
+  // Wie viele Sekunden dauert das weiche Überblenden zum nächsten Stück?
+  musikUeberblendSekunden: 4,
+
+  // ---------- Geräusche ----------
+  // Geräusche bleiben an, auch wenn die Musik aus ist.
+  // Wie laut sind alle Geräusche zusammen? (0 = aus, 1 = ganz laut)
+  geraeuscheLautstaerke: 0.5,
+  // Meeresrauschen, wenn man am Wasser ist
+  meerLautstaerke: 0.35,
+  // Rascheln in Büschen und im Gras
+  raschelnLautstaerke: 0.35,
+  // Platschen ins Wasser
+  wasserLautstaerke: 0.6,
+  // Angel-Geräusche (Surren, Blubb, Jubel)
+  angelLautstaerke: 1,
+  // Münzen und Kasse beim Händler
+  muenzenLautstaerke: 1,
 
   // ---------- Zauberpilze & Fliegen ----------
   // Wie viele Zauberpilze wachsen in den Wäldern?

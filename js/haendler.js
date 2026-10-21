@@ -54,6 +54,12 @@ export class Haendler {
     this.fenster.querySelector('.haendler-info').innerHTML = text;
   }
 
+  // Ein grauer Knopf wurde angetippt
+  gehtNicht() {
+    this.spiel.musik.gehtNicht();
+    if (this.seite === 'kaufen') this.info('„Dafür hast du nicht genug Münzen. Verkauf mir doch etwas!“');
+  }
+
   zeichnen() {
     const { rucksack } = this.spiel;
     this.fenster.querySelector('.geld').textContent = `🪙 ${rucksack.muenzen}`;
@@ -69,8 +75,10 @@ export class Haendler {
         const k = document.createElement('button');
         k.className = 'fenster-knopf gelb';
         k.textContent = text;
-        k.disabled = !aktiv;
-        knopf(k, () => aktiv && wasPassiert());
+        // Nicht "disabled": Dann hört man beim Antippen den "Geht nicht"-Ton
+        k.classList.toggle('gesperrt', !aktiv);
+        if (!aktiv) k.style.background = '#cbbfae';
+        knopf(k, () => (aktiv ? wasPassiert() : this.gehtNicht()));
         z.querySelector('.ware-knoepfe').appendChild(k);
       }
       liste.appendChild(z);
@@ -141,6 +149,7 @@ export class Haendler {
     if (EINSTELLUNGEN.kaufPreise[id] === undefined) return; // das verkauft der Händler nicht
     preis = EINSTELLUNGEN.kaufPreise[id];
     if (rucksack.muenzen < preis) {
+      musik.gehtNicht();
       this.info('„Dafür hast du nicht genug Münzen. Verkauf mir doch etwas!“');
       return;
     }
@@ -149,18 +158,21 @@ export class Haendler {
     if (upgrade) {
       rucksack.aendereMuenzen(-preis);
       rucksack.vergroessern(upgrade);
-      musik.pling();
+      musik.muenzen(Math.ceil(preis / 10)); // Münzen auf den Tisch legen …
+      musik.kasse(); // … Ka-tsching!
       this.info(`„Bitte schön! Dein neuer Rucksack hat ${upgrade} Plätze.“`);
       this.zeichnen();
       return;
     }
     if (!rucksack.passt(id)) {
+      musik.gehtNicht();
       this.info('„Dein Rucksack ist voll! Wirf etwas weg oder verkauf mir was.“');
       return;
     }
     rucksack.aendereMuenzen(-preis);
     rucksack.hinein(id);
-    musik.pling();
+    musik.muenzen(Math.ceil(preis / 10)); // Münzen auf den Tisch legen …
+    musik.kasse(); // … Ka-tsching!
     this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}!“`);
     this.zeichnen();
   }
@@ -170,6 +182,7 @@ export class Haendler {
     this.neuerTagPruefen();
     anzahl = Math.min(anzahl, rucksack.anzahl(id), EINSTELLUNGEN.haendlerKauftProTag - this.heuteGekauft);
     if (anzahl <= 0) {
+      musik.gehtNicht();
       this.info('„Für heute habe ich genug gekauft! Komm morgen wieder.“');
       return;
     }
@@ -178,7 +191,8 @@ export class Haendler {
     rucksack.aendereMuenzen(betrag);
     this.verkauftHeute[id] = (this.verkauftHeute[id] || 0) + anzahl;
     this.heuteGekauft += anzahl;
-    musik.pling();
+    musik.kasse(); // Ka-tsching …
+    setTimeout(() => musik.muenzen(Math.ceil(betrag / 5)), 250); // … und die Münzen klimpern zu dir
     this.info(`„Danke! Hier sind ${betrag} Münzen.“`);
     this.zeichnen();
   }

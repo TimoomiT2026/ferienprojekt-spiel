@@ -492,19 +492,22 @@ export class Angeln {
 
   // ---------- Der Aktions-Knopf "Angeln" ----------
   angeln(stelle) {
-    const { rucksack, meldung } = this.spiel;
+    const { rucksack, meldung, musik } = this.spiel;
     if (this.wurf) return;
     if (rucksack.inDerHand !== 'angel') {
+      musik.gehtNicht();
       meldung(rucksack.hat('angel')
         ? 'Nimm erst die Angel in die Hand: Rucksack 🎒 öffnen und die Angel antippen.'
         : 'Zum Angeln brauchst du eine Angel 🎣. Bau sie an der Werkbank: 2 Holz + 1 Schnur (Schnur = 2 Holz).', 5);
       return;
     }
     if (!rucksack.hat('koeder')) {
+      musik.gehtNicht();
       meldung('Du brauchst Würmer als Köder 🪱. Die findest du beim Graben oder beim Händler.', 5);
       return;
     }
     if (rucksack.istVoll()) {
+      musik.gehtNicht();
       meldung('Dein Rucksack ist voll! 🎒 Da passt kein Fang mehr rein.');
       return;
     }
@@ -522,6 +525,7 @@ export class Angeln {
     this.spitzePosition(this.wurf.start);
     this.schwimmer.visible = true;
     this.schnur.visible = true;
+    musik.angelAuswerfen(); // Wusch – die Rolle surrt
   }
 
   // Wo ist die Spitze der Angel gerade? (Dort hängt die Schnur)
@@ -595,6 +599,7 @@ export class Angeln {
           w.phase = 'warten';
           w.zeit = 0;
           this.schwimmerRing(0, ziel); // Platsch!
+          musik.platsch(0.45);
         }
       }
     } else if (w.phase === 'warten') {
@@ -603,7 +608,11 @@ export class Angeln {
       sp.y = ziel.y - 0.03 + Math.sin(w.zeit * 4) * 0.025;
       // Einmal kurz zucken – beißt da was? Noch nicht!
       const zucken = w.zeit / w.warten - w.zuckenBei;
-      if (zucken > 0 && zucken < 0.06) sp.y -= 0.08;
+      if (zucken > 0 && zucken < 0.06) {
+        sp.y -= 0.08;
+        if (!w.gezuckt) musik.angelBiss(0.4); // ein kleines Blubb – war da was?
+        w.gezuckt = true;
+      }
       arm += Math.sin(w.zeit * 1.5) * 0.05;
       this.maleSchnur(spitze, sp, 0.5);
       if (w.zeit >= w.warten) {
@@ -611,6 +620,7 @@ export class Angeln {
         w.zeit = 0;
         this.schwimmerRing(1, ziel);
         meldung('❗ Biss!', 1.2);
+        musik.angelBiss(); // Blubb blubb!
       }
     } else if (w.phase === 'biss') {
       // Der Schwimmer wird unter Wasser gezogen
@@ -624,6 +634,7 @@ export class Angeln {
         w.zeit = 0;
         this.schwimmer.visible = false;
         this.schwimmerRing(0, ziel);
+        musik.platsch(0.9); // Spritz – raus aus dem Wasser!
         this.fang.visible = true;
         for (const [id, modell] of Object.entries(this.fangModelle)) modell.visible = id === w.fund;
       }
@@ -652,10 +663,12 @@ export class Angeln {
     this.schwimmer.visible = false;
     this.wurf = null;
     if (!rucksack.hinein(fund)) {
+      musik.platsch(0.5);
+      musik.gehtNicht();
       meldung('Dein Rucksack ist voll! 🎒 Der Fang ist zurück ins Wasser geplumpst.', 4);
       return;
     }
-    musik.pling();
+    musik.angelFang(fund === 'tofufisch'); // Jubel oder Bäh
     const rest = rucksack.anzahl('koeder');
     const koederText = rest > 0 ? ` (noch ${rest} Köder 🪱)` : ' Das war dein letzter Köder 🪱.';
     meldung(FANG_TEXTE[fund] + koederText, 4);
@@ -703,6 +716,12 @@ export class Angeln {
           st.sprung = -1;
           st.spritzer = 0;
           st.spritzOrt = p.clone();
+          // Ist man in der Nähe, hört man den Fisch leise platschen
+          const figur = this.spiel.spieler && this.spiel.spieler.figur;
+          if (figur) {
+            const abstand = Math.hypot(p.x - figur.position.x, p.z - figur.position.z);
+            if (abstand < 18) this.spiel.musik.platsch(0.35 * (1 - abstand / 18));
+          }
         }
       } else {
         this.springer.setMatrixAt(i, m.compose(p.set(0, -50, 0), q.identity(), leer));

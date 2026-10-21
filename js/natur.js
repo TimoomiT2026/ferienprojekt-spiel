@@ -19,7 +19,7 @@ import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { fbm, zufallMitSeed } from './rauschen.js';
-import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, DORF } from './gelaende.js';
+import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, DORF, WASSER_HOEHE } from './gelaende.js';
 import { textur } from './texturen.js';
 
 const zufall = zufallMitSeed(42);
@@ -377,6 +377,43 @@ export function holzInDerNaehe(x, z) {
     }
   }
   return beste;
+}
+
+// ---------- Für die Geräusche ----------
+// Steht man in einem Busch? 0 = nein, 1 = mittendrin (dann raschelt es laut)
+export function buschInDerNaehe(x, z) {
+  const kx = Math.floor(x / 10), kz = Math.floor(z / 10);
+  let staerke = 0;
+  for (let dx = -1; dx <= 1; dx++) {
+    for (let dz = -1; dz <= 1; dz++) {
+      for (const h of holzGitter.get(`${kx + dx},${kz + dz}`) || []) {
+        if (h.weg || h.art !== 'busch') continue;
+        // Wie breit ist der Busch? (steht in seiner Matrix, einmal ausrechnen reicht)
+        if (h.radius === undefined) h.radius = Math.hypot(h.matrix.elements[0], h.matrix.elements[1], h.matrix.elements[2]) + 0.3;
+        const d = Math.hypot(h.x - x, h.z - z);
+        if (d < h.radius) staerke = Math.max(staerke, 1 - d / h.radius);
+      }
+    }
+  }
+  return Math.min(1, staerke * 1.5);
+}
+
+// Wie viel Gras und Farn wächst hier? 0 = nichts, 1 = dichte Wiese
+export function grasDichte(x, z) {
+  const boden = gitterWerte(x, z);
+  if (boden.hoehe < 1.6 || boden.hoehe > 20) return 0;
+  return Math.min(1, boden.wiese + boden.wald * 0.35) * (1 - boden.pfad);
+}
+
+// Wie nah ist Wasser? Wir schauen in 8 Richtungen nach (0 = weit weg, 1 = überall Wasser)
+export function wasserInDerNaehe(x, z, weite = 14) {
+  let nass = 0;
+  for (let k = 0; k < 8; k++) {
+    const w = (k / 8) * Math.PI * 2;
+    if (bodenHoehe(x + Math.sin(w) * weite, z + Math.cos(w) * weite) < WASSER_HOEHE) nass++;
+    if (bodenHoehe(x + Math.sin(w) * weite * 0.4, z + Math.cos(w) * weite * 0.4) < WASSER_HOEHE) nass++;
+  }
+  return Math.min(1, nass / 6);
 }
 
 // Ein Schlag mit dem Schwert. Gibt zurück, wie viel Holz man bekommt (0 = noch nicht umgefallen)

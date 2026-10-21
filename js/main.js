@@ -5,8 +5,8 @@
 // =============================================================
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { baueGelaende, bodenHoehe, DORF } from './gelaende.js';
-import { baueNatur, aktualisiereNatur, wenigerDetails } from './natur.js';
+import { baueGelaende, bodenHoehe, DORF, WASSER_HOEHE } from './gelaende.js';
+import { baueNatur, aktualisiereNatur, wenigerDetails, buschInDerNaehe, grasDichte, wasserInDerNaehe } from './natur.js';
 import { Hindernisse } from './hindernisse.js';
 import { Himmel } from './himmel.js';
 import { Wasser } from './wasser.js';
@@ -292,6 +292,7 @@ function bewegeKamera(dt, drehung, neigung) {
 const uhr = new THREE.Clock();
 let laeuft = false;
 let warNacht = false;
+let umgebungsUhr = 0, wasserNah = 0; // für Meeresrauschen & Rascheln
 
 // Automatische Qualität: Ruckelt es, rechnen wir mit etwas weniger Pixeln
 let bilderGezaehlt = 0, messZeit = 0;
@@ -387,6 +388,17 @@ function spielSchleife() {
   pferde.aktualisiere(dt, pos, himmel.helligkeit);
   pilze.aktualisiere(dt, pos);
   aktualisiereNatur(dt, pos);
+  // Geräusche der Umgebung: Meer, Rascheln im Busch, Platschen im Wasser
+  umgebungsUhr -= dt;
+  if (umgebungsUhr <= 0) { umgebungsUhr = 0.25; wasserNah = wasserInDerNaehe(pos.x, pos.z); } // nur 4× pro Sekunde
+  const zuFuss = laeuft && !spieler.fliegt && !boote.faehrt && !pferde.reitet && !angeln.beschaeftigt;
+  musik.umgebung({
+    wasserNaehe: wasserNah,
+    imGebuesch: zuFuss ? buschInDerNaehe(pos.x, pos.z) : 0,
+    imGras: zuFuss ? grasDichte(pos.x, pos.z) : 0,
+    watet: zuFuss && bodenHoehe(pos.x, pos.z) < WASSER_HOEHE,
+    tempo: zuFuss ? spieler.tempoJetzt : 0,
+  });
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
   base.aktualisiere(dt, himmel.helligkeit);
   spieler.laterne.intensity = (1 - himmel.helligkeit) * 14;
