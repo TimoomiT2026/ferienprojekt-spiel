@@ -167,6 +167,7 @@ const karte = new Karte(spielfeld);
 karte.beiInselEntdeckt = (name) => {
   meldung(`🏝️ Neue Insel entdeckt: ${name}!`, 4);
   if (name === 'Palmeninsel') zeigePalmendorf();
+  zeigeAngelstellen();
 };
 // Das Palmendorf erscheint auf der Karte, sobald man die Palmeninsel entdeckt hat
 function zeigePalmendorf() {
@@ -181,7 +182,12 @@ karte.punkt('zelt', { name: 'Base', bild: '🏠', x: base.ort.x, z: base.ort.z }
 karte.punkt('werkbank', { name: 'Werkbank', bild: '🔨', x: werkbank.ort.x, z: werkbank.ort.z });
 karte.punkt('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z });
 karte.beiZielErreicht = (ziel) => meldung(`${ziel.bild} Du bist da: ${ziel.name}!`, 4);
-angeln.positionen.forEach((p, i) => karte.punkt(`angel${i}`, { name: 'Angelstelle', bild: '🎣', x: p.x, z: p.z }));
+// Angelstellen auf der Karte – auf neuen Inseln erst, wenn man die Insel entdeckt hat
+const zeigeAngelstellen = () => angeln.positionen.forEach((p, i) => karte.punkt(`angel${i}`, {
+  name: 'Angelstelle', bild: '🎣', x: p.x, z: p.z,
+  sichtbar: !p.insel || p.insel === 'Startinsel' || karte.entdeckteInseln.includes(p.insel),
+}));
+zeigeAngelstellen();
 // Boote erscheinen erst auf der Karte, wenn man sie entdeckt hat
 boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild: '🚣', x: b.x, z: b.z, sichtbar: false }));
 // ---------- Pferde ----------
@@ -223,6 +229,7 @@ rucksack.beimBenutzen = (id) => {
   meldung('✨ Du kannst fliegen! Sprungknopf festhalten = höher, 🛬 = landen.', 5);
 };
 spieler.beiFlugWarnung = (s) => meldung(`⏳ Noch ${s} Sekunden, dann landest du!`, 4);
+spieler.beiWind = () => meldung('🌬️ Puh, über der Klippe weht ein starker Wind! Da kommst du nur mit der Seilkanone hoch.', 5);
 spieler.beiFlugEnde = (selbst) => meldung(selbst ? '🛬 Du landest.' : '🍄 Der Zauber ist vorbei – du schwebst runter.', 4);
 
 // ---------- Tutorial: Erklär-Blasen beim ersten Mal ----------
@@ -573,6 +580,7 @@ function wendeSpielstandAn(s) {
     bewohner.ladeDaten(s.bewohner);
     palmendorf.ladeDaten(s.palmendorf || {});
     if (karte.entdeckteInseln.includes('Palmeninsel')) zeigePalmendorf();
+    zeigeAngelstellen();
     ballonTag = tageszeit.tag;
     finale.ladeDaten(s.finale || {});
     ladeGefaellte(s.gefaellt);
