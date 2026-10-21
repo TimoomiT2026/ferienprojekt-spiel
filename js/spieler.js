@@ -6,7 +6,7 @@
 // =============================================================
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { bodenHoehe, WASSER_HOEHE, zuSteilBergauf, istKlippenWand } from './gelaende.js';
+import { bodenHoehe, WASSER_HOEHE, zuSteilBergauf, istKlippenWand, wasserHoeheBei } from './gelaende.js';
 import { baueSchaufel, baueSchwert } from './figur.js';
 import { baueJunge, BEIN_LAENGE } from './junge.js';
 
@@ -159,7 +159,7 @@ export class Spieler {
 
   // Darf man hier landen? (fester Boden, kein Baum, kein Wasser)
   kannLanden(x, z) {
-    return bodenHoehe(x, z) > WASSER_HOEHE + 0.3 && this.kannStehen(x, z) && !istKlippenWand(x, z);
+    return bodenHoehe(x, z) > wasserHoeheBei(x, z) + 0.3 && this.kannStehen(x, z) && !istKlippenWand(x, z);
   }
 
   // Sucht in immer größeren Kreisen den nächsten Platz zum Landen
@@ -318,7 +318,8 @@ export class Spieler {
   }
 
   kannStehen(x, z) {
-    return bodenHoehe(x, z) > WASSER_HOEHE - 0.5 && !this.hindernisse.trifft(x, z, 0.4);
+    // Nicht ins tiefe Wasser (Meer oder Lagune) – am flachen Rand darf man waten
+    return bodenHoehe(x, z) > wasserHoeheBei(x, z) - 0.5 && !this.hindernisse.trifft(x, z, 0.4);
   }
 
   schwingen() {

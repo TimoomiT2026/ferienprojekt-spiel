@@ -6,17 +6,28 @@
 //  So findet man das Zelt immer wieder!
 // =============================================================
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, WASSER_HOEHE, WELT, INSELN } from './gelaende.js';
+import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, WASSER_HOEHE, WELT, INSELN, aufWelcherInsel } from './gelaende.js';
 import { knopf } from './steuerung.js';
 
-// Die Karte zeigt ALLE Inseln: ein Quadrat um die ganze Inselgruppe.
-// BEREICH = wie viele Meter von der Kartenmitte bis zum Rand, MX/MZ = Kartenmitte
-const BEREICH = WELT.halb;
-const MX = WELT.mitteX, MZ = WELT.mitteZ;
-// Wie viele Pixel hat das Kartenbild? (mehr = schärfer, aber langsamer)
-const BILD_PIXEL = 1024;
-// An wie vielen Punkten messen wir die Höhe? (dazwischen wird gemischt)
-const MESS_PUNKTE = 401;
+// Die Karte hat zwei Ansichten:
+//  • "Diese Insel": nur die Insel, auf der man ist (schön groß, wie früher)
+//  • "Alle Inseln": die ganze Inselgruppe (unentdeckte Inseln sind unter Wolken)
+// BEREICH = Meter von der Kartenmitte bis zum Rand, MX/MZ = Kartenmitte,
+// BILD_PIXEL = Pixel im Bild (mehr = schärfer, aber langsamer),
+// MESS_PUNKTE = an so vielen Punkten messen wir die Höhe (dazwischen wird gemischt)
+const ANSICHTEN = {
+  gruppe: { mx: WELT.mitteX, mz: WELT.mitteZ, bereich: WELT.halb, pixel: 1024, punkte: 401 },
+};
+INSELN.forEach((I, i) => {
+  ANSICHTEN[I.name] = i === 0
+    ? { mx: 0, mz: 0, bereich: EINSTELLUNGEN.inselGroesse + 70, pixel: 768, punkte: 241 } // genau wie früher
+    : { mx: I.x, mz: I.z, bereich: I.reichweite + 30, pixel: 768, punkte: 241 };
+});
+let BEREICH, MX, MZ, BILD_PIXEL, MESS_PUNKTE;
+function waehleAnsicht(a) {
+  ({ bereich: BEREICH, mx: MX, mz: MZ, pixel: BILD_PIXEL, punkte: MESS_PUNKTE } = a);
+}
+waehleAnsicht(ANSICHTEN.Startinsel);
 // Die Startinsel (bis hier gibt es Pfad und Dorf)
 const START_BEREICH = EINSTELLUNGEN.inselGroesse * 1.3;
 // Auf welcher Insel liegt (x, z)? 0 = Startinsel oder Meer, 1, 2, … = neue Inseln
@@ -245,10 +256,12 @@ function maleBaeume(ctx, wald, hoehe, N, insel) {
 function maleVerzierung(ctx, P) {
   const proMeter = P / (BEREICH * 2);
 
-  // Feines Gitter alle 100 Meter (wie Längen- und Breitengrade)
+  // Feines Gitter alle 50 Meter (bei allen Inseln: 100 m) – wie Längen- und Breitengrade
   ctx.strokeStyle = 'rgba(90, 60, 30, 0.13)';
   ctx.lineWidth = 1;
-  for (let m = -Math.floor(BEREICH / 100) * 100; m <= BEREICH; m += 100) {
+  const gross = BEREICH > 400;
+  const gitter = gross ? 100 : 50;
+  for (let m = -Math.ceil((BEREICH + Math.abs(MX) + Math.abs(MZ)) / gitter) * gitter; m <= BEREICH + Math.abs(MX) + Math.abs(MZ); m += gitter) {
     const px = (m - MX + BEREICH) * proMeter, pz = (m - MZ + BEREICH) * proMeter;
     ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, P); ctx.stroke();
     ctx.beginPath(); ctx.moveTo(0, pz); ctx.lineTo(P, pz); ctx.stroke();
@@ -259,7 +272,7 @@ function maleVerzierung(ctx, P) {
   ctx.strokeStyle = 'rgba(230, 245, 245, 0.55)';
   ctx.lineWidth = 2;
   ctx.lineCap = 'round';
-  for (let n = 0; n < 120; n++) {
+  for (let n = 0; n < (gross ? 120 : 40); n++) {
     const x = zufall() * P, y = zufall() * P;
     const mx = x / proMeter - BEREICH + MX, mz = y / proMeter - BEREICH + MZ;
     if (bodenHoehe(mx, mz) > -5 || bodenHoehe(mx + 10, mz) > -5) continue;
@@ -310,8 +323,8 @@ function maleVerzierung(ctx, P) {
   }
   ctx.restore();
 
-  // Maßstab unten links: 100 Meter
-  const lang = 100 * proMeter;
+  // Maßstab unten links: 50 Meter (bei allen Inseln: 100 m)
+  const lang = gitter * proMeter;
   const mx = 26, my = P - 30;
   ctx.fillStyle = 'rgba(245, 232, 200, 0.85)';
   ctx.fillRect(mx - 8, my - 24, lang + 16, 38);
@@ -323,7 +336,7 @@ function maleVerzierung(ctx, P) {
   ctx.font = 'bold 14px Georgia, serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('100 m', mx + lang / 2, my - 7);
+  ctx.fillText(`${gitter} m`, mx + lang / 2, my - 7);
 
   // Verbrannter, dunkler Papierrand
   const rand = ctx.createRadialGradient(P / 2, P / 2, P * 0.42, P / 2, P / 2, P * 0.74);
@@ -422,10 +435,11 @@ export class Karte {
     this.fenster.innerHTML = `
       <div class="fenster-kopf">
         <h2>🗺️ Inselkarte</h2>
+        <button id="karte-ansicht" style="margin-left:auto;margin-right:10px;padding:8px 14px;border:none;border-radius:14px;background:#c9a877;color:#4a2c10;font:bold 17px inherit;box-shadow:0 3px 0 #8a6a40">🌍 Alle Inseln</button>
         <button id="karte-zu" aria-label="Karte schließen">✕</button>
       </div>
       <div id="karte-blatt">
-        <canvas id="karte-bild"></canvas>
+        <canvas id="karte-bild" data-ansicht="Startinsel"></canvas>
         <canvas id="karte-nebel" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
         <svg id="karte-linie" viewBox="0 0 1000 1000" preserveAspectRatio="none">
           <line x1="0" y1="0" x2="0" y2="0" />
@@ -440,7 +454,11 @@ export class Karte {
     elternElement.appendChild(this.fenster);
     this.blatt = this.fenster.querySelector('#karte-blatt');
     this.nebel = this.fenster.querySelector('#karte-nebel');
-    maleNebel(this.nebel, this.entdeckt);
+    this.bilder = { Startinsel: this.fenster.querySelector('#karte-bild') }; // ein gemaltes Bild pro Ansicht
+    this.ansicht = 'Startinsel';
+    this.ansichtKnopf = this.fenster.querySelector('#karte-ansicht');
+    knopf(this.ansichtKnopf, () => this.zeigeAnsicht(this.ansicht === 'gruppe' ? this.inselHier() || 'Startinsel' : 'gruppe'));
+    this.nebel.style.display = 'none';
     this.punkteEbene = this.fenster.querySelector('#karte-punkte');
     this.ichElement = this.fenster.querySelector('#karte-ich');
     this.linie = this.fenster.querySelector('#karte-linie line');
@@ -478,16 +496,47 @@ export class Karte {
     // ---------- Die Insel einmal malen ----------
     // Das dauert fast eine halbe Sekunde. Darum malen wir kurz nach dem Laden
     // (dann ist noch der Startbildschirm da) – oder spätestens beim ersten Öffnen.
-    this.gemalt = false;
+    this.gemalt = new Set();
     setTimeout(() => this.maleEinmal(), 300);
   }
 
-  maleEinmal() {
-    if (this.gemalt) return;
-    this.gemalt = true;
+  // Jede Ansicht wird nur einmal gemalt (beim ersten Anschauen)
+  maleEinmal(name = this.ansicht) {
+    if (this.gemalt.has(name)) return;
+    this.gemalt.add(name);
+    let bild = this.bilder[name];
+    if (!bild) {
+      bild = this.bilder[name] = document.createElement('canvas');
+      bild.style.cssText = 'width:100%;height:100%;display:none';
+      this.bilder.Startinsel.after(bild);
+    }
     const start = performance.now();
-    maleKarte(this.fenster.querySelector('#karte-bild'));
+    waehleAnsicht(ANSICHTEN[name]);
+    maleKarte(bild);
+    waehleAnsicht(ANSICHTEN[this.ansicht]);
     this.malDauer = Math.round(performance.now() - start); // für Tests: wie lange hat's gedauert?
+  }
+
+  // Auf welcher Insel ist man gerade? (Name oder null = auf dem Meer)
+  inselHier() {
+    return aufWelcherInsel(this.spieler.x, this.spieler.z);
+  }
+
+  // Zwischen "Diese Insel" und "Alle Inseln" umschalten
+  zeigeAnsicht(name) {
+    if (!ANSICHTEN[name]) return;
+    this.ansicht = name;
+    this.maleEinmal(name);
+    waehleAnsicht(ANSICHTEN[name]);
+    for (const [n, bild] of Object.entries(this.bilder)) bild.style.display = n === name ? 'block' : 'none';
+    const gruppe = name === 'gruppe';
+    this.nebel.style.display = gruppe ? 'block' : 'none';
+    if (gruppe) maleNebel(this.nebel, this.entdeckt);
+    this.ansichtKnopf.textContent = gruppe ? '🏝️ Diese Insel' : '🌍 Alle Inseln';
+    this.fenster.querySelector('h2').textContent = gruppe ? '🗺️ Alle Inseln' : `🗺️ ${name === 'Startinsel' ? 'Inselkarte' : name}`;
+    // Alle Punkte neu hinsetzen
+    for (const [id, p] of this.punkte) this.punkt(id, p);
+    this.zeichneSpieler();
   }
 
   // Welt-Meter → Prozent auf der Karte (Norden = oben)
@@ -501,7 +550,7 @@ export class Karte {
   entdeckeInsel(name) {
     if (this.entdeckt.has(name) || !INSELN.some((I) => I.name === name)) return false;
     this.entdeckt.add(name);
-    maleNebel(this.nebel, this.entdeckt);
+    if (this.ansicht === 'gruppe') maleNebel(this.nebel, this.entdeckt);
     if (this.beiInselEntdeckt) this.beiInselEntdeckt(name);
     return true;
   }
@@ -513,7 +562,7 @@ export class Karte {
 
   ladeEntdeckteInseln(liste) {
     this.entdeckt = new Set((liste || []).filter((n) => INSELN.some((I) => I.name === n)));
-    maleNebel(this.nebel, this.entdeckt);
+    if (this.ansicht === 'gruppe') maleNebel(this.nebel, this.entdeckt);
   }
 
   // Einen Punkt auf die Karte setzen (oder ändern)
@@ -569,7 +618,9 @@ export class Karte {
   }
 
   oeffnen() {
-    this.maleEinmal();
+    // Die Karte zeigt die Insel, auf der man gerade ist – auf dem Meer alle Inseln
+    const hier = this.inselHier();
+    this.zeigeAnsicht(hier && (hier === 'Startinsel' || this.entdeckt.has(hier)) ? hier : 'gruppe');
     this._offen = true;
     this.zeichneSpieler();
     this.fenster.classList.add('offen');

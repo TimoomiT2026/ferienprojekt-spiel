@@ -80,7 +80,8 @@ const NEUE_INSELN = (EINSTELLUNGEN.inseln || []).map((e) => {
 
 // Klippeninsel: oben ein Plateau, rundherum eine fast senkrechte Felswand.
 // In den Buchten liegt unten ein kleiner Strand.
-function klippenHoehe(I, dx, dz, d) {
+// Wo ist die Felswand in dieser Richtung? (oben = Kante, fuss = unten, bucht = 0 … 1)
+function klippenWand(I, dx, dz) {
   const w = Math.atan2(dz, dx);
   const s = I.seed, c = Math.cos(w), n = Math.sin(w);
   // Wie stark ist hier eine Bucht? (0 = keine, 1 = mitten in der Bucht)
@@ -90,7 +91,12 @@ function klippenHoehe(I, dx, dz, d) {
   // Zacken in der Wand: Felsrippen von oben nach unten
   const zacken = (fbm(c * 7 + s, n * 7 - s, 3, s + 3) - 0.5) * 5;
   const oben = kueste - 4 - bucht * I.buchtTiefe + zacken; // Kante oben
-  const fuss = oben + I.wandBreite; // Fuß der Wand unten
+  return { oben, fuss: oben + I.wandBreite, bucht };
+}
+
+function klippenHoehe(I, dx, dz, d) {
+  const { oben, fuss, bucht } = klippenWand(I, dx, dz);
+  const s = I.seed;
   const fussHoehe = THREE.MathUtils.lerp(-2.5, 1.5, bucht); // in der Bucht: Strand
   if (d > fuss) {
     // Vor der Wand: Strand (in der Bucht) und dann ab ins tiefe Meer
@@ -139,6 +145,10 @@ function inselGewichte(I, x, z, y, steil) {
   if (I.klippen) {
     // An der Klippe ist schon ein bisschen schräg = Fels (sonst gibt es Sand-Zacken an der Wand)
     fels = Math.max(fels, S(steil, 0.08, 0.16) * S(y, 1.0, 2.2));
+    // Die ganze Wand (von der Kante bis kurz vor dem Fuß) ist Fels
+    const dx = x - I.x, dz = z - I.z, d = Math.hypot(dx, dz);
+    const wand = klippenWand(I, dx, dz);
+    if (d > wand.oben - 0.5 && d < wand.fuss + 1.5) fels = 1;
     sand = 1 - S(y + wackel * 0.5, 1.1, 2.0);
     // Ein Sandufer rund um die Lagune
     const L = I.lagune;
@@ -168,6 +178,15 @@ export function aufWelcherInsel(x, z) {
   if (Math.hypot(x, z) < R * 1.25) return 'Startinsel';
   const I = neueInselBei(x, z);
   return I ? I.name : null;
+}
+
+// Wie hoch steht das Wasser an (x, z)? Meer = WASSER_HOEHE (0), in der Lagune oben auf dem Plateau höher.
+export function wasserHoeheBei(x, z) {
+  for (const I of NEUE_INSELN) {
+    const L = I.lagune;
+    if (L && Math.abs(x - L.x) < L.radius * 1.15 && Math.abs(z - L.z) < L.radius * 1.15 && Math.hypot(x - L.x, z - L.z) < L.radius * 1.15) return L.wasserHoehe;
+  }
+  return WASSER_HOEHE;
 }
 
 // Ist das eine Klippen-Felswand? (Da kann man nicht hochlaufen und nicht aussteigen)

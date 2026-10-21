@@ -141,12 +141,12 @@ export class Ballon {
 
     // ---------- Die Ziele ----------
     this.ziele = [];
-    this.ziel('base', { name: 'Base', bild: '🏠', ...E().basePlatz, genau: true, freigeschaltet: true });
-    this.ziel('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z, radius: DORF.radius, freigeschaltet: true });
+    this.ziel('base', { name: 'Base', bild: '🏠', wohin: 'zur Base', ...E().basePlatz, genau: true, freigeschaltet: true });
+    this.ziel('dorf', { name: 'Dorf', bild: '🏘️', wohin: 'ins Dorf', x: DORF.x, z: DORF.z, radius: DORF.radius, freigeschaltet: true });
     // Das Palmendorf kennt man erst, wenn man es entdeckt hat (main.js schaltet es frei)
     const palme = (EINSTELLUNGEN.inseln || []).find((i) => i.dorfPlatz && /palm/i.test(i.name));
     this.ziel('palmendorf', {
-      name: 'Palmendorf', bild: '🌴',
+      name: 'Palmendorf', bild: '🌴', wohin: 'ins Palmendorf',
       x: palme ? palme.x + palme.dorfPlatz.x : 0, z: palme ? palme.z + palme.dorfPlatz.z : 0,
       radius: palme ? palme.dorfPlatz.radius : 18,
       freigeschaltet: false,
@@ -194,7 +194,7 @@ export class Ballon {
   }
 
   // ---------- Ziele hinzufügen oder freischalten ----------
-  // daten: { name, bild, x, z, radius?, freigeschaltet? }
+  // daten: { name, bild, wohin ('ins Dorf'), x, z, radius?, freigeschaltet? }
   //   radius → (x, z) ist die Mitte eines Dorfes, gelandet wird am Rand davon
   //   ohne radius → gelandet wird möglichst genau bei (x, z)
   ziel(id, daten = {}) {
@@ -407,7 +407,7 @@ export class Ballon {
     this.pflock.visible = this.halteSeil.visible = false; // Leine los!
     if (this.hindernis) this.hindernisse.entfernen(this.hindernis), (this.hindernis = null);
     spieler.geschwindigkeitY = 0;
-    this.spiel.meldung?.(`🎈 Los geht's zum ${ziel.name}!`, 4);
+    this.spiel.meldung?.(`🎈 Los geht's ${ziel.wohin || 'nach ' + ziel.name}!`, 4);
     this.fauchen(1.2);
   }
 
