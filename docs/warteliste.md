@@ -39,6 +39,10 @@ Entscheidungen vom Game Designer (Tag 3):
 - Seilkanone: Seil = 3 Schnüre, Widerhaken = 2 Eisenerz + 1 Stein, Seilkanone = 4 Holz + 3 Eisenerz + Seil + Widerhaken (Werkbank)
 - Heißluftballon: 150 Münzen beim Händler, Ziel aussuchen (Dorf, Palmendorf, Base); er fliegt jeden Morgen von selbst zurück zur Base
 - Karotten gibt es nur aus dem eigenen Garten (bleibt so)
+- Mit dem Zauberpilz kommt man **nicht** aufs Klippen-Plateau (starker Wind) – nur mit der Seilkanone
+- Neue Inseln bekommen eigene Grabehügel: Palmeninsel = Muscheln 🐚 & Kokosnüsse 🥥 (zum Verkaufen), Klippen-Plateau = mehr Eisen & Gold; dazu je 2 Angelstellen
+- Durchs Fernrohr verschwindet der Dunst, so entdeckt man die Inseln
+- Die wertvollen Münz-Hügel glitzern golden; die Klippen-Münze liegt oben auf dem Plateau
 
 - [ ] Inselgruppe: mehrere Inseln mit anderen Materialien, Dörfern und Händlern
 - [ ] Hohe Klippen an den anderen Inseln
