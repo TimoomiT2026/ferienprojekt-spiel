@@ -435,7 +435,7 @@ export class Karte {
     this.fenster.innerHTML = `
       <div class="fenster-kopf">
         <h2>🗺️ Inselkarte</h2>
-        <button id="karte-ansicht" style="margin-left:auto;margin-right:10px;padding:8px 14px;border:none;border-radius:14px;background:#c9a877;color:#4a2c10;font:bold 17px inherit;box-shadow:0 3px 0 #8a6a40">🌍 Alle Inseln</button>
+        <button id="karte-ansicht" style="margin-left:auto;margin-right:10px;padding:8px 14px;border:none;border-radius:14px;background:#c9a877;color:#4a2c10;font:bold 15px inherit;white-space:nowrap;box-shadow:0 3px 0 #8a6a40">🌍 Alle Inseln</button>
         <button id="karte-zu" aria-label="Karte schließen">✕</button>
       </div>
       <div id="karte-blatt">
@@ -584,10 +584,20 @@ export class Karte {
     const ort = this.aufKarte(x, z);
     p.knopf.style.left = `${ort.links}%`;
     p.knopf.style.top = `${ort.oben}%`;
-    p.knopf.hidden = !sichtbar;
+    p.knopf.hidden = !sichtbar || !this.gehoertZurAnsicht(id, x, z);
     // Wird das Ziel unsichtbar, hört die Navigation auf
     if (!sichtbar && this.ziel === id) this.navigationAus();
     this.zeichneZiel();
+  }
+
+  // Zeigen wir diesen Punkt in der aktuellen Ansicht?
+  // "Diese Insel": nur Punkte auf dieser Insel. "Alle Inseln": die Startinsel ist dann
+  // so klein, dass dort nur die Base gezeigt wird. Das Navigationsziel sieht man immer.
+  gehoertZurAnsicht(id, x, z) {
+    if (!this.ansicht || id === this.ziel) return true;
+    const insel = aufWelcherInsel(x, z);
+    if (this.ansicht === 'gruppe') return insel !== 'Startinsel' || id === 'zelt';
+    return insel === this.ansicht || (insel === null && Math.hypot(x - ANSICHTEN[this.ansicht].mx, z - ANSICHTEN[this.ansicht].mz) < ANSICHTEN[this.ansicht].bereich);
   }
 
   punktAngetippt(id) {
