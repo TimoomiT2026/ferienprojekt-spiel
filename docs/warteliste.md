@@ -50,6 +50,18 @@ Entscheidungen vom Game Designer (Tag 3):
 - [ ] Heißluftballon (Händler): an der Base doppelt antippen → sofort ins Dorf
 - [ ] Das **Insadorium** finden (so heißt das geheime Material!): ein **roter Stein**, der so grell leuchtet, dass man fast nicht hinschauen kann. Er liegt **unter Wasser**. Wer ihn findet: Ziel erreicht! Konfetti über den ganzen Bildschirm + Dankeschön-Nachricht fürs Spielen, danach frei weiterspielen (Open World).
 
+**Etappe 4 · Wochenmarkt & Inselzeitung** (Idee vom Game Designer, nach Etappe 3)
+- [ ] **Wochenmarkt** einmal pro Woche
+  - [ ] Obst- & Gemüsestand: günstigere Angebote
+  - [ ] Kaffeestand ☕: Kaffee = einmal nicht schlafen müssen (ca. 15 Münzen, Luxus)
+  - [ ] Limonadenstand 🍋: „Nacht-Limo“ in den Rucksack; trinken = diese eine Nacht wird taghell, macht aber müde. Mit Kaffee zusammen: wach + helle Nacht. Luxus – schwer leistbar, aber möglich
+  - [ ] Stein-, Metall- & Edelsteinhändler: Edelsteine, Goldnuggets, Eisenerz, Kohle zu okayen Preisen
+- [ ] **Challenge: Zauberpilz-Rallye** 🚣 (Teilnahme 10 Münzen, Gewinn 50 Münzen)
+  - [ ] Alle starten in Booten auf dem Wasser, feste abgesteckte Rennstrecke, breit genug zum Überholen
+  - [ ] Zu schnell in die Kurve → man treibt aus der Bahn und wird langsamer; nur in der Strecke volles Tempo
+  - [ ] KI-Gegner: nicht schlecht, aber nicht unrealistisch gut
+- [ ] **Briefkasten an der Base** 📬: einmal pro Woche morgens die **Inselgruppen-Zeitung** – lustige Bilder von Menschen und Tieren der Insel in skurrilen Situationen, Angebote vom Wochenmarkt, Ergebnis und Sieger der letzten Challenge
+
 ## Vor Etappe 3 (Feedback Tag 3)
 - [x] Tofu-Fische sind bunt statt weiß
 - [x] Weniger Münzen für die ersten Aufgaben, frühe Aufgabe „Handeln“
