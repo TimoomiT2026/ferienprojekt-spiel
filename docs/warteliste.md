@@ -44,11 +44,11 @@ Entscheidungen vom Game Designer (Tag 3):
 - Durchs Fernrohr verschwindet der Dunst, so entdeckt man die Inseln
 - Die wertvollen Münz-Hügel glitzern golden; die Klippen-Münze liegt oben auf dem Plateau
 
-- [ ] Inselgruppe: mehrere Inseln mit anderen Materialien, Dörfern und Händlern
-- [ ] Hohe Klippen an den anderen Inseln
-- [ ] Seilkanone bauen (Holz, Eisen, Seil, Widerhaken) – schwer zu schaffen!
-- [ ] Heißluftballon (Händler): an der Base doppelt antippen → sofort ins Dorf
-- [ ] Das **Insadorium** finden (so heißt das geheime Material!): ein **roter Stein**, der so grell leuchtet, dass man fast nicht hinschauen kann. Er liegt **unter Wasser**. Wer ihn findet: Ziel erreicht! Konfetti über den ganzen Bildschirm + Dankeschön-Nachricht fürs Spielen, danach frei weiterspielen (Open World).
+- [x] Inselgruppe: mehrere Inseln mit anderen Materialien, Dörfern und Händlern
+- [x] Hohe Klippen an den anderen Inseln
+- [x] Seilkanone bauen (Holz, Eisen, Seil, Widerhaken) – schwer zu schaffen!
+- [x] Heißluftballon (Händler): an der Base doppelt antippen → sofort ins Dorf
+- [x] Das **Insadorium** finden (so heißt das geheime Material!): ein **roter Stein**, der so grell leuchtet, dass man fast nicht hinschauen kann. Er liegt **unter Wasser**. Wer ihn findet: Ziel erreicht! Konfetti über den ganzen Bildschirm + Dankeschön-Nachricht fürs Spielen, danach frei weiterspielen (Open World).
 
 **Etappe 4 · Wochenmarkt & Inselzeitung** (Idee vom Game Designer, nach Etappe 3)
 - [ ] **Wochenmarkt** einmal pro Woche
@@ -83,7 +83,7 @@ Entscheidungen vom Game Designer (Tag 3):
 - [ ] **Schienen und eine kleine Minenbahn**, damit man schneller unten in die Mine kommt
 - [ ] Dorfbewohner, die herumlaufen (KI-gesteuert)
 - [ ] Kleidung: Hüte, Hemden
-- [ ] Fliegen
+- [x] ~~Fliegen~~ (Zauberpilze!)
 - [x] ~~Boote~~ (fertig!) – Floß und größere Schiffe kommen vielleicht noch
 - [ ] Burg und Schatztruhen finden
 - [ ] Höhlen mit Fackeln

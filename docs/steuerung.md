@@ -49,3 +49,13 @@ Wenn nichts zu hören ist: Lautstärke hochdrehen und prüfen, ob das iPad auf *
 - **Nachts** schläft der Händler. Handeln geht nur am Tag.
 - **Zauberpilze 🍄:** leuchten im Wald (nachts besser zu sehen). Im Rucksack „✨ Essen“: 1 Minute fliegen. Sprungknopf festhalten = höher.
 - **Fernrohr 🔭:** an der Werkbank bauen (2 Eisenerz, 1 Gold, 1 Holz). In die Hand nehmen, „Durchschauen“, mit ➕/➖ oder zwei Fingern zoomen. Halte ein Boot 1 Sekunde in der Mitte, dann ist es entdeckt.
+
+## Neu in Etappe 3 · Das große Abenteuer
+- **Neue Inseln 🏝️:** Mit dem Boot weit aufs Meer fahren. Durchs Fernrohr 🔭 sieht man durch den Dunst. Auf der Karte gibt es dann „🌍 Alle Inseln“.
+- **Palmeninsel 🌴:** Dort leben 10 Menschen. „💬 Ansprechen“. Einer hat eine Taucherbrille – er will dafür 3 wertvolle Münzen 🏅 (eine von jeder Insel). Erst dann gibt es golden glitzernde Hügel (❓ auf der Karte). Schaufel in die Hand und graben!
+- **Palmendorf:** zweiter Händler (Brot, Äpfel, Würmer, Holz).
+- **Seilkanone 🪝:** Werkbank: Seil ➰ (3 Schnüre), Widerhaken 🪝 (2 Eisenerz + 1 Stein), dann Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken). In die Hand, vor eine hohe Wand schauen, „Hochschießen“. Jeder Schuss braucht 1 Seil. Das Seil bleibt hängen: „Hochklettern“ / „Runterklettern“.
+- **Wind 🌬️:** Mit dem Zauberpilz kommt man nicht auf die Klippe.
+- **Tauchen 🤿:** Taucherbrille im Rucksack, an tiefes Wasser, „Tauchen“. Joystick = schwimmen, Sprungknopf halten = hoch. Unten steht die Luft – bei 0 taucht man auf.
+- **Das Insadorium 🔴:** liegt im See oben auf der Klippeninsel. „Aufheben“ → Ziel erreicht! 🎉
+- **Heißluftballon 🎈:** beim Händler im ersten Dorf (150 Münzen). Antippen = Ziel aussuchen, zweimal schnell tippen = sofort los. Morgens steht er wieder an der Base.

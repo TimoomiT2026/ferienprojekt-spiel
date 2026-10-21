@@ -3,7 +3,7 @@
 Diese Seite fasst zusammen, was gebaut ist und **warum** wir etwas so entschieden haben.
 Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.md`.
 
-## Was es gibt (Stand: Tag 2, Etappe 2 fertig)
+## Was es gibt (Stand: Tag 3, Etappe 3 fertig)
 - **Insel** mit Bergen, Wald, Seen, Strand, Trampelpfad, Dorf mit Händler, 7 Ruderbooten, Schafen, Hasen und 4 Wildpferden
 - **Spielfigur:** der Game Designer selbst (Ringelpulli, Jogginghose, orange Sohlen), mit Skelett und Animationen
 - **Überleben:** einmal am Tag essen (sonst halb so schnell), spätestens jede 2. Nacht schlafen (sonst −50 Münzen)
@@ -12,6 +12,13 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 - **Base** mit Menü am Schild „BASE“: Zelt → großes Zelt → Hütte mit Truhe → Hütte mit Karotten-Garten → Haus mit Fischteich; dazu Reisezelt (3 Rucksack-Plätze) und Pferdestall (ab Hütte und ab Tag 3)
 - **Pferde:** Apfel in die Hand → Pferd wird neugierig, 3× füttern = gezähmt; Leine (Schuh + Schnur) zum Führen und am Stall Anbinden; alle 2 Tage füttern, sonst reißt es aus
 - **Vor Etappe 3:** bunte Fische, Satt-Balken (Hunger läuft auch beim Schlafen weiter), Landen beim Fliegen, Händler schläft nachts, weniger Münzen am Anfang + Aufgabe „Handeln“, 3 Tagstücke + eigenes Nachtstück, Umgebungsgeräusche, Erklär-Blasen für neue Spieler (js/tutorial.js)
+- **Etappe 3 · Das große Abenteuer** (Ziel des Spiels!):
+  - **Klippeninsel** (Osten, hohe Felswände, oben ein See) und **Palmeninsel** (Westen, Palmendorf mit zweitem Händler) – mit dem Boot ca. 20 s
+  - **Palmeninsel:** 10 Bewohner (js/bewohner.js). Nur **Nalu** hat die Taucherbrille und will dafür **3 wertvolle Münzen** (eine pro Insel). Erst ab ihrem Satz gibt es die 3 golden glitzernden Münz-Hügel (❓ auf der Karte).
+  - **Seilkanone** (js/seilkanone.js): Seil + Widerhaken + Holz + Eisenerz; schießt ein Seil an hohe Wände, das Seil bleibt hängen
+  - **Tauchen** (js/tauchen.js) mit Luft-Anzeige; im See oben auf der Klippe liegt das **Insadorium** (roter, grell leuchtender Stein) → **Finale** mit Konfetti + Dankeschön (js/finale.js), danach frei weiterspielen
+  - **Heißluftballon** (js/ballon.js, 150 Münzen): Ziel aussuchen (Dorf, Palmendorf, Base), fliegt jeden Morgen von selbst heim
+  - Wind über der Klippe (Zauberpilz bringt einen nicht hoch), neue Funde (Muscheln, Kokosnüsse; Eisen & Gold oben auf der Klippe), Angelstellen auf allen Inseln, Fernrohr sieht durch den Dunst
 - **Zauberpilze** im Wald: 1 Minute fliegen (Sprungknopf halten = höher)
 - **Fernrohr:** zoomen, Boote entdecken (später andere Inseln). Durch Berge sieht man nicht.
 - **Karte & Navigation**, Tag/Nacht (5 + 3 Minuten), Wellen, Musik, automatisches Speichern
@@ -28,12 +35,12 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 | Fernrohr sieht nicht durch Berge | Man muss auf einen Hügel steigen – macht Entdecken spannender |
 | Fliegen mit Joystick + Sprungknopf halten | Entscheidung des Game Designers (am einfachsten auf dem iPad) |
 | Echte Namen/Fotos nicht ins Repo | Das Repo ist öffentlich |
+| Taucherbrille nur gegen 3 Münzen (eine pro Insel), Münzen erst nach Nalus Satz | Game Designer: Sonst wären die anderen Inseln sinnlos, und eine Münze ohne Ziel versteht man nicht |
+| Kein Zauberpilz-Flug aufs Klippen-Plateau (Wind) | Game Designer: Man soll sich die Seilkanone erarbeiten |
+| Die 30 alten Grabestellen, Bäume, Pilze bleiben exakt gleich, Neues wird hinten angehängt | Damit alte Spielstände weiter funktionieren |
 
-## Als Nächstes: Etappe 3 · Das große Abenteuer
-- Inselgruppe mit anderen Materialien, Dörfern und Händlern
-- Hohe Klippen an den anderen Inseln → **Seilkanone** (Holz, Eisen, Seil, Widerhaken) – schwer zu schaffen
-- Heißluftballon (an der Base doppelt antippen → sofort ins Dorf)
-- **Das Insadorium** finden – so heißt das geheime Material (Name vom Game Designer, Tag 3). Roter, grell leuchtender Stein, liegt unter Wasser. Finden = Ziel erreicht → Konfetti + Dankeschön-Nachricht (OHNE echten Namen, Repo ist öffentlich), danach Open World weiterspielen.
+## Als Nächstes: Etappe 4 · Wochenmarkt & Inselzeitung
+Steht in `docs/warteliste.md`. Vorher muss der Game Designer noch ein paar Fragen klären (wann/wo ist der Markt, Preise für Kaffee & Limo, was in der Zeitung steht).
 
 ## Bekannte Schwächen
 - Auf dem iPad Air (2025) läuft es flüssig; am MacBook ruckelte es kurz am Anfang (Shader werden jetzt vorab vorbereitet)
