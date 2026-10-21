@@ -351,9 +351,10 @@ export const EINSTELLUNGEN = {
       [200, 30], [270, 75], [220, 85], [130, 82], [175, 72],
       [330, 82], [250, 50], [20, 30],
     ],
-    // Welcher Bewohner hat die Taucherbrille? (Zählen ab 0: 0 = Ferdinand … 9 = Emil … 12 = Sichel)
-    // Die Liste mit den Namen steht in js/bewohner.js.
-    brilleBei: 9,
+    // Wer hat die Taucherbrille? Das entscheidet der Zufall in jedem neuen Spiel:
+    // Es ist der 6. bis 13. Bewohner, den man anspricht. Die ersten 5 haben sie NIE.
+    brilleFruehestens: 6,
+    brilleSpaetestens: 13,
     // So viele wertvolle Münzen will er haben
     muenzenNoetig: 3,
     // So nah muss man ran, damit "💬 Ansprechen" kommt (Meter)

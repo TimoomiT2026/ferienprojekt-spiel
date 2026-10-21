@@ -14,7 +14,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 - **Vor Etappe 3:** bunte Fische, Satt-Balken (Hunger läuft auch beim Schlafen weiter), Landen beim Fliegen, Händler schläft nachts, weniger Münzen am Anfang + Aufgabe „Handeln“, 3 Tagstücke + eigenes Nachtstück, Umgebungsgeräusche, Erklär-Blasen für neue Spieler (js/tutorial.js)
 - **Etappe 3 · Das große Abenteuer** (Ziel des Spiels!):
   - **Klippeninsel** (Osten, hohe Felswände, oben ein See) und **Palmeninsel** (Westen, Palmendorf mit zweitem Händler) – mit dem Boot ca. 20 s
-  - **Palmeninsel:** 13 Bewohner (js/bewohner.js). Nur einer hat die Taucherbrille (im Moment **Emil**, einstellbar mit `bewohner.brilleBei`) und will dafür **3 wertvolle Münzen** (eine pro Insel). Erst ab ihrem Satz gibt es die 3 golden glitzernden Münz-Hügel (❓ auf der Karte).
+  - **Palmeninsel:** 13 Bewohner (js/bewohner.js). Wer die Taucherbrille hat, ist Zufall: der 6. bis 13. Bewohner, den man anspricht (die ersten 5 nie; `bewohner.brilleFruehestens/brilleSpaetestens`) und will dafür **3 wertvolle Münzen** (eine pro Insel). Erst ab ihrem Satz gibt es die 3 golden glitzernden Münz-Hügel (❓ auf der Karte).
   - **Seilkanone** (js/seilkanone.js): Seil + Widerhaken + Holz + Eisenerz; schießt ein Seil an hohe Wände, das Seil bleibt hängen
   - **Tauchen** (js/tauchen.js) mit Luft-Anzeige; im See oben auf der Klippe liegt das **Insadorium** (roter, grell leuchtender Stein) → **Finale** mit Konfetti + Dankeschön (js/finale.js), danach frei weiterspielen
   - **Heißluftballon** (js/ballon.js, 150 Münzen): Ziel aussuchen (Dorf, Palmendorf, Base), fliegt jeden Morgen von selbst heim

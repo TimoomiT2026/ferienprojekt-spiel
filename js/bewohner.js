@@ -91,7 +91,8 @@ const MENSCHEN = [
   {
     id: 'emil', name: 'Emil', gesicht: '🧒', kind: true,
     farben: { shirt: '#00b4d8', hose: '#023e8a', haare: '#2b1a12', haut: '#a8704a', bart: false }, extra: 'lang',
-    hallo: 'Hallo! Ich bin Emil. Niemand auf der Palmeninsel taucht so gern wie ich. 🌊',
+    hallo: 'Hallo! Ich bin Emil. Ich kenne jeden Krebs am Strand mit Namen! 🦀',
+    nochmal: 'Das da ist Kalle, der Krebs. Sag hallo!',
   },
   {
     id: 'finn', name: 'Finn', gesicht: '🧒', kind: true,
@@ -220,7 +221,6 @@ export class Bewohner {
     const { hindernisse } = this.spiel;
     const zufall = zufallMitSeed(2024);
     const plaetze = this.E.plaetze || [];
-    const brilleBei = this.E.brilleBei ?? MENSCHEN.length - 1;
     const schonDa = [];
     const passt = (x, z) => {
       const h = bodenHoehe(x, z);
@@ -251,7 +251,7 @@ export class Bewohner {
       if (hindernisse) hindernisse.hinzufuegen(x, z, 0.45); // durch Menschen läuft man nicht durch
 
       const mensch = {
-        ...m, nummer: i, hatBrille: i === brilleBei,
+        ...m, nummer: i,
         figur: teile.figur, armL: teile.armL, armR: teile.armR,
         pos: new THREE.Vector3(x, y, z), boden: y,
         grundWinkel, winkel: grundWinkel, phase: zufall() * 10,
@@ -267,7 +267,9 @@ export class Bewohner {
         ausfuehren: () => this.ansprechen(mensch),
       });
     });
-    this.brilleMensch = this.leute.find((l) => l.hatBrille) || this.leute[this.leute.length - 1];
+    // Wer die Taucherbrille hat, entscheidet der Zufall – erst beim Ansprechen (siehe ansprechen)
+    this.brilleId = null;
+    this.brilleAb = this.wuerfleBrilleAb();
   }
 
   // ---------- Die 3 goldenen Grabehügel ----------
@@ -408,10 +410,26 @@ export class Bewohner {
   }
 
   // ---------- Ansprechen ----------
+  // Der wievielte NEUE Bewohner hat die Taucherbrille? (Zufall, z. B. der 6. bis 13.)
+  // Die ersten 5 haben sie nie – Entscheidung des Game Designers.
+  wuerfleBrilleAb() {
+    const frueh = this.E.brilleFruehestens ?? 6;
+    const spaet = Math.min(this.E.brilleSpaetestens ?? 13, this.leute.length || 13);
+    return frueh + Math.floor(Math.random() * (spaet - frueh + 1));
+  }
+
+  // Die Person mit der Taucherbrille (oder null, solange es noch niemand ist)
+  get brilleMensch() {
+    return this.leute.find((l) => l.id === this.brilleId) || null;
+  }
+
   ansprechen(mensch) {
     if (this.offen || performance.now() < this.sperreBis) return;
     const ersterBesuch = !this.getroffen.has(mensch.id);
     this.getroffen.add(mensch.id);
+    // Ist das der x-te neue Bewohner? Dann hat GENAU DIESER die Taucherbrille.
+    if (!this.brilleId && ersterBesuch && this.getroffen.size >= this.brilleAb) this.brilleId = mensch.id;
+    mensch.hatBrille = mensch.id === this.brilleId;
     // Die Person dreht sich gleich zu dir
     const p = this.spiel.spieler.figur.position;
     mensch.winkel = Math.atan2(p.x - mensch.pos.x, p.z - mensch.pos.z);
@@ -579,6 +597,8 @@ export class Bewohner {
   alsDaten() {
     return {
       getroffen: [...this.getroffen],
+      brilleId: this.brilleId,
+      brilleAb: this.brilleAb,
       trigger: this.trigger,
       gefunden: this.huegel.map((h) => h.gefunden),
       abgegeben: this.abgegeben,
@@ -591,6 +611,11 @@ export class Bewohner {
     this.getroffen = new Set((d.getroffen || []).filter((id) => this.leute.some((l) => l.id === id)));
     this.trigger = !!d.trigger;
     this.abgegeben = !!d.abgegeben;
+    this.brilleAb = d.brilleAb || this.wuerfleBrilleAb();
+    this.brilleId = this.leute.some((l) => l.id === d.brilleId) ? d.brilleId : null;
+    // Alte Spielstände: Dort hatte immer Emil die Brille
+    if (!this.brilleId && (this.trigger || this.abgegeben)) this.brilleId = 'emil';
+    this.leute.forEach((l) => (l.hatBrille = l.id === this.brilleId));
     (d.gefunden || []).forEach((g, i) => {
       if (this.huegel[i]) this.huegel[i].gefunden = !!g;
     });
