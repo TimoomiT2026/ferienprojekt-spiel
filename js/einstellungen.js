@@ -86,6 +86,23 @@ export const EINSTELLUNGEN = {
     gold: 8,
     edelstein: 2,
   },
+  // Die neuen Inseln haben eigene Grabehügel – mit anderen Funden!
+  // (Die Startinsel benutzt weiter die "fundChancen" oben.)
+  //   anzahl = wie viele Grabehügel es auf der Insel gibt
+  //   funde  = was man dort findet (größere Zahl = häufiger)
+  inselFunde: {
+    Palmeninsel: {
+      anzahl: 8,
+      funde: { muschel: 45, kokosnuss: 35, stein: 20 },
+    },
+    // Oben auf dem Klippen-Plateau (nur mit der Seilkanone!) gibt es mehr Eisen und Gold
+    Klippeninsel: {
+      anzahl: 6,
+      funde: { eisenerz: 40, gold: 25, stein: 20, kohle: 12, edelstein: 3 },
+    },
+  },
+  // So viele Angelstellen gibt es auf jeder neuen Insel
+  inselAngelstellen: 2,
 
   // ---------- Werkbank ----------
   // Was braucht man, um etwas zu bauen? (Ding: Anzahl)
@@ -127,6 +144,8 @@ export const EINSTELLUNGEN = {
     fernrohr: 10,
     edelstein: 40,
     karotte: 3, // aus deinem Garten
+    muschel: 4, // vom Strand der Palmeninsel
+    kokosnuss: 5, // von der Palmeninsel (nicht zum Essen, nur zum Verkaufen)
   },
   // Angebot & Nachfrage: Jedes weitere Stück vom Gleichen bringt weniger.
   // 0.8 heißt: 2. Stück = 80 %, 3. Stück = 64 %, … (am nächsten Morgen wieder voll)
@@ -255,6 +274,32 @@ export const EINSTELLUNGEN = {
   sinkTempo: 2,
   // Wie hoch kann man höchstens fliegen? (Meter über dem Boden)
   maxFlugHoehe: 40,
+  // Klippen-Wind 🌬️ (Entscheidung des Game Designers): Über der Klippeninsel weht
+  // ein starker Wind. Mit dem Zauberpilz kommt man NICHT aufs Plateau – nur mit der Seilkanone!
+  klippenWind: {
+    // So weit (Meter) hinter der Küste fängt der Wind schon an
+    rand: 10,
+    // Ab so viel Metern UNTER dem Plateau bläst er (Plateau ist ca. 21 m hoch → ab ca. 17 m)
+    unterPlateau: 4,
+    // So schnell drückt er dich nach außen (Meter pro Sekunde – Fliegen ist 12, also stärker!)
+    tempo: 16,
+    // So schnell drückt er dich nach unten (Meter pro Sekunde)
+    runter: 5,
+    // Wie viele Windstreifen sieht man? (0 = keine)
+    streifen: 24,
+  },
+
+  // ---------- Fernrohr 🔭 ----------
+  fernrohr: {
+    // So viel weiter sieht man durchs Fernrohr, bevor alles im Dunst verschwindet.
+    // Bei wenig Zoom "weitMin"-mal so weit, bei viel Zoom "weitMax"-mal so weit.
+    nebelWeitMin: 2.5,
+    nebelWeitMax: 4,
+    // So viel vom Boden-Dunst bleibt übrig (1 = alles, 0 = gar keiner)
+    dunstRest: 0.15,
+    // Bis so weit weg (Meter hinter der Küste) werden die anderen Inseln gemalt
+    inselSichtweite: 900,
+  },
 
   // ---------- Heißluftballon 🎈 ----------
   ballon: {

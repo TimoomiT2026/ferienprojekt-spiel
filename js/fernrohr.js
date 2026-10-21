@@ -11,7 +11,10 @@
 // =============================================================
 import * as THREE from 'three';
 import { knopf } from './steuerung.js';
-import { bodenHoehe } from './gelaende.js';
+import { bodenHoehe, setzeSichtweite } from './gelaende.js';
+import { FERNSICHT } from './himmel.js';
+import { setzeFernblick } from './natur.js';
+import { EINSTELLUNGEN } from './einstellungen.js';
 
 // ---------- Zahlen zum Rumprobieren ----------
 const NORMALES_SICHTFELD = 60; // so viel Grad sieht man ohne Fernrohr
@@ -197,7 +200,44 @@ export class Fernrohr {
     clearTimeout(this.hinweisTimer);
     this.hinweisTimer = setTimeout(() => this.hinweis.classList.remove('sichtbar'), 4000);
     this.overlay.classList.add('offen');
+    this.fernsichtAn();
     this.stelleKamera();
+  }
+
+  // ---------- Durchs Fernrohr verschwindet der Dunst ----------
+  // Der Nebel wird weiter weggeschoben, damit man die anderen Inseln sieht.
+  // Beim Weglegen kommt alles GENAU so zurück, wie es vorher war.
+  fernsichtAn() {
+    const E = EINSTELLUNGEN.fernrohr || {};
+    const nebel = FERNSICHT.nebel;
+    if (nebel && !this.nebelVorher) this.nebelVorher = { near: nebel.near, far: nebel.far };
+    FERNSICHT.dunst = E.dunstRest ?? 0.15;
+    setzeSichtweite(E.inselSichtweite ?? 900);
+    setzeFernblick(E.inselSichtweite ?? 900);
+    this.stelleNebel();
+  }
+
+  // Je stärker der Zoom, desto weiter sieht man
+  stelleNebel() {
+    const nebel = FERNSICHT.nebel, vorher = this.nebelVorher;
+    if (!nebel || !vorher) return;
+    const E = EINSTELLUNGEN.fernrohr || {};
+    const t = THREE.MathUtils.clamp((this.zoom - ZOOM_MIN) / (6 - ZOOM_MIN), 0, 1); // ab 6× volle Weite
+    const faktor = THREE.MathUtils.lerp(E.nebelWeitMin ?? 2.5, E.nebelWeitMax ?? 4, t);
+    nebel.near = vorher.near * faktor;
+    nebel.far = vorher.far * faktor;
+  }
+
+  fernsichtAus() {
+    const nebel = FERNSICHT.nebel;
+    if (nebel && this.nebelVorher) {
+      nebel.near = this.nebelVorher.near;
+      nebel.far = this.nebelVorher.far;
+    }
+    this.nebelVorher = null;
+    FERNSICHT.dunst = 1;
+    setzeSichtweite();
+    setzeFernblick(0);
   }
 
   beenden() {
@@ -205,6 +245,7 @@ export class Fernrohr {
     this._aktiv = false;
     this.overlay.classList.remove('offen');
     this.finger.clear();
+    this.fernsichtAus();
     // Alles wieder normal: 60° Sichtfeld
     this.kamera.fov = NORMALES_SICHTFELD;
     this.kamera.rotation.order = this.alteReihenfolge || 'XYZ';
@@ -248,6 +289,7 @@ export class Fernrohr {
     if (Math.abs(this.zoom - this.zoomZiel) < 0.002) this.zoom = this.zoomZiel;
     this.zoomAnzeige.textContent = `${Math.round(this.zoom)}×`;
 
+    this.stelleNebel();
     this.stelleKamera();
     this.pruefeZiele(dt);
   }

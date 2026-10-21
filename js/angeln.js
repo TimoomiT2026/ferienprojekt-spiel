@@ -7,7 +7,8 @@
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { zufallMitSeed } from './rauschen.js';
-import { bodenHoehe, abstandZumDorf, abstandZumPfad, DORF, WASSER_HOEHE } from './gelaende.js';
+import { bodenHoehe, abstandZumDorf, abstandZumPfad, DORF, WASSER_HOEHE, INSELN, aufWelcherInsel, istKlippenWand } from './gelaende.js';
+import { EINSTELLUNGEN } from './einstellungen.js';
 
 // ---------- Zahlen zum Rumprobieren ----------
 // Was zieht man aus dem Wasser, und wie oft?
@@ -164,30 +165,43 @@ export function baueAngel() {
 // erlauben wir bis 5 m – sonst gäbe es dort gar keine Angelstellen.
 const TIEF_NAH = 3;
 const TIEF_WEIT = 5;
-function sucheKandidaten() {
-  const R = 265; // etwas größer als die Insel, damit auch die Küste dabei ist
+// Die Strände der neuen Inseln sind ganz flach – da darf das tiefe Wasser weiter weg sein
+const TIEF_WEIT_INSEL = 10;
+// mitte/R/zuf: wo wir suchen (normal: die Startinsel) und mit welchem Zufall.
+// insel: bei den neuen Inseln deren Infos aus INSELN (sonst null)
+function sucheKandidaten(mx = 0, mz = 0, R = 265, zuf = zufall, insel = null) {
+  // R = 265: etwas größer als die Startinsel, damit auch die Küste dabei ist
   const SCHRITT = 3.5; // wir prüfen ein Gitter, ein bisschen verwackelt
+  const tiefWeit = insel ? TIEF_WEIT_INSEL : TIEF_WEIT;
   const kandidaten = [];
   for (let gx = -R; gx <= R; gx += SCHRITT) {
     for (let gz = -R; gz <= R; gz += SCHRITT) {
-      const x = gx + (zufall() - 0.5) * SCHRITT;
-      const z = gz + (zufall() - 0.5) * SCHRITT;
+      const x = mx + gx + (zuf() - 0.5) * SCHRITT;
+      const z = mz + gz + (zuf() - 0.5) * SCHRITT;
       const h = bodenHoehe(x, z);
       if (h < 0.5 || h > 2.2) continue; // nicht im Wasser, nicht hoch oben auf einer Klippe
-      if (abstandZumDorf(x, z) < DORF.radius + 5) continue; // nicht im Dorf
-      if (abstandZumPfad(x, z) < 4) continue; // nicht mitten auf dem Trampelpfad
+      if (insel) {
+        // Neue Insel: nicht im Dorf, nicht da, wo die Boote anlegen, nicht an der Felswand
+        if (aufWelcherInsel(x, z) !== insel.name) continue;
+        if (insel.dorfPlatz && Math.hypot(x - insel.dorfPlatz.x, z - insel.dorfPlatz.z) < insel.dorfPlatz.radius + 8) continue;
+        if ((insel.anlegestellen || []).some((a) => Math.hypot(x - a.strandX, z - a.strandZ) < 7)) continue;
+        if (istKlippenWand(x, z)) continue;
+      } else {
+        if (abstandZumDorf(x, z) < DORF.radius + 5) continue; // nicht im Dorf
+        if (abstandZumPfad(x, z) < 4) continue; // nicht mitten auf dem Trampelpfad
+      }
 
       // Schneller Vorab-Blick: Geht es in der Nähe überhaupt bergab ins Wasser?
       let tiefster = Infinity;
       for (let k = 0; k < 8; k++) {
         const w = (k / 8) * Math.PI * 2;
-        tiefster = Math.min(tiefster, bodenHoehe(x + Math.sin(w) * TIEF_WEIT, z + Math.cos(w) * TIEF_WEIT));
+        tiefster = Math.min(tiefster, bodenHoehe(x + Math.sin(w) * tiefWeit, z + Math.cos(w) * tiefWeit));
       }
       if (tiefster > 0.2) continue;
 
       // In 16 Richtungen schauen: Wo ist das tiefe Wasser am nächsten?
       let beste = null;
-      for (let d = 1; d <= TIEF_WEIT && !beste; d += 0.5) {
+      for (let d = 1; d <= tiefWeit && !beste; d += 0.5) {
         for (let k = 0; k < 16; k++) {
           const w = (k / 16) * Math.PI * 2;
           const wh = bodenHoehe(x + Math.sin(w) * d, z + Math.cos(w) * d);
@@ -247,6 +261,33 @@ function waehleStellen(kandidaten) {
   return gewaehlt;
 }
 
+// Auf den neuen Inseln (Etappe 3): ein paar Stellen, die weit auseinander liegen.
+// Jede Insel hat ihren eigenen Zufall – die Stellen auf der Startinsel bleiben gleich.
+function waehleInselStellen() {
+  const alle = [];
+  INSELN.slice(1).forEach((I, nr) => {
+    const kandidaten = sucheKandidaten(I.x, I.z, I.radius + 45, zufallMitSeed(2718 + nr * 7), I);
+    if (!kandidaten.length) return;
+    // Die erste: möglichst nah an einer Anlegestelle (da kommt man mit dem Boot an)
+    const a = (I.anlegestellen || [])[0] || { strandX: I.x, strandZ: I.z };
+    const nahDran = (k) => Math.hypot(k.x - a.strandX, k.z - a.strandZ) - (k.steil ? 6 : 0);
+    const gewaehlt = [[...kandidaten].sort((p, q) => nahDran(p) - nahDran(q))[0]];
+    // Die anderen: immer die, die am weitesten von den schon gewählten weg ist
+    while (gewaehlt.length < (EINSTELLUNGEN.inselAngelstellen ?? 2)) {
+      let beste = null, besterWert = MIN_ABSTAND;
+      for (const k of kandidaten) {
+        const d = Math.min(...gewaehlt.map((g) => Math.hypot(g.x - k.x, g.z - k.z))) * (k.steil ? 1 : 0.8);
+        if (d > besterWert) { beste = k; besterWert = d; }
+      }
+      if (!beste) break;
+      gewaehlt.push(beste);
+    }
+    gewaehlt.forEach((k) => { k.insel = I.name; });
+    alle.push(...gewaehlt);
+  });
+  return alle;
+}
+
 // =============================================================
 export class Angeln {
   constructor(szene, spiel) {
@@ -256,7 +297,8 @@ export class Angeln {
     this.wurf = null; // läuft gerade ein Wurf? Dann steht hier alles darüber
 
     // ---------- Die Stellen ----------
-    this.stellen = waehleStellen(sucheKandidaten()).map((k, i) => {
+    // (Die neuen Inseln kommen HINTEN dran – so bleiben die alten Nummern gleich)
+    this.stellen = [...waehleStellen(sucheKandidaten()), ...waehleInselStellen()].map((k, i) => {
       const sx = Math.sin(k.richtung), sz = Math.cos(k.richtung);
       // Der runde Steg ragt ein Stück übers Wasser (am flachen Ufer etwas weiter)
       const raus = 0.9 + Math.max(0, k.tiefAbstand - TIEF_NAH) * 0.5;
@@ -268,6 +310,7 @@ export class Angeln {
         richtung: k.richtung,
         imSee: k.imSee,
         steil: k.steil,
+        insel: k.insel || 'Startinsel', // auf welcher Insel die Stelle liegt
         steg: new THREE.Vector3(stegX, stegY, stegZ),
         sprungIn: 2 + i * 1.3, // wann springt hier der nächste Fisch?
         sprung: -1, // läuft gerade ein Sprung? (0 bis 1)
@@ -487,7 +530,7 @@ export class Angeln {
   }
 
   get positionen() {
-    return this.stellen.map((s) => ({ x: s.stand.x, z: s.stand.z }));
+    return this.stellen.map((s) => ({ x: s.stand.x, z: s.stand.z, insel: s.insel || 'Startinsel' }));
   }
 
   // ---------- Der Aktions-Knopf "Angeln" ----------

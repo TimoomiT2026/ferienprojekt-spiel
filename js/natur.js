@@ -451,6 +451,7 @@ let naturHindernisse = null;
 
 // ---------- Stücke ----------
 const alleStuecke = []; // { mesh, mitte, sichtweite, groesse }
+let inselStueckeAb = Infinity; // ab dieser Nummer gehören die Stücke zu den neuen Inseln
 
 // Verteilt viele Kopien (eintraege: { matrix, farbe, x, z }) auf Stücke
 function inStuecken(geo, material, eintraege, { sichtweite = 190, schatten = true, stueck = STUECK } = {}) {
@@ -1062,6 +1063,7 @@ export function baueNatur(szene, hindernisse) {
   baueSteinchen(gruppe);
   // Die anderen Inseln (Etappe 3) – ganz am Ende, damit sich auf der
   // Startinsel nichts verschiebt (Spielstände merken sich die Nummern der Bäume!)
+  inselStueckeAb = alleStuecke.length; // ab hier gehören die Stücke zu den neuen Inseln
   for (const insel of INSELN.slice(1)) baueInselNatur(gruppe, hindernisse, insel);
   holzGitterBauen();
   szene.add(gruppe);
@@ -1076,11 +1078,20 @@ export function wenigerDetails() {
   return true;
 }
 
+// Durchs Fernrohr: große Pflanzen (Bäume, Palmen) auf den neuen Inseln bis so weit zeigen (Meter).
+// 0 = normal. (fernrohr.js stellt das ein)
+let fernBlick = 0;
+export function setzeFernblick(meter) {
+  fernBlick = meter || 0;
+}
+
 // Jedes Bild: Wind weiterlaufen lassen, nur nahe Stücke zeigen
 export function aktualisiereNatur(dt, spielerPos) {
   windZeit.value += dt;
   aktualisiereInseln(spielerPos); // ferne Inseln nicht malen
-  for (const s of alleStuecke) {
-    s.mesh.visible = Math.hypot(s.mitte.x - spielerPos.x, s.mitte.y - spielerPos.z) < s.sichtweite * detail + s.groesse * 0.7;
-  }
+  alleStuecke.forEach((s, i) => {
+    let weite = s.sichtweite * detail;
+    if (fernBlick && i >= inselStueckeAb && s.sichtweite >= 130) weite = Math.max(weite, fernBlick);
+    s.mesh.visible = Math.hypot(s.mitte.x - spielerPos.x, s.mitte.y - spielerPos.z) < weite + s.groesse * 0.7;
+  });
 }

@@ -6,7 +6,7 @@
 // =============================================================
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { bodenHoehe, WASSER_HOEHE, zuSteilBergauf, istKlippenWand, wasserHoeheBei } from './gelaende.js';
+import { bodenHoehe, WASSER_HOEHE, zuSteilBergauf, istKlippenWand, wasserHoeheBei, INSELN } from './gelaende.js';
 import { baueSchaufel, baueSchwert } from './figur.js';
 import { baueJunge, BEIN_LAENGE } from './junge.js';
 
@@ -28,6 +28,18 @@ const glatt = (a, b, x) => {
   return t * t * (3 - 2 * t);
 };
 const mische = THREE.MathUtils.lerp;
+
+// ---------- Klippen-Wind 🌬️ ----------
+// Über der Klippeninsel weht ein starker Wind: Mit dem Zauberpilz kommt man
+// nicht aufs Plateau (nur mit der Seilkanone). Die Zahlen stehen in einstellungen.js.
+const KLIPPE = INSELN.find((I) => I.klippen);
+const WIND = () => EINSTELLUNGEN.klippenWind || {};
+// Ist (x, z) oben auf dem Klippen-Plateau? (auch in der Lagune oben)
+function aufKlippenPlateau(x, z) {
+  if (!KLIPPE) return false;
+  if (Math.hypot(x - KLIPPE.x, z - KLIPPE.z) > KLIPPE.radius + 5) return false;
+  return bodenHoehe(x, z) > KLIPPE.plateauHoehe - 6;
+}
 
 export class Spieler {
   constructor(szene, hindernisse) {
@@ -91,7 +103,11 @@ export class Spieler {
     this.beiFlugWarnung = null; // noch 5 Sekunden!
     this.beiFlugEnde = null; // Zauber vorbei – jetzt wird gelandet
     this.beiGelandet = null; // wieder sicher auf dem Boden
+    this.beiWind = null; // der Klippen-Wind bläst (einmal pro Flug)
+    this.windJetzt = 0; // wie stark der Wind gerade an uns zieht (0 bis 1)
+    this.startAufPlateau = false; // ist man OBEN auf der Klippe losgeflogen? Dann bläst er nicht.
     this.baueGlitzerSpur(szene);
+    this.baueWindStreifen(szene);
   }
 
   // ---------- Glitzerspur: viele kleine Funken, aber nur 1 Draw Call ----------
@@ -128,7 +144,12 @@ export class Spieler {
     } else {
       this.flugZeit = sekunden;
       this.abhebZeit = this.flugModus ? 0 : 0.9; // am Anfang hebt er von selbst ein Stück ab
-      if (!this.flugModus) this.flugV.set(0, 0);
+      if (!this.flugModus) {
+        this.flugV.set(0, 0);
+        this.windGemeldet = false;
+        // Wer mit der Seilkanone schon oben ist, darf da oben auch fliegen
+        this.startAufPlateau = aufKlippenPlateau(this.figur.position.x, this.figur.position.z);
+      }
     }
     this.flugModus = true;
     this.gewarnt = this.flugZeit <= WARN_SEKUNDEN;
@@ -159,7 +180,32 @@ export class Spieler {
 
   // Darf man hier landen? (fester Boden, kein Baum, kein Wasser)
   kannLanden(x, z) {
-    return bodenHoehe(x, z) > wasserHoeheBei(x, z) + 0.3 && this.kannStehen(x, z) && !istKlippenWand(x, z);
+    return bodenHoehe(x, z) > wasserHoeheBei(x, z) + 0.3 && this.kannStehen(x, z) && !istKlippenWand(x, z) &&
+      !(this.windSperrt() && aufKlippenPlateau(x, z)); // aufs Plateau nur mit der Seilkanone!
+  }
+
+  // Bläst der Klippen-Wind bei diesem Flug? (nicht, wenn man oben losgeflogen ist)
+  windSperrt() {
+    return !!KLIPPE && !this.startAufPlateau;
+  }
+
+  // Wie stark packt uns der Wind gerade? 0 = gar nicht, 1 = voll.
+  // Dazu die Richtung nach außen (weg von der Inselmitte).
+  klippenWind(pos) {
+    if (!KLIPPE) return 0;
+    const W = WIND();
+    const dx = pos.x - KLIPPE.x, dz = pos.z - KLIPPE.z;
+    const d = Math.hypot(dx, dz);
+    // Oben losgeflogen und dann weit weg? Ab jetzt bläst der Wind wieder.
+    if (this.startAufPlateau && d > KLIPPE.radius + (W.rand ?? 10) + 5) this.startAufPlateau = false;
+    if (!this.windSperrt()) return 0;
+    if (d > KLIPPE.radius + (W.rand ?? 10)) return 0;
+    this.windAussen = this.windAussen || new THREE.Vector2();
+    if (d > 0.01) this.windAussen.set(dx / d, dz / d);
+    else this.windAussen.set(1, 0);
+    const grenze = KLIPPE.plateauHoehe - (W.unterPlateau ?? 4);
+    if (aufKlippenPlateau(pos.x, pos.z)) return 1; // über dem Plateau immer volle Kraft
+    return glatt(grenze - 0.5, grenze + 1.5, pos.y);
   }
 
   // Sucht in immer größeren Kreisen den nächsten Platz zum Landen
@@ -215,9 +261,27 @@ export class Spieler {
     }
     // weich beschleunigen und bremsen – wie ein Vogel, nicht wie ein Auto
     this.flugV.lerp(ziel, Math.min(1, dt * (this.landeZiel ? 5 : 3)));
+    // Der Klippen-Wind drückt sanft nach außen – stärker, als man fliegen kann
+    const wind = this.klippenWind(pos);
+    this.windJetzt = wind;
+    if (wind > 0) {
+      const W = WIND();
+      const a = this.windAussen;
+      const nachAussen = this.flugV.x * a.x + this.flugV.y * a.y;
+      const soll = (W.tempo ?? 16) * wind;
+      if (nachAussen < soll) {
+        const plus = (soll - nachAussen) * Math.min(1, dt * 6);
+        this.flugV.x += a.x * plus;
+        this.flugV.y += a.y * plus;
+      }
+      if (!this.windGemeldet && wind > 0.3) {
+        this.windGemeldet = true;
+        this.beiWind?.();
+      }
+    }
     const neuX = pos.x + this.flugV.x * dt, neuZ = pos.z + this.flugV.y * dt;
     const ueberBoden = pos.y - Math.max(bodenHoehe(pos.x, pos.z), WASSER_HOEHE);
-    if (ueberBoden > 1.2 || this.landeZiel || !this.hindernisse.trifft(neuX, neuZ, 0.4)) {
+    if (ueberBoden > 1.2 || this.landeZiel || wind > 0 || !this.hindernisse.trifft(neuX, neuZ, 0.4)) {
       // in der Luft gibt es keine Hindernisse
       pos.x = neuX;
       pos.z = neuZ;
@@ -253,6 +317,11 @@ export class Spieler {
       zielY = gehalten ? E.steigTempo : -E.sinkTempo;
     }
     this.geschwindigkeitY += (zielY - this.geschwindigkeitY) * Math.min(1, dt * 3);
+    // Der Wind drückt auch nach unten
+    if (wind > 0) {
+      const runter = -(WIND().runter ?? 5) * wind;
+      if (this.geschwindigkeitY > runter) this.geschwindigkeitY += (runter - this.geschwindigkeitY) * Math.min(1, dt * 4);
+    }
     pos.y += this.geschwindigkeitY * dt;
 
     // nicht höher als erlaubt
@@ -277,6 +346,79 @@ export class Spieler {
       this.amBoden = true;
       this.beiGelandet?.();
     }
+  }
+
+  // ---------- Windstreifen über der Klippe (1 Draw Call) ----------
+  // Dünne, helle Striche, die nach außen sausen – so sieht man den Wind.
+  baueWindStreifen(szene) {
+    const n = KLIPPE ? (WIND().streifen ?? 24) : 0;
+    this.windStreifen = [];
+    if (!n) return;
+    // Zwei gekreuzte, lange schmale Flächen – dann sieht man sie von jeder Seite
+    const a = new THREE.PlaneGeometry(5, 0.07);
+    const b = new THREE.PlaneGeometry(5, 0.07).rotateX(Math.PI / 2);
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.Float32BufferAttribute([...a.attributes.position.array, ...b.attributes.position.array], 3));
+    geo.setIndex([...a.index.array, ...b.index.array.map((i) => i + a.attributes.position.count)]);
+    const material = new THREE.MeshBasicMaterial({
+      color: '#ffffff', transparent: true, blending: THREE.AdditiveBlending,
+      depthWrite: false, side: THREE.DoubleSide, toneMapped: false,
+    });
+    this.wind = new THREE.InstancedMesh(geo, material, n);
+    this.wind.frustumCulled = false;
+    this.wind.visible = false;
+    const schwarz = new THREE.Color(0, 0, 0);
+    for (let i = 0; i < n; i++) {
+      this.windStreifen.push({ pos: new THREE.Vector3(), leben: 0, dauer: 1 });
+      this.wind.setColorAt(i, schwarz);
+    }
+    szene.add(this.wind);
+  }
+
+  aktualisiereWind(dt) {
+    if (!this.wind) return;
+    const pos = this.figur.position;
+    const dx = pos.x - KLIPPE.x, dz = pos.z - KLIPPE.z;
+    const d = Math.hypot(dx, dz);
+    // Nur zeigen, wenn man fliegend in der Nähe der Klippe ist
+    const zeigen = this.flugModus && this.windSperrt() && d < KLIPPE.radius + 45 && pos.y > KLIPPE.plateauHoehe - 12;
+    if (!zeigen && !this.wind.visible) return;
+    const m = new THREE.Matrix4(), q = new THREE.Quaternion(), s = new THREE.Vector3(1, 1, 1);
+    const farbe = new THREE.Color();
+    const hoch = new THREE.Vector3(0, 1, 0);
+    const tempo = (WIND().tempo ?? 16) * 1.6;
+    let irgendwas = false;
+    this.windStreifen.forEach((st, i) => {
+      if (st.leben <= 0 && zeigen) {
+        // Neuer Streifen irgendwo um die Figur herum, über der Klippe
+        const w = Math.random() * Math.PI * 2, r = 4 + Math.random() * 26;
+        st.pos.set(pos.x + Math.cos(w) * r, 0, pos.z + Math.sin(w) * r);
+        const boden = Math.max(bodenHoehe(st.pos.x, st.pos.z), WASSER_HOEHE);
+        st.pos.y = Math.max(boden + 1, pos.y + (Math.random() - 0.4) * 10);
+        st.dauer = st.leben = 0.6 + Math.random() * 0.7;
+        st.drin = Math.hypot(st.pos.x - KLIPPE.x, st.pos.z - KLIPPE.z) < KLIPPE.radius + 20;
+      }
+      let hell = 0;
+      if (st.leben > 0) {
+        st.leben -= dt;
+        // Nach außen sausen (weg von der Inselmitte), ein bisschen nach unten
+        const ax = st.pos.x - KLIPPE.x, az = st.pos.z - KLIPPE.z;
+        const al = Math.hypot(ax, az) || 1;
+        st.pos.x += (ax / al) * tempo * dt;
+        st.pos.z += (az / al) * tempo * dt;
+        st.pos.y -= 2 * dt;
+        q.setFromAxisAngle(hoch, -Math.atan2(az, ax));
+        const t = 1 - st.leben / st.dauer;
+        hell = st.drin ? Math.sin(t * Math.PI) * 0.45 : 0;
+        if (hell > 0) irgendwas = true;
+      }
+      m.compose(st.pos, q, s.setScalar(hell > 0 ? 1 : 0));
+      this.wind.setMatrixAt(i, m);
+      this.wind.setColorAt(i, farbe.setScalar(Math.max(0, hell)));
+    });
+    this.wind.instanceMatrix.needsUpdate = true;
+    this.wind.instanceColor.needsUpdate = true;
+    this.wind.visible = zeigen || irgendwas;
   }
 
   // Funken an den Füßen erzeugen und bewegen
@@ -334,6 +476,7 @@ export class Spieler {
   // Wird jedes Bild aufgerufen (ca. 60 Mal pro Sekunde!)
   // springenGehalten = wird der Sprungknopf gerade festgehalten? (nur fürs Fliegen wichtig)
   aktualisiere(dt, richtung, springen, kameraWinkel, springenGehalten = false) {
+    this.aktualisiereWind(dt);
     if (this.flugModus) {
       this.fliegeSchritt(dt, richtung, springenGehalten, kameraWinkel);
       if (this.flugModus) this.animiereFlug(dt);

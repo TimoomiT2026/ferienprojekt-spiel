@@ -97,6 +97,9 @@ function bauNebelEin() {
 }
 bauNebelEin();
 
+// Durchs Fernrohr ist weniger Dunst (fernrohr.js setzt das, 1 = normal)
+export const FERNSICHT = { dunst: 1, nebel: null };
+
 // Der Himmel wird wie in echt berechnet: Sonnenlicht wird in der Luft
 // gestreut ("Rayleigh-Streuung"). Darum ist der Himmel blau und der
 // Sonnenuntergang orange! Das Programm dafür kommt von three.js.
@@ -411,6 +414,7 @@ export class Himmel {
     szene.add(this.himmelsLicht, this.sonne, this.sonne.target);
 
     szene.fog = new THREE.Fog('#bfe3ff', 70, 330);
+    FERNSICHT.nebel = szene.fog; // damit das Fernrohr den Nebel kurz wegschieben kann
 
     // Spiegelungen (fürs Wasser): der Himmel wird einmal "fotografiert"
     this.pmrem = new THREE.PMREMGenerator(renderer);
@@ -455,7 +459,7 @@ export class Himmel {
     Object.assign(NEBEL.nebelGlanz.value, { x: hilfsFarbe.r, y: hilfsFarbe.g, z: hilfsFarbe.b });
     Object.assign(NEBEL.nebelSonne.value, { x: richtung.x, y: richtung.y, z: richtung.z });
     // Nachts weniger Bodendunst (sonst wird alles grau)
-    NEBEL.nebelHoehe.value.x = DUNST.boden * (0.35 + 0.65 * hell);
+    NEBEL.nebelHoehe.value.x = DUNST.boden * (0.35 + 0.65 * hell) * FERNSICHT.dunst;
 
     // Kuppel, Sterne und Mond wandern mit der Kamera mit (sie sind "unendlich" weit weg)
     this.kuppel.position.copy(kamera.position);

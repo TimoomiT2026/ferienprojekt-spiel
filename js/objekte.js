@@ -7,7 +7,7 @@
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { zufallMitSeed } from './rauschen.js';
-import { bodenHoehe, abstandZumDorf, abstandZumPfad, DORF } from './gelaende.js';
+import { bodenHoehe, abstandZumDorf, abstandZumPfad, DORF, INSELN, aufWelcherInsel, wasserHoeheBei, istKlippenWand } from './gelaende.js';
 import { baueSchaufel } from './figur.js';
 import { DINGE, SCHAUFEL_BILD } from './rucksack.js';
 
@@ -81,6 +81,10 @@ export class Objekte {
       if (hindernisse.trifft(x, z, 1.5)) continue;
       this.grabestellen.push({ pos: new THREE.Vector3(x, h, z), da: true, leerSeit: 0 });
     }
+    // Die neuen Inseln bekommen auch Grabehügel. WICHTIG: Die kommen HINTEN dran und
+    // haben ihren eigenen Zufall – so bleiben die alten Stellen genau gleich
+    // und alte Spielstände passen noch.
+    this.baueInselGrabestellen(hindernisse);
 
     const huegelGeo = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2);
     this.huegel = new THREE.InstancedMesh(huegelGeo, new THREE.MeshStandardMaterial({ color: '#8a5a34', roughness: 1 }), this.grabestellen.length);
@@ -102,6 +106,55 @@ export class Objekte {
         aktiv: () => stelle.da,
         ausfuehren: () => this.graben(stelle),
       });
+    });
+  }
+
+  // ---------- Grabehügel auf der Palmeninsel und oben auf dem Klippen-Plateau ----------
+  baueInselGrabestellen(hindernisse) {
+    const E = EINSTELLUNGEN;
+    const GRAD = Math.PI / 180;
+    // Hier soll kein Hügel liegen: bei den Inselbewohnern und den Schatz-Hügeln
+    const besetzt = (I) => {
+      const liste = [];
+      if (I.name === 'Palmeninsel') {
+        for (const [richtung, abstand] of (E.bewohner?.plaetze || [])) {
+          liste.push({ x: I.x + Math.cos(richtung * GRAD) * abstand, z: I.z + Math.sin(richtung * GRAD) * abstand });
+        }
+      }
+      for (const s of E.schatzHuegel || []) {
+        if (s.insel !== I.name) continue;
+        if (s.richtung !== undefined) liste.push({ x: I.x + Math.cos(s.richtung * GRAD) * s.abstand, z: I.z + Math.sin(s.richtung * GRAD) * s.abstand });
+        else liste.push({ x: s.x, z: s.z });
+      }
+      return liste;
+    };
+
+    INSELN.slice(1).forEach((I, nr) => {
+      const info = (E.inselFunde || {})[I.name];
+      if (!info) return;
+      const z = zufallMitSeed(4711 + nr * 13); // eigener Zufall für jede Insel
+      const frei = besetzt(I);
+      const neue = [];
+      for (let versuch = 0; versuch < 3000 && neue.length < info.anzahl; versuch++) {
+        const w = z() * Math.PI * 2;
+        const r = Math.sqrt(z()) * I.radius * 0.9;
+        const x = I.x + Math.cos(w) * r, zz = I.z + Math.sin(w) * r;
+        const h = bodenHoehe(x, zz);
+        if (aufWelcherInsel(x, zz) !== I.name) continue;
+        if (h < wasserHoeheBei(x, zz) + 1.2) continue; // nicht im Wasser / nicht in der Lagune
+        if (I.klippen) {
+          // Nur oben auf dem Plateau – da kommt man nur mit der Seilkanone hin!
+          if (h < I.plateauHoehe - 3 || istKlippenWand(x, zz)) continue;
+          if (I.lagune && Math.hypot(x - I.lagune.x, zz - I.lagune.z) < I.lagune.radius * 1.4) continue;
+        }
+        if (I.dorfPlatz && Math.hypot(x - I.dorfPlatz.x, zz - I.dorfPlatz.z) < I.dorfPlatz.radius + 12) continue; // nicht ins Dorf
+        if ((I.anlegestellen || []).some((a) => Math.hypot(x - a.x, zz - a.z) < 10)) continue; // nicht da, wo die Boote anlegen
+        if (frei.some((p) => Math.hypot(x - p.x, zz - p.z) < 8)) continue;
+        if (neue.some((s) => Math.hypot(x - s.pos.x, zz - s.pos.z) < 14)) continue; // schön verteilt
+        if (hindernisse.trifft(x, zz, 1.5)) continue;
+        neue.push({ pos: new THREE.Vector3(x, h, zz), da: true, leerSeit: 0, insel: I.name });
+      }
+      this.grabestellen.push(...neue);
     });
   }
 
@@ -152,7 +205,7 @@ export class Objekte {
         : 'Zum Graben brauchst du eine Schaufel! Vielleicht liegt eine beim Zelt? ✨', 5);
       return;
     }
-    const fund = this.zufallsFund();
+    const fund = this.zufallsFund(stelle.insel);
     if (!rucksack.passt(fund)) {
       meldung('Dein Rucksack ist voll! 🎒 Wirf etwas weg oder verkauf es im Dorf.', 4);
       return;
@@ -174,8 +227,10 @@ export class Objekte {
     }, 900);
   }
 
-  zufallsFund() {
-    const chancen = Object.entries(EINSTELLUNGEN.fundChancen);
+  // insel = auf welcher Insel gegraben wird (die neuen Inseln haben eigene Funde)
+  zufallsFund(insel) {
+    const eigene = insel && (EINSTELLUNGEN.inselFunde || {})[insel];
+    const chancen = Object.entries(eigene ? eigene.funde : EINSTELLUNGEN.fundChancen);
     const summe = chancen.reduce((s, [, c]) => s + c, 0);
     let wurf = Math.random() * summe;
     for (const [id, c] of chancen) {

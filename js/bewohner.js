@@ -207,7 +207,7 @@ export class Bewohner {
     const passt = (x, z) => {
       const h = bodenHoehe(x, z);
       if (h < wasserHoeheBei(x, z) + 1.4) return false; // nicht im Wasser
-      if (hindernisse && hindernisse.trifft(x, z, 1.2)) return false; // nicht in Palmen, Bäumen, Häusern
+      if (hindernisse && hindernisse.trifft(x, z, 1.8)) return false; // nicht in Palmen, Bäumen, Felsen, Häusern
       if (!flachGenug(x, z)) return false;
       if (P.dorfPlatz && Math.hypot(x - P.dorfPlatz.x, z - P.dorfPlatz.z) < P.dorfPlatz.radius + 3) return false; // nicht mitten im Dorf
       if ((P.anlegestellen || []).some((a) => Math.hypot(x - a.strandX, z - a.strandZ) < 8)) return false; // nicht da, wo die Boote anlegen
@@ -263,11 +263,15 @@ export class Bewohner {
     const glitzerMat = new THREE.MeshStandardMaterial({ color: '#fff7c2', emissive: '#ffd84a', emissiveIntensity: 4 });
     // Ein goldener Schimmer, der nach oben leuchtet – damit man den Hügel von weitem sieht
     const strahlMat = new THREE.MeshBasicMaterial({
-      color: '#ffd24a', transparent: true, opacity: 0.22, depthWrite: false,
+      color: '#ffd24a', vertexColors: true, transparent: true, opacity: 0.3, depthWrite: false,
       blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
     const strahlGeo = new THREE.CylinderGeometry(0.6, 1.3, 15, 20, 1, true); // so hoch, dass er über die Bäume schaut
     strahlGeo.translate(0, 7.5, 0);
+    // Unten hell, nach oben immer schwächer (schwarz = unsichtbar beim Leuchten)
+    const sp = strahlGeo.attributes.position, sf = new Float32Array(sp.count * 3);
+    for (let k = 0; k < sp.count; k++) sf.fill(Math.pow(1 - sp.getY(k) / 15, 1.5), k * 3, k * 3 + 3);
+    strahlGeo.setAttribute('color', new THREE.BufferAttribute(sf, 3));
     const muenzGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.07, 28);
     muenzGeo.rotateX(Math.PI / 2);
     const glitzerGeo = new THREE.SphereGeometry(0.08, 8, 6);
@@ -540,7 +544,7 @@ export class Bewohner {
       if (!h.gruppe.visible || d > 150) continue;
       h.muenze.rotation.y = t * 1.5;
       h.muenze.position.y = 0.55 + Math.sin(t * 2.5) * 0.06;
-      h.strahl.material.opacity = 0.16 + Math.sin(t * 2) * 0.06;
+      h.strahl.material.opacity = 0.26 + Math.sin(t * 2) * 0.08;
       for (let k = 0; k < 8; k++) {
         const funkeln = Math.max(0, Math.sin(t * 3.2 + k * 1.9));
         const w = k * 0.785 + t * 0.6;

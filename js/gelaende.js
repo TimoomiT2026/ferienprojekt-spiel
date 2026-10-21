@@ -439,11 +439,16 @@ function tiefenWegschneiden(geo) {
 // Die neuen Inseln werden nur gemalt, wenn man nah genug dran ist
 // (weiter weg ist eh alles im Dunst). Das hält das iPad schnell.
 const INSEL_SICHTWEITE = 360; // Meter hinter der Küste
+let inselSichtweite = INSEL_SICHTWEITE; // durchs Fernrohr sieht man weiter (siehe setzeSichtweite)
 const inselTeile = []; // { insel, gruppe }
 export function aktualisiereInseln(pos) {
   for (const t of inselTeile) {
-    t.gruppe.visible = Math.hypot(pos.x - t.insel.x, pos.z - t.insel.z) < t.insel.reichweite + INSEL_SICHTWEITE;
+    t.gruppe.visible = Math.hypot(pos.x - t.insel.x, pos.z - t.insel.z) < t.insel.reichweite + inselSichtweite;
   }
+}
+// Das Fernrohr darf die Inseln weiter weg malen lassen. Ohne Zahl = wieder normal.
+export function setzeSichtweite(meter) {
+  inselSichtweite = meter ?? INSEL_SICHTWEITE;
 }
 
 // Wasser für die Lagune oben auf dem Plateau (liegt höher als das Meer)

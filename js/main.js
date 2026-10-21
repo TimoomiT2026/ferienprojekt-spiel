@@ -39,6 +39,7 @@ import { Seilkanone } from './seilkanone.js';
 import { Tauchen } from './tauchen.js';
 import { Finale } from './finale.js';
 import { Ballon } from './ballon.js';
+import { Bewohner } from './bewohner.js';
 import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
@@ -150,7 +151,7 @@ objekte.interaktionen.push(...ballon.interaktionen);
 const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen || bewohner.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);
@@ -160,6 +161,11 @@ const tiere = new Tiere(szene, hindernisse);
 // ---------- Karte & Navigation ----------
 const karte = new Karte(spielfeld);
 karte.beiInselEntdeckt = (name) => meldung(`🏝️ Neue Insel entdeckt: ${name}!`, 4);
+
+// ---------- Die 10 Inselbewohner auf der Palmeninsel (einer hat die Taucherbrille) ----------
+// (erst NACH dem Palmendorf bauen, damit niemand in einer Hütte steht)
+const bewohner = new Bewohner(szene, { rucksack, meldung, musik, spieler, hindernisse, elternElement: spielfeld, karte });
+objekte.interaktionen.push(...bewohner.interaktionen);
 karte.punkt('zelt', { name: 'Base', bild: '🏠', x: base.ort.x, z: base.ort.z });
 karte.punkt('werkbank', { name: 'Werkbank', bild: '🔨', x: werkbank.ort.x, z: werkbank.ort.z });
 karte.punkt('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z });
@@ -180,6 +186,8 @@ const seilkanone = new Seilkanone(szene, { rucksack, meldung, musik, spieler, hi
 objekte.interaktionen.push(...seilkanone.interaktionen);
 aufgaben.spiel.base = base;
 aufgaben.spiel.haendler = haendler;
+aufgaben.spiel.karte = karte;
+aufgaben.spiel.bewohner = bewohner;
 aufgaben.spiel.pferde = pferde;
 
 // ---------- Zauberpilze & Fliegen ----------
@@ -191,6 +199,7 @@ const tauchen = new Tauchen(szene, { rucksack, meldung, musik, spieler, kamera, 
 objekte.interaktionen.push(...tauchen.interaktionen);
 const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
+aufgaben.spiel.tauchen = tauchen;
 rucksack.beimBenutzen = (id) => {
   if (id !== 'zauberpilz') return;
   if (boote.faehrt || pferde.reitet || seilkanone.beschaeftigt) {
@@ -366,6 +375,7 @@ function spielSchleife() {
       else if (aufgaben.offen) aufgaben.schliessen();
       else if (base.offen) base.schliessen();
       else if (ballon.offen) ballon.schliessen();
+      else if (bewohner.offen) bewohner.schliessen();
       else rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
     }
     if (karte.offen && rucksack.offen) rucksack.schliessen();
@@ -427,6 +437,7 @@ function spielSchleife() {
   tiere.aktualisiere(dt, pos, himmel.helligkeit);
   pferde.aktualisiere(dt, pos, himmel.helligkeit);
   pilze.aktualisiere(dt, pos);
+  bewohner.aktualisiere(dt, pos);
   aktualisiereNatur(dt, pos);
   // Geräusche der Umgebung: Meer, Rascheln im Busch, Platschen im Wasser
   umgebungsUhr -= dt;
@@ -519,6 +530,7 @@ function sammleSpielstand() {
     tauchen: tauchen.alsDaten(),
     ballon: ballon.alsDaten(),
     inseln: karte.entdeckteInseln,
+    bewohner: bewohner.alsDaten(),
     finale: finale.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
@@ -543,6 +555,7 @@ function wendeSpielstandAn(s) {
     tauchen.ladeDaten(s.tauchen || {});
     ballon.ladeDaten(s.ballon || {});
     karte.ladeEntdeckteInseln(s.inseln);
+    bewohner.ladeDaten(s.bewohner);
     ballonTag = tageszeit.tag;
     finale.ladeDaten(s.finale || {});
     ladeGefaellte(s.gefaellt);
@@ -640,7 +653,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {

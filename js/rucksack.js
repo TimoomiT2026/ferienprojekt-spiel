@@ -22,7 +22,7 @@ export const SEILKANONE_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-h
 </svg>`;
 
 // Die wertvolle Münze: groß, golden, mit Stern und Glanz (für die Taucherbrille)
-export const WERTVOLLE_MUENZE_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hidden="true">
+export const WERTVOLLE_MUENZE_BILD = `<svg class="svg-bild muenze-bild" viewBox="0 0 64 64" aria-hidden="true">
   <circle cx="32" cy="32" r="27" fill="#f5b91f" stroke="#b87a00" stroke-width="3"/>
   <circle cx="32" cy="32" r="20" fill="#ffd54a" stroke="#d99a00" stroke-width="2"/>
   <path d="M32 18 l4 9 10 1 -7.5 6.5 2.3 10 -8.8 -5.2 -8.8 5.2 2.3 -10 -7.5 -6.5 10 -1 z" fill="#fff1a8" stroke="#d99a00" stroke-width="1.5"/>
@@ -51,6 +51,9 @@ export const DINGE = {
   schuh: { name: 'Alter Schuh', bild: '👞', text: 'Igitt, nass. Den willst du nicht anziehen.' },
   dose: { name: 'Alte Dose', bild: '🥫', text: 'Müll aus dem Meer. Wirf ihn lieber weg.' },
   alge: { name: 'Alge', bild: '🌿', text: 'Glitschig und grün.' },
+  // Funde von der Palmeninsel (Etappe 3) – nur zum Verkaufen
+  muschel: { name: 'Muschel', bild: '🐚', artikel: 'eine', text: 'Eine schöne Muschel vom Strand der Palmeninsel. Kann man verkaufen.' },
+  kokosnuss: { name: 'Kokosnuss', bild: '🥥', artikel: 'eine', text: 'Hart wie ein Stein! Essen kann man sie nicht – aber verkaufen.' },
   karotte: { name: 'Karotte', bild: '🥕', essen: true, werkzeug: true, text: 'Aus deinem Garten! Eine Mahlzeit – oder Futter für dein Pferd (in die Hand nehmen).' },
   apfel: { name: 'Apfel', bild: '🍎', werkzeug: true, text: 'Pferde lieben Äpfel! Nimm einen in die Hand und geh zu einem Wildpferd.' },
   leine: { name: 'Leine', bild: '🪢', werkzeug: true, artikel: 'eine', text: 'Aus dem Leder vom alten Schuh. In die Hand nehmen, dann kannst du dein Pferd führen und am Stall anbinden.' },

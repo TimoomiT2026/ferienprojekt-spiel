@@ -65,3 +65,6 @@
   .bw-text { font-size: 20px; }
   .bw-gesicht { width: 44px; height: 44px; font-size: 26px; }
 }
+
+/* Die wertvolle Münze im Rucksack: größer und mit goldenem Schimmer */
+.muenze-bild { width: 1.35em; height: 1.35em; filter: drop-shadow(0 0 5px #ffd84a); }
