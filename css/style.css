@@ -342,8 +342,8 @@ button { font-family: inherit; cursor: pointer; }
 @keyframes wackeln { 25% { transform: rotate(-6deg) scale(1.1); } 75% { transform: rotate(6deg) scale(1.1); } }
 
 /* ---------- Händler ---------- */
-#haendler-fenster { border-color: #3c8d4a; width: min(640px, 94vw); }
-#haendler-fenster .geld { font-size: 24px; font-weight: bold; color: #7a4b00; margin-left: auto; margin-right: 16px; }
+.haendler-fenster { border-color: #3c8d4a; width: min(640px, 94vw); }
+.haendler-fenster .geld { font-size: 24px; font-weight: bold; color: #7a4b00; margin-left: auto; margin-right: 16px; }
 .reiter { display: flex; gap: 10px; margin-bottom: 12px; }
 .reiter-knopf { flex: 1; height: 56px; border: 3px solid #cfe3c4; border-radius: 18px; background: #f1f7ec; font-size: 20px; font-weight: bold; color: #2d5a22; }
 .reiter-knopf.aktiv { background: #3c8d4a; border-color: #3c8d4a; color: #fff; }

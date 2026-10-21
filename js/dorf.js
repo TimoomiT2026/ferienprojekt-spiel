@@ -25,7 +25,7 @@ function mat(farbe, extra = {}) {
 }
 
 // ---------- Der Bausatz sammelt alle Teile, sortiert nach Material ----------
-class Bausatz {
+export class Bausatz {
   constructor() {
     this.teile = new Map();
   }

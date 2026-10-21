@@ -331,6 +331,27 @@ export const EINSTELLUNGEN = {
   // So ungenau ist das "❓" auf der Karte (Meter)
   schatzKarteUngenau: 18,
 
+  // ---------- Palmendorf (das zweite Dorf auf der Palmeninsel) ----------
+  palmendorf: {
+    // Das verkauft der Palmen-Händler (Münzen). Ballon und Rucksack gibt es nur im ersten Dorf!
+    kaufPreise: {
+      brot: 25,
+      apfel: 4, // Pferdefutter
+      koeder: 3, // Würmer
+      holz: 12,
+    },
+    // So viele Sachen kauft er dir höchstens an einem Tag ab (er zählt selbst, nicht zusammen mit dem ersten Händler)
+    kauftProTag: 10,
+    // Wie viele Strandhütten auf Stelzen stehen im Dorf?
+    huetten: 4,
+    // Wie viele Fackeln leuchten nachts rund um den Platz?
+    fackeln: 6,
+    // Wie hell leuchten die Fackeln nachts? (0 = aus)
+    fackelLeuchten: 3.5,
+    // Ab so viel Metern Abstand wird das Dorf nicht mehr gemalt (spart Arbeit fürs iPad)
+    sichtweite: 320,
+  },
+
   // ---------- Seilkanone ----------
   // Kanone in die Hand, vor eine hohe Wand stellen, Hochschießen!
   // Jeder Schuss braucht 1 Seil aus dem Rucksack, die Kanone bleibt.

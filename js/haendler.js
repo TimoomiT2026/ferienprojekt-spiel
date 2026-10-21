@@ -8,15 +8,20 @@ import { EINSTELLUNGEN } from './einstellungen.js';
 import { DINGE } from './rucksack.js';
 import { knopf } from './steuerung.js';
 
+// Es kann mehrere Händler geben (Dorf, Palmendorf …). Jeder hat seinen
+// eigenen Namen, seine eigene Kauf-Liste und zählt selbst, wie viel er
+// heute schon gekauft hat. Ohne "art" ist es der Händler aus dem ersten Dorf.
+//   art = { name, bild, fensterId, kaufPreise, kauftProTag, gruss }
 export class Haendler {
-  constructor(spiel) {
+  constructor(spiel, art = {}) {
     this.spiel = spiel; // { rucksack, meldung, musik, tageszeit, elternElement }
+    this.art = art;
     this.seite = 'kaufen';
     this.fenster = document.createElement('div');
-    this.fenster.id = 'haendler-fenster';
-    this.fenster.className = 'spiel-fenster';
+    this.fenster.id = art.fensterId || 'haendler-fenster';
+    this.fenster.className = 'spiel-fenster haendler-fenster';
     this.fenster.innerHTML = `
-      <div class="fenster-kopf"><h2>🧑‍🌾 Händler</h2><div class="geld"></div><button class="zu" aria-label="Schließen">✕</button></div>
+      <div class="fenster-kopf"><h2>${art.bild || '🧑‍🌾'} ${art.name || 'Händler'}</h2><div class="geld"></div><button class="zu" aria-label="Schließen">✕</button></div>
       <div class="reiter">
         <button class="reiter-knopf" data-seite="kaufen">🛒 Kaufen</button>
         <button class="reiter-knopf" data-seite="verkaufen">💰 Verkaufen</button>
@@ -38,9 +43,19 @@ export class Haendler {
     this.heuteGekauft = 0;
   }
 
+  // Was verkauft DIESER Händler? (Zahlen stehen in einstellungen.js)
+  get kaufPreise() {
+    return this.art.kaufPreise || EINSTELLUNGEN.kaufPreise;
+  }
+
+  // Wie viele Sachen kauft DIESER Händler an einem Tag?
+  get kauftProTag() {
+    return this.art.kauftProTag ?? EINSTELLUNGEN.haendlerKauftProTag;
+  }
+
   oeffnen() {
     this.offen = true;
-    this.info('„Hallo, Forscher! Was darf es heute sein?“');
+    this.info(this.art.gruss || '„Hallo, Forscher! Was darf es heute sein?“');
     this.zeichnen();
     this.fenster.classList.add('offen');
   }
@@ -86,7 +101,7 @@ export class Haendler {
 
     this.neuerTagPruefen();
     if (this.seite === 'kaufen') {
-      for (const [id, preis] of Object.entries(EINSTELLUNGEN.kaufPreise)) {
+      for (const [id, preis] of Object.entries(this.kaufPreise)) {
         const ding = DINGE[id];
         // Rucksack-Upgrades nur zeigen, wenn sie noch etwas bringen
         if (ding.upgradePlaetze && rucksack.plaetze.length >= ding.upgradePlaetze) continue;
@@ -95,7 +110,7 @@ export class Haendler {
         zeile(id, `${preis} 🪙`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
       }
     } else {
-      const rest = EINSTELLUNGEN.haendlerKauftProTag - this.heuteGekauft;
+      const rest = this.kauftProTag - this.heuteGekauft;
       const kopf = document.createElement('p');
       kopf.className = 'haendler-hinweis';
       kopf.textContent = rest > 0
@@ -146,10 +161,10 @@ export class Haendler {
     return s;
   }
 
-  kaufen(id, preis = EINSTELLUNGEN.kaufPreise[id]) {
+  kaufen(id, preis = this.kaufPreise[id]) {
     const { rucksack, musik } = this.spiel;
-    if (EINSTELLUNGEN.kaufPreise[id] === undefined) return; // das verkauft der Händler nicht
-    preis = EINSTELLUNGEN.kaufPreise[id];
+    if (this.kaufPreise[id] === undefined) return; // das verkauft dieser Händler nicht
+    preis = this.kaufPreise[id];
     if (rucksack.muenzen < preis) {
       musik.gehtNicht();
       this.info('„Dafür hast du nicht genug Münzen. Verkauf mir doch etwas!“');
@@ -193,7 +208,7 @@ export class Haendler {
   verkaufen(id, anzahl) {
     const { rucksack, musik } = this.spiel;
     this.neuerTagPruefen();
-    anzahl = Math.min(anzahl, rucksack.anzahl(id), EINSTELLUNGEN.haendlerKauftProTag - this.heuteGekauft);
+    anzahl = Math.min(anzahl, rucksack.anzahl(id), this.kauftProTag - this.heuteGekauft);
     if (anzahl <= 0) {
       musik.gehtNicht();
       this.info('„Für heute habe ich genug gekauft! Komm morgen wieder.“');

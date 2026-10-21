@@ -266,8 +266,8 @@ export class Bewohner {
       color: '#ffd24a', transparent: true, opacity: 0.22, depthWrite: false,
       blending: THREE.AdditiveBlending, side: THREE.DoubleSide,
     });
-    const strahlGeo = new THREE.CylinderGeometry(0.7, 1.3, 9, 20, 1, true);
-    strahlGeo.translate(0, 4.5, 0);
+    const strahlGeo = new THREE.CylinderGeometry(0.6, 1.3, 15, 20, 1, true); // so hoch, dass er über die Bäume schaut
+    strahlGeo.translate(0, 7.5, 0);
     const muenzGeo = new THREE.CylinderGeometry(0.32, 0.32, 0.07, 28);
     muenzGeo.rotateX(Math.PI / 2);
     const glitzerGeo = new THREE.SphereGeometry(0.08, 8, 6);

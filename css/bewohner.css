@@ -6,7 +6,7 @@
 #bewohner-blase {
   position: absolute;
   left: 50%;
-  bottom: clamp(70px, 14vh, 130px);
+  bottom: 12px; /* ganz unten – so sieht man die Person noch, die redet */
   width: min(600px, calc(100vw - 32px));
   padding: 16px 20px 16px 22px;
   border-radius: 36px;
@@ -61,7 +61,7 @@
 
 /* Kleine Bildschirme: etwas kompakter */
 @media (max-height: 600px) {
-  #bewohner-blase { bottom: 60px; padding: 12px 16px; }
+  #bewohner-blase { padding: 10px 16px; }
   .bw-text { font-size: 20px; }
   .bw-gesicht { width: 44px; height: 44px; font-size: 26px; }
 }
