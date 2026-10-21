@@ -98,7 +98,7 @@ function strahlenBild() {
 // ---------- Aussehen der Anzeigen (HTML) ----------
 const STIL = `
 #tauch-blick { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.5s;
-  background: radial-gradient(ellipse at 50% 35%, rgba(60,170,220,0.18), rgba(5,40,90,0.55) 85%);
+  background: radial-gradient(ellipse at 50% 35%, rgba(60,170,220,0.18), rgba(5,40,90,0.38) 85%);
   overflow: hidden; }
 #tauch-blick.an { opacity: 1; }
 #tauch-blick .blase { position: absolute; bottom: -40px; border-radius: 50%;
@@ -207,12 +207,13 @@ export class Tauchen {
     form.computeVertexNormals();
     this.steinMaterial = new THREE.MeshStandardMaterial({
       color: '#ff2a1a',
-      emissive: '#ff1200',
+      emissive: '#ff0500',
       emissiveIntensity: E.insadoriumLeuchten,
       roughness: 0.25,
       metalness: 0.1,
       flatShading: true, // Facetten wie bei einem geschliffenen Stein
       fog: false, // der blaue Unterwasser-Nebel darf das Rot nicht verschlucken
+      toneMapped: false, // sonst wird sehr helles Rot gelb-weiß
     });
     this.stein = new THREE.Mesh(form, this.steinMaterial);
     this.steinGruppe.add(this.stein);
@@ -220,7 +221,7 @@ export class Tauchen {
     // Ein heller Kern innen drin (ganz weiß-rot = am grellsten)
     const kern = new THREE.Mesh(
       new THREE.SphereGeometry(STEIN_GROESSE * 0.55, 16, 12),
-      new THREE.MeshBasicMaterial({ color: new THREE.Color(9, 1.2, 0.6), transparent: true, opacity: 0.85, toneMapped: false, depthWrite: false, fog: false })
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(6, 0.3, 0.12), transparent: true, opacity: 0.85, toneMapped: false, depthWrite: false, fog: false })
     );
     this.stein.add(kern);
 
