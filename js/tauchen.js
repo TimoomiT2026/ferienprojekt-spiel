@@ -227,13 +227,10 @@ export class Tauchen {
 
     // Der Lichtschein drumherum (ein „Sprite“ schaut immer zur Kamera)
     this.schein = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: leuchtBild(), color: new THREE.Color(5, 0.5, 0.28), transparent: true,
+      map: leuchtBild(), color: new THREE.Color(5, 0.35, 0.18), transparent: true,
       blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false,
     }));
     this.schein.scale.setScalar(4);
-    // Der Schein liegt ÜBER dem Stein – so blendet er richtig ("fast nicht reingucken")
-    this.schein.material.depthTest = false;
-    this.schein.renderOrder = 10;
     this.steinGruppe.add(this.schein);
     // Strahlen, die sich langsam drehen – darum „kann man fast nicht hineinschauen“
     this.strahlen = new THREE.Sprite(new THREE.SpriteMaterial({
