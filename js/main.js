@@ -5,7 +5,7 @@
 // =============================================================
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { baueGelaende, bodenHoehe, DORF, WASSER_HOEHE, aufWelcherInsel } from './gelaende.js';
+import { baueGelaende, bodenHoehe, DORF, WASSER_HOEHE, aufWelcherInsel, INSELN } from './gelaende.js';
 import { baueNatur, aktualisiereNatur, wenigerDetails, buschInDerNaehe, grasDichte, wasserInDerNaehe } from './natur.js';
 import { Hindernisse } from './hindernisse.js';
 import { Himmel } from './himmel.js';
@@ -159,6 +159,7 @@ const tiere = new Tiere(szene, hindernisse);
 
 // ---------- Karte & Navigation ----------
 const karte = new Karte(spielfeld);
+karte.beiInselEntdeckt = (name) => meldung(`🏝️ Neue Insel entdeckt: ${name}!`, 4);
 karte.punkt('zelt', { name: 'Base', bild: '🏠', x: base.ort.x, z: base.ort.z });
 karte.punkt('werkbank', { name: 'Werkbank', bild: '🔨', x: werkbank.ort.x, z: werkbank.ort.z });
 karte.punkt('dorf', { name: 'Dorf', bild: '🏘️', x: DORF.x, z: DORF.z });
@@ -252,6 +253,12 @@ boote.liste.forEach((b, i) => fernrohr.ziel('boot' + i, {
       boote.beiEntdeckt?.(b);
     }
   },
+}));
+
+// Die neuen Inseln kann man auch durchs Fernrohr entdecken
+INSELN.slice(1).forEach((I) => fernrohr.ziel('insel-' + I.name, {
+  name: I.name, bild: '🏝️', pos: new THREE.Vector3(I.x, 0, I.z), hoehe: I.plateauHoehe ?? 8,
+  beiEntdeckt: () => karte.entdeckeInsel(I.name),
 }));
 
 boote.beiEntdeckt = (boot) => {
@@ -511,6 +518,7 @@ function sammleSpielstand() {
     seilkanone: seilkanone.alsDaten(),
     tauchen: tauchen.alsDaten(),
     ballon: ballon.alsDaten(),
+    inseln: karte.entdeckteInseln,
     finale: finale.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
@@ -534,6 +542,7 @@ function wendeSpielstandAn(s) {
     seilkanone.ladeDaten(s.seilkanone || {});
     tauchen.ladeDaten(s.tauchen || {});
     ballon.ladeDaten(s.ballon || {});
+    karte.ladeEntdeckteInseln(s.inseln);
     ballonTag = tageszeit.tag;
     finale.ladeDaten(s.finale || {});
     ladeGefaellte(s.gefaellt);
