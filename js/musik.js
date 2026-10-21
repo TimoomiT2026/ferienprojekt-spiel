@@ -467,11 +467,14 @@ export class Musik {
     if (!this.ctx || staerke <= 0) return;
     const t = this.ctx.currentTime;
     const laut = EINSTELLUNGEN.raschelnLautstaerke * Math.min(1, staerke);
-    // Ein paar kurze Knister-Stöße, jeder ein bisschen anders
-    const stuecke = 2 + Math.floor(Math.random() * 3);
-    for (let k = 0; k < stuecke; k++) {
-      const f = zwischen(2200, 5000);
-      this.rauschStoss(t + k * zwischen(0.03, 0.07), zwischen(0.05, 0.12), laut * zwischen(0.5, 1), 'bandpass', f, f * 0.8, 1.2, 0.01);
+    // Ein weiches "Wusch": längeres, tiefes Rauschen, das langsam an- und
+    // abschwillt. (Kurze, harte Stöße klingen wie Klicken – darum nicht!)
+    const f = zwischen(1300, 2200);
+    this.rauschStoss(t, zwischen(0.28, 0.4), laut, 'bandpass', f, f * 0.6, 0.5, zwischen(0.07, 0.11));
+    // manchmal ein zweites, leiseres Wusch, das sich überlappt
+    if (Math.random() < 0.5) {
+      const f2 = zwischen(1000, 1800);
+      this.rauschStoss(t + zwischen(0.08, 0.15), zwischen(0.25, 0.35), laut * 0.6, 'bandpass', f2, f2 * 0.7, 0.5, 0.09);
     }
   }
 

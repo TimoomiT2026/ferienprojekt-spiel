@@ -251,7 +251,7 @@ export const EINSTELLUNGEN = {
   // Meeresrauschen, wenn man am Wasser ist
   meerLautstaerke: 0.35,
   // Rascheln in Büschen und im Gras
-  raschelnLautstaerke: 0.35,
+  raschelnLautstaerke: 0.2,
   // Platschen ins Wasser
   wasserLautstaerke: 0.6,
   // Angel-Geräusche (Surren, Blubb, Jubel)
