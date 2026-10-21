@@ -137,6 +137,8 @@ function inselGewichte(I, x, z, y, steil) {
   let fels = S(steil + wackel * 0.08, 0.2, 0.34); // steile Wände sind Fels
   let sand;
   if (I.klippen) {
+    // An der Klippe ist schon ein bisschen schräg = Fels (sonst gibt es Sand-Zacken an der Wand)
+    fels = Math.max(fels, S(steil, 0.08, 0.16) * S(y, 1.0, 2.2));
     sand = 1 - S(y + wackel * 0.5, 1.1, 2.0);
     // Ein Sandufer rund um die Lagune
     const L = I.lagune;
@@ -212,8 +214,9 @@ function anlegestelleSuchen(I, winkel) {
   for (let d = I.radius * 0.4; d < I.reichweite; d += 0.5) {
     const h = bodenHoehe(I.x + c * d, I.z + n * d);
     if (h > 0.3) land = d;
-    else if (land !== null && h < -0.6) {
-      return { x: I.x + c * (d + 1), z: I.z + n * (d + 1), strandX: I.x + c * (land - 2), strandZ: I.z + n * (land - 2) };
+    else if (land !== null && h < -0.45) {
+      // x, z = hier schwimmt das Boot (ca. 2–3 m vor dem trockenen Strand); strandX/Z = trockener Strand
+      return { x: I.x + c * d, z: I.z + n * d, strandX: I.x + c * (land - 2), strandZ: I.z + n * (land - 2) };
     }
   }
   return null;
