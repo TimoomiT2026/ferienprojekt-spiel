@@ -41,3 +41,6 @@ Holz + Feuer kaufen → Lager bauen   →→→   nächster Morgen  →→→ wi
 
 ## Was ich in der Mindmap nicht lesen konnte
 „Beybadex“ (Beyblade X?), „cholatos“, „Trane“ (Truhe? Tränke?), „MZT“, „Mob kaufen“?
+
+## Das geheime Material: Insadorium 🔮
+Der Forscher sucht auf der Inselgruppe nach dem **Insadorium**. Den Namen hat der Game Designer an Tag 3 erfunden.

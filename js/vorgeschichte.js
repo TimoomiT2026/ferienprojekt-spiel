@@ -4,15 +4,15 @@
 // =============================================================
 import { knopf } from './steuerung.js';
 
-// Den Namen des geheimen Materials erfindet der Game Designer noch!
-export const MATERIAL = 'das geheime Material';
+// So heißt das geheime Material – erfunden vom Game Designer an Tag 3!
+export const MATERIAL = 'Insadorium';
 
 const SEITEN = [
   {
     bild: '📔',
     text: `<b>Forscher-Tagebuch, Tag 8</b><br><br>
       Seit einer Woche bin ich jetzt auf dieser Inselgruppe. Ich bin Forscher –
-      und ich suche nach etwas ganz Besonderem: <b>${MATERIAL}</b>.`,
+      und ich suche nach etwas ganz Besonderem: dem <b>${MATERIAL}</b> 🔮.`,
   },
   {
     bild: '🕵️',

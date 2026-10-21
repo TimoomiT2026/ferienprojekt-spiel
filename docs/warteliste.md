@@ -33,7 +33,7 @@ Echte Spielestudios haben so eine Liste auch, sie heißt dort **„Backlog“**.
 - [ ] Hohe Klippen an den anderen Inseln
 - [ ] Seilkanone bauen (Holz, Eisen, Seil, Widerhaken) – schwer zu schaffen!
 - [ ] Heißluftballon (Händler): an der Base doppelt antippen → sofort ins Dorf
-- [ ] Das geheime Material finden (Name erfindet der Game Designer!)
+- [ ] Das **Insadorium** finden (so heißt das geheime Material!)
 
 ## Vom Game Designer (Tag 1)
 - [ ] **An jeder beliebigen Stelle ein Lager oder eine Mine bauen**
