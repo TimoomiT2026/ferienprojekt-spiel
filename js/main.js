@@ -606,7 +606,9 @@ function wendeSpielstandAn(s) {
   }
 }
 
+let neuAnfangen = false; // wurde "Neues Spiel" gedrückt?
 function speichern() {
+  if (neuAnfangen) return; // gerade wird alles gelöscht – nicht wieder speichern!
   if (laeuft && !boote.faehrt && !pferde.reitet && !seilkanone.beschaeftigt && !ballon.faehrt && !tauchen.taucht) speichereSpielstand(sammleSpielstand());
 }
 setInterval(speichern, 10000);
@@ -628,16 +630,19 @@ if (gespeichert) {
   neu.className = 'neues-spiel';
   neu.textContent = '🔄 Neues Spiel anfangen';
   startBildschirm.appendChild(neu);
+  // Der Finger-Tipp auf diesen Knopf darf NICHT auch noch "Weiterspielen" auslösen
+  neu.addEventListener('touchend', (e) => e.stopPropagation());
   knopf(neu, () => {
+    neuAnfangen = true; // ab jetzt: nichts mehr speichern, nichts starten
     if (confirm('Wirklich ganz von vorn anfangen? Dein Spielstand wird gelöscht.')) {
       loescheSpielstand();
       location.reload();
-    }
+    } else neuAnfangen = false;
   });
 }
 
 function starte() {
-  if (laeuft) return;
+  if (laeuft || neuAnfangen) return;
   musik.start();
   startBildschirm.classList.add('weg');
   const los = () => {
