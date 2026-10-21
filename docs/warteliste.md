@@ -37,7 +37,7 @@ Entscheidungen vom Game Designer (Tag 3):
   - **Erst ab diesem Satz** ist auf jeder Insel eine wertvolle Münze in einem Grabehügel versteckt (vorher gäbe die Münze keinen Sinn).
   - Die Taucherbrille gibt es also **nicht** beim Händler.
 - Seilkanone: Seil = 3 Schnüre, Widerhaken = 2 Eisenerz + 1 Stein, Seilkanone = 4 Holz + 3 Eisenerz + Seil + Widerhaken (Werkbank)
-- Heißluftballon: 150 Münzen beim Händler, Ziel aussuchen (Dorf, Palmendorf, Base)
+- Heißluftballon: 150 Münzen beim Händler, Ziel aussuchen (Dorf, Palmendorf, Base); er fliegt jeden Morgen von selbst zurück zur Base
 - Karotten gibt es nur aus dem eigenen Garten (bleibt so)
 
 - [ ] Inselgruppe: mehrere Inseln mit anderen Materialien, Dörfern und Händlern

@@ -210,6 +210,14 @@ export class Ballon {
     return z;
   }
 
+  // Jeden Morgen fliegt der Ballon von selbst heim zur Base (Idee vom Game Designer)
+  morgensHeim() {
+    if (!this.gekauft || this.faehrt || this.ort === 'base') return false;
+    this.ort = 'base';
+    this.platzieren();
+    return true;
+  }
+
   freischalten(id) {
     return this.ziel(id, { freigeschaltet: true });
   }

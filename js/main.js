@@ -315,7 +315,8 @@ const uhr = new THREE.Clock();
 let laeuft = false;
 let warNacht = false;
 let umgebungsUhr = 0, wasserNah = 0;
-let inselUhr = 0; // prüft 1× pro Sekunde, auf welcher Insel man ist // für Meeresrauschen & Rascheln
+let inselUhr = 0; // prüft 1× pro Sekunde, auf welcher Insel man ist
+let ballonTag = 1; // an welchem Tag haben wir zuletzt nach dem Ballon geschaut? // für Meeresrauschen & Rascheln
 
 // Automatische Qualität: Ruckelt es, rechnen wir mit etwas weniger Pixeln
 let bilderGezaehlt = 0, messZeit = 0;
@@ -439,6 +440,10 @@ function spielSchleife() {
   // Aus der Luft kann man nichts anfassen
   let naechste = objekte.aktualisiere(dt, pos);
   if (ballon.faehrt) naechste = null;
+  if (tageszeit.tag !== ballonTag) {
+    ballonTag = tageszeit.tag;
+    if (laeuft && ballon.morgensHeim()) setTimeout(() => meldung('🎈 Dein Ballon ist über Nacht heim zur Base geflogen.', 5), 6000);
+  }
   // Wer auf der Palmeninsel war, kann mit dem Ballon ins Palmendorf fliegen
   inselUhr -= dt;
   if (laeuft && inselUhr <= 0) {
@@ -529,6 +534,7 @@ function wendeSpielstandAn(s) {
     seilkanone.ladeDaten(s.seilkanone || {});
     tauchen.ladeDaten(s.tauchen || {});
     ballon.ladeDaten(s.ballon || {});
+    ballonTag = tageszeit.tag;
     finale.ladeDaten(s.finale || {});
     ladeGefaellte(s.gefaellt);
     lagerfeuer.brennt = s.feuer || 0;
