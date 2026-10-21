@@ -7,7 +7,7 @@
 //  unter Wasser – oben auf der Klippeninsel, im See auf dem Plateau.
 //
 //  So geht es:
-//   1. Taucherbrille beim Händler kaufen (sie muss nur im Rucksack sein)
+//   1. Taucherbrille von einem Inselbewohner auf der Palmeninsel bekommen (bewohner.js; sie muss nur im Rucksack sein)
 //   2. An tiefes Wasser gehen → Knopf „🤿 Tauchen“
 //   3. Joystick = schwimmen, Sprungknopf festhalten = nach oben,
 //      loslassen = langsam nach unten. Achtung, die Luft reicht nicht lange!

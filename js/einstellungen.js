@@ -143,7 +143,8 @@ export const EINSTELLUNGEN = {
     rucksackGross: 60, // Rucksack mit 18 Plätzen
     rucksackRiesig: 120, // Rucksack mit 24 Plätzen
     ballon: 150, // Heißluftballon – steht dann an der Base (nur einmal zu kaufen)
-    taucherbrille: 40, // zum Tauchen (siehe "Tauchen" unten)
+    // (Die Taucherbrille gibt es NICHT mehr beim Händler! Entscheidung des Game Designers:
+    //  Man bekommt sie von einem Inselbewohner auf der Palmeninsel – siehe "Inselbewohner" unten.)
   },
 
   // ---------- Essen & Schlafen ----------
@@ -293,6 +294,42 @@ export const EINSTELLUNGEN = {
   insadoriumLeuchten: 7,
   // Wie dicht ist das Wasser? So weit (Meter) kann man unter Wasser sehen
   tauchSichtweite: 30,
+
+  // ---------- Inselbewohner & die wertvollen Münzen (Palmeninsel) ----------
+  // Auf der Palmeninsel wohnen 10 Menschen. EINER hat die Taucherbrille.
+  // Er leiht sie dir für 3 wertvolle Münzen – eine von jeder Insel.
+  bewohner: {
+    // Wo stehen sie? Richtung in Grad (0 = Osten, 90 = Süden, 180 = Westen, 270 = Norden)
+    // und Abstand von der Inselmitte (Meter). Steht da ein Baum, sucht er sich daneben Platz.
+    plaetze: [
+      [0, 60], [300, 55], [40, 80], [90, 45], [120, 20],
+      [200, 30], [270, 75], [220, 85], [130, 82], [175, 72],
+    ],
+    // Welcher Bewohner hat die Taucherbrille? (0 = der erste in der Liste oben … 9 = der letzte)
+    brilleBei: 9,
+    // So viele wertvolle Münzen will er haben
+    muenzenNoetig: 3,
+    // So nah muss man ran, damit "💬 Ansprechen" kommt (Meter)
+    ansprechRadius: 3.2,
+    // Ab so nah schauen sie zu dir (Meter)
+    anschauWeite: 10,
+    // Weiter weg als das werden sie nicht gemalt (Meter) – spart Rechenkraft
+    sichtWeite: 130,
+    // Bis so weit weg bewegen sie sich ein bisschen (Meter)
+    animierWeite: 50,
+  },
+  // Die 3 goldenen Grabehügel mit den wertvollen Münzen. Sie erscheinen erst,
+  // wenn der Bewohner mit der Taucherbrille dir davon erzählt hat!
+  //   x, z = wo (Meter, wie auf der Karte). Steht da ein Baum, rutscht der Hügel ein Stück.
+  schatzHuegel: [
+    { insel: 'Startinsel', x: -103, z: 38 }, // im Wald auf dem Berg, westlich der Base
+    { insel: 'Palmeninsel', richtung: 250, abstand: 65 }, // am anderen Ende der Insel (Nordwesten)
+    { insel: 'Klippeninsel', richtung: 60, abstand: 76 }, // oben am Rand des Plateaus – Seilkanone!
+  ],
+  // Zeigt die Karte ungefähr, wo eine Münze liegt? (ein "❓" – nicht ganz genau)
+  schatzAufKarte: true,
+  // So ungenau ist das "❓" auf der Karte (Meter)
+  schatzKarteUngenau: 18,
 
   // ---------- Seilkanone ----------
   // Kanone in die Hand, vor eine hohe Wand stellen, Hochschießen!

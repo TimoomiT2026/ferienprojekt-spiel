@@ -66,7 +66,7 @@ function dreh(umriss, seiten = 18, start = 0, laenge = Math.PI * 2) {
   return new THREE.LatheGeometry(umriss.map(([r, y]) => new THREE.Vector2(r, y)), seiten, start, laenge);
 }
 
-// farben = { shirt, hose, haare, haut, hut }
+// farben = { shirt, hose, haare, haut, hut, bart }  (bart: false = ohne Bart)
 // Ein Erwachsener (der Händler): mit Bart, Schürze, Gürtel und Hut.
 export function baueFigur(farben) {
   const figur = new THREE.Group();
@@ -103,9 +103,9 @@ export function baueFigur(farben) {
     teile.push(teil(new THREE.SphereGeometry(0.05, 8, 6), '#e08a78', [s * 0.2, 1.93, 0.25], [1, 0.7, 0.4]));
   }
   teile.push(teil(new THREE.SphereGeometry(0.065, 12, 10), dunkler(farben.haut, 0.93), [0, 1.95, 0.33], [0.9, 1, 1.1])); // Nase
-  // Bart: um Kinn und Wangen, dazu ein Schnurrbart
-  teile.push(teil(new THREE.SphereGeometry(0.33, 18, 10, Math.PI * 0.08, Math.PI * 0.84, Math.PI * 0.55, Math.PI * 0.4), farben.haare, [0, 1.99, 0.02], [1, 1.1, 1.05]));
-  for (const s of [-1, 1]) {
+  // Bart: um Kinn und Wangen, dazu ein Schnurrbart (bart: false = ohne Bart)
+  if (farben.bart !== false) teile.push(teil(new THREE.SphereGeometry(0.33, 18, 10, Math.PI * 0.08, Math.PI * 0.84, Math.PI * 0.55, Math.PI * 0.4), farben.haare, [0, 1.99, 0.02], [1, 1.1, 1.05]));
+  for (const s of farben.bart !== false ? [-1, 1] : []) {
     teile.push(teil(new THREE.CapsuleGeometry(0.035, 0.1, 4, 8), farben.haare, [s * 0.065, 1.875, 0.31], [1, 1, 1], [0, 0, Math.PI / 2 - s * 0.35]));
   }
   // Haare hinten und an den Seiten (unter dem Hut)

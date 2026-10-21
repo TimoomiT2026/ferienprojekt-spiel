@@ -21,6 +21,14 @@ export const SEILKANONE_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-h
   <circle cx="20" cy="48" r="7" fill="#9a6a3c" stroke="#5e3d1f" stroke-width="2"/>
 </svg>`;
 
+// Die wertvolle Münze: groß, golden, mit Stern und Glanz (für die Taucherbrille)
+export const WERTVOLLE_MUENZE_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hidden="true">
+  <circle cx="32" cy="32" r="27" fill="#f5b91f" stroke="#b87a00" stroke-width="3"/>
+  <circle cx="32" cy="32" r="20" fill="#ffd54a" stroke="#d99a00" stroke-width="2"/>
+  <path d="M32 18 l4 9 10 1 -7.5 6.5 2.3 10 -8.8 -5.2 -8.8 5.2 2.3 -10 -7.5 -6.5 10 -1 z" fill="#fff1a8" stroke="#d99a00" stroke-width="1.5"/>
+  <ellipse cx="22" cy="19" rx="7" ry="3.5" transform="rotate(-35 22 19)" fill="#fff" opacity="0.75"/>
+</svg>`;
+
 // Alle Dinge, die es im Spiel gibt
 //   werkzeug: kann man in die Hand nehmen
 //   essen:    kann man essen (zählt als Mahlzeit)
@@ -51,6 +59,8 @@ export const DINGE = {
   seil: { name: 'Seil', bild: '➰', artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Jeder Schuss mit der Seilkanone braucht eins.' },
   widerhaken: { name: 'Widerhaken', bild: '🪝', artikel: 'einen', text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone.' },
   seilkanone: { name: 'Seilkanone', bild: SEILKANONE_BILD, werkzeug: true, artikel: 'eine', text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Jeder Schuss braucht 1 Seil.' },
+  // wichtig: kann man nicht wegwerfen. Nicht verkaufbar (steht nicht in den verkaufsPreisen).
+  wertvolleMuenze: { name: 'Wertvolle Münze', bild: WERTVOLLE_MUENZE_BILD, artikel: 'eine', wichtig: true, text: 'Eine uralte, goldene Münze! Bring 3 davon zum Inselbewohner mit der Taucherbrille auf der Palmeninsel.' },
   taucherbrille: { name: 'Taucherbrille', bild: '🤿', artikel: 'eine', text: 'Damit kannst du tauchen! Geh an tiefes Wasser. Die Luft reicht aber nicht lange.' },
   insadorium: { name: 'Insadorium', bild: '<span class="insadorium-bild">🔴</span>', text: 'DAS INSADORIUM! Der geheime rote Stein. Er leuchtet so grell, dass man fast nicht hinschauen kann.' },
   reisezelt: { name: 'Reisezelt', bild: '⛺', plaetze: 3, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
@@ -252,6 +262,10 @@ export class Rucksack {
     const p = this.plaetze[index];
     if (!p) return;
     const ding = DINGE[p.id];
+    if (ding.wichtig) {
+      this.meldung(`${ding.bild} Die ist viel zu wertvoll zum Wegwerfen!`, 3);
+      return;
+    }
     this.nehmen(p.id, alle ? p.anzahl : 1);
     this.meldung(`${ding.bild} ${alle ? 'Alles' : 'Eins'} weggeworfen.`, 2);
   }
@@ -308,6 +322,7 @@ export class Rucksack {
     if (ding.essen) neuerKnopf('😋 Essen', 'gruen', () => this.essen(platz.id));
     if (ding.zauber) neuerKnopf('✨ Essen', 'blau', () => this.benutzen(platz.id));
     for (const [text, wasPassiert] of this.extraKnoepfe(platz.id)) neuerKnopf(text, 'blau', wasPassiert);
+    if (ding.wichtig) return; // Wichtige Dinge kann man nicht wegwerfen
     neuerKnopf('🗑️ 1 wegwerfen', 'rot', () => this.wegwerfen(this.gewaehlt, false));
     if (platz.anzahl > 1) neuerKnopf('🗑️ Alle', 'rot', () => this.wegwerfen(this.gewaehlt, true));
   }

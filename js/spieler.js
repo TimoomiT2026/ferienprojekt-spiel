@@ -358,7 +358,7 @@ export class Spieler {
       const altX = pos.x, altZ = pos.z;
 
       // Nicht ins tiefe Wasser, nicht durch Bäume/Felsen und keine Klippe hoch – sonst entlangrutschen
-      const geht = (x, z) => this.kannStehen(x, z) && !zuSteilBergauf(pos.x, pos.z, x, z, pos.y);
+      const geht = (x, z) => this.kannStehen(x, z) && !zuSteilBergauf(pos.x, pos.z, x, z);
       if (geht(neuX, neuZ)) {
         pos.x = neuX;
         pos.z = neuZ;

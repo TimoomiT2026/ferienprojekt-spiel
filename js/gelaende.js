@@ -198,12 +198,16 @@ export function istKlippenWand(x, z) {
   return Math.hypot(dx, dz) / 1.4 > EINSTELLUNGEN.maxSteigung;
 }
 
-// Ist ein Schritt von (ax, az) nach (bx, bz) zu steil bergauf? (füsseY = wo die Füße gerade sind)
-export function zuSteilBergauf(ax, az, bx, bz, fuesseY = bodenHoehe(ax, az)) {
+// Ist ein Schritt von (ax, az) nach (bx, bz) zu steil bergauf?
+// (Es zählt der Boden, nicht die Füße – sonst könnte man die Klippe hochhüpfen!)
+export function zuSteilBergauf(ax, az, bx, bz) {
   const I = neueInselBei(bx, bz);
   if (!I || !I.klippen) return false; // nur an den Klippen – die Startinsel bleibt, wie sie ist
   const weg = Math.max(Math.hypot(bx - ax, bz - az), 0.01);
-  return bodenHoehe(bx, bz) - fuesseY > weg * EINSTELLUNGEN.maxSteigung + 0.02;
+  const hoch = bodenHoehe(bx, bz) - bodenHoehe(ax, az);
+  if (hoch > weg * EINSTELLUNGEN.maxSteigung + 0.02) return true;
+  // Auch nicht schräg (im Zickzack) an der Wand hoch
+  return hoch > 0.005 && istKlippenWand(bx, bz);
 }
 
 // Wie weit darf man mit dem Boot aufs Meer? (um jede Insel herum ein Stück)
