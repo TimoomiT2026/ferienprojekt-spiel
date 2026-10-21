@@ -17,7 +17,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { INSELN, bodenHoehe, wasserHoeheBei, istKlippenWand } from './gelaende.js';
 import { baueFigur } from './figur.js';
-import { DINGE, SCHAUFEL_BILD, WERTVOLLE_MUENZE_BILD } from './rucksack.js';
+import { SCHAUFEL_BILD } from './rucksack.js';
 import { knopf } from './steuerung.js';
 import { zufallMitSeed } from './rauschen.js';
 
@@ -363,6 +363,7 @@ export class Bewohner {
 
   zeigeBlase(mensch, text, danach = null) {
     this.offen = true;
+    this.redner = mensch;
     this.danach = danach;
     this.gesichtFeld.textContent = mensch.gesicht;
     this.nameFeld.textContent = mensch.name;
@@ -514,7 +515,7 @@ export class Bewohner {
       const d = Math.hypot(m.pos.x - spielerPos.x, m.pos.z - spielerPos.z);
       m.figur.visible = d < sicht; // weit weg: gar nicht malen
       if (d > animier) continue; // nicht in der Nähe: nicht bewegen (spart Rechnen)
-      const redet = this.offen && this.nameFeld.textContent === m.name;
+      const redet = this.offen && this.redner === m;
       // Zum Spieler schauen, wenn er nah ist – sonst gemütlich herumschauen
       let ziel = m.grundWinkel + Math.sin(t * 0.25 + m.phase) * 0.7;
       if (d < schau || redet) ziel = Math.atan2(spielerPos.x - m.pos.x, spielerPos.z - m.pos.z);
@@ -574,6 +575,3 @@ export class Bewohner {
     this.zeigeHuegel();
   }
 }
-
-// Damit andere Teile das Bild der Münze benutzen können (z. B. das Aufgabenbuch)
-export { WERTVOLLE_MUENZE_BILD, DINGE as BEWOHNER_DINGE };

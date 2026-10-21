@@ -1,0 +1,67 @@
+/* =============================================================
+   INSELBEWOHNER-SPRECHBLASE 💬 (Palmeninsel)
+   Runde Comic-Blase unten in der Mitte – das Spiel pausiert,
+   solange sie offen ist. Antippen oder „OK 👍“ = schließen.
+   ============================================================= */
+#bewohner-blase {
+  position: absolute;
+  left: 50%;
+  bottom: clamp(70px, 14vh, 130px);
+  width: min(600px, calc(100vw - 32px));
+  padding: 16px 20px 16px 22px;
+  border-radius: 36px;
+  background: #fffdf5;
+  border: 5px solid #2bb3c0;
+  box-shadow: 0 6px 0 #1d8a94, 0 14px 32px rgba(0, 0, 0, 0.25);
+  color: #2a2a22;
+  z-index: 15; /* wie die Fenster */
+  touch-action: none;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: translateX(-50%) scale(0.6) translateY(30px);
+  transform-origin: 50% 100%;
+  transition: opacity 0.25s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#bewohner-blase.sichtbar { opacity: 1; pointer-events: auto; transform: translateX(-50%); }
+
+/* Zwei runde Pünktchen oben – die Blase „kommt“ von der Person */
+#bewohner-blase::before,
+#bewohner-blase::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: #fffdf5;
+  border: 4px solid #2bb3c0;
+}
+#bewohner-blase::before { width: 26px; height: 26px; left: 46%; top: -26px; }
+#bewohner-blase::after { width: 14px; height: 14px; left: 49%; top: -46px; }
+
+.bw-kopf { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.bw-gesicht {
+  width: 52px; height: 52px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  background: #d8f4f6; font-size: 32px; flex: none;
+}
+.bw-name { font-size: 24px; font-weight: bold; color: #146b73; }
+.bw-text { font-size: 21px; line-height: 1.4; font-weight: bold; }
+.bw-text b { color: #b8620a; }
+.bw-fuss { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 10px; }
+.bw-zaehler {
+  font-size: 18px; font-weight: bold; color: #5a4a2a;
+  padding: 6px 14px; border-radius: 20px; background: #f3e6cf;
+}
+.bw-ok {
+  flex: none; min-width: 96px; height: 58px; padding: 0 18px;
+  border: none; border-radius: 29px;
+  background: #4caf50; color: #fff; font-size: 21px; font-weight: bold;
+  box-shadow: 0 4px 0 #2f7d32;
+}
+.bw-ok:active { transform: translateY(3px); box-shadow: 0 1px 0 #2f7d32; }
+
+/* Kleine Bildschirme: etwas kompakter */
+@media (max-height: 600px) {
+  #bewohner-blase { bottom: 60px; padding: 12px 16px; }
+  .bw-text { font-size: 20px; }
+  .bw-gesicht { width: 44px; height: 44px; font-size: 26px; }
+}

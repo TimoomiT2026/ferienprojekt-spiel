@@ -5,7 +5,7 @@
 // =============================================================
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { baueGelaende, bodenHoehe, DORF, WASSER_HOEHE } from './gelaende.js';
+import { baueGelaende, bodenHoehe, DORF, WASSER_HOEHE, aufWelcherInsel } from './gelaende.js';
 import { baueNatur, aktualisiereNatur, wenigerDetails, buschInDerNaehe, grasDichte, wasserInDerNaehe } from './natur.js';
 import { Hindernisse } from './hindernisse.js';
 import { Himmel } from './himmel.js';
@@ -38,6 +38,7 @@ import { Tutorial } from './tutorial.js';
 import { Seilkanone } from './seilkanone.js';
 import { Tauchen } from './tauchen.js';
 import { Finale } from './finale.js';
+import { Ballon } from './ballon.js';
 import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
@@ -142,10 +143,14 @@ const base = new Base(szene, hindernisse, { rucksack, meldung, musik, tageszeit,
 base.beiNeuerInteraktion = (ia) => objekte.interaktionen.push(ia);
 objekte.interaktionen.push(...base.interaktionen);
 
+// ---------- Heißluftballon 🎈 ----------
+const ballon = new Ballon(szene, hindernisse, { spieler, meldung, musik, haendler, elternElement: spielfeld });
+objekte.interaktionen.push(...ballon.interaktionen);
+
 const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen || base.offen || finale.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);
@@ -165,6 +170,8 @@ boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild:
 // Die Base (mit dem Pferdestall) kommt später dazu – bis dahin gibt es keinen Stall
 const baseHalter = { base, get stall() { return this.base?.stall ?? null; } };
 const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter, tageszeit, boote });
+ballon.spiel.boote = boote; // damit beim Rudern/Reiten "Steig erst ab" kommt
+ballon.spiel.pferde = pferde;
 objekte.interaktionen.push(...pferde.interaktionen);
 
 // ---------- Seilkanone (Klippen hochklettern) ----------
@@ -287,7 +294,7 @@ function bewegeKamera(dt, drehung, neigung) {
   const p = spieler.figur.position;
   // Beim Fliegen geht die Kamera weich etwas weiter weg
   flugZoom += ((spieler.fliegt ? 1 : 0) - flugZoom) * Math.min(1, dt * 2);
-  const abstand = EINSTELLUNGEN.kameraAbstand * (1 + 0.45 * flugZoom) * tauchen.kameraAbstandFaktor;
+  const abstand = EINSTELLUNGEN.kameraAbstand * (1 + 0.45 * flugZoom + 1.8 * ballon.kameraZoom) * tauchen.kameraAbstandFaktor;
   const ziel = new THREE.Vector3(
     p.x + Math.sin(kameraWinkel) * Math.cos(kameraNeigung) * abstand,
     p.y + 1.5 + Math.sin(kameraNeigung) * abstand,
@@ -307,7 +314,8 @@ function bewegeKamera(dt, drehung, neigung) {
 const uhr = new THREE.Clock();
 let laeuft = false;
 let warNacht = false;
-let umgebungsUhr = 0, wasserNah = 0; // für Meeresrauschen & Rascheln
+let umgebungsUhr = 0, wasserNah = 0;
+let inselUhr = 0; // prüft 1× pro Sekunde, auf welcher Insel man ist // für Meeresrauschen & Rascheln
 
 // Automatische Qualität: Ruckelt es, rechnen wir mit etwas weniger Pixeln
 let bilderGezaehlt = 0, messZeit = 0;
@@ -349,13 +357,14 @@ function spielSchleife() {
       else if (haendler.offen) haendler.schliessen();
       else if (aufgaben.offen) aufgaben.schliessen();
       else if (base.offen) base.schliessen();
+      else if (ballon.offen) ballon.schliessen();
       else rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
     }
     if (karte.offen && rucksack.offen) rucksack.schliessen();
     const pausiert = fensterOffen() || schlaeft;
     if (!pausiert) {
       tageszeit.aktualisiere(dt);
-      if (eingabe.aktion && !seilkanone.beschaeftigt) {
+      if (eingabe.aktion && !seilkanone.beschaeftigt && !ballon.faehrt) {
         if (tauchen.taucht) tauchen.aktion();
         else if (spieler.fliegt) spieler.landen(); // in der Luft: Aktion = landen
         else if (objekte.aktuelle) objekte.aktion();
@@ -363,7 +372,8 @@ function spielSchleife() {
         else if (rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) fernrohr.starten(spieler.figur.position, kameraWinkel);
         else if (rucksack.inDerHand === 'seilkanone' && !boote.faehrt && !pferde.reitet) seilkanone.schiessen(spieler.figur.position, spieler.figur.rotation.y);
       }
-      if (tauchen.taucht) tauchen.steuern(dt, eingabe.richtung, eingabe.springenGehalten, kameraWinkel);
+      if (ballon.faehrt) { /* der Ballon bewegt die Figur selbst */ }
+      else if (tauchen.taucht) tauchen.steuern(dt, eingabe.richtung, eingabe.springenGehalten, kameraWinkel);
       else if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (pferde.reitet) pferde.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (seilkanone.beschaeftigt) { /* die Seilkanone bewegt die Figur selbst */ }
@@ -371,6 +381,7 @@ function spielSchleife() {
       else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel, eingabe.springenGehalten);
       angeln.aktualisiere(dt); // nach dem Spieler, damit die Arm-Haltung stimmt
       seilkanone.aktualisiere(dt);
+      ballon.aktualisiere(dt);
     }
     bewegeKamera(dt, eingabe.kameraDrehung, eingabe.kameraNeigung);
   } else {
@@ -395,7 +406,7 @@ function spielSchleife() {
   wasser.aktualisiere(dt);
   boote.aktualisiere(dt);
   // Beim Rudern hat man beide Hände an den Rudern – Werkzeuge weg
-  const hand = boote.faehrt || pferde.reitet || tauchen.taucht ? null : rucksack.inDerHand;
+  const hand = boote.faehrt || pferde.reitet || tauchen.taucht || ballon.faehrt ? null : rucksack.inDerHand;
   spieler.schaufel.visible = hand === 'schaufel';
   spieler.schwert.visible = hand === 'schwert';
   // (Das Fernrohr hält man nicht sichtbar in der Hand – man schaut nur hindurch)
@@ -427,6 +438,14 @@ function spielSchleife() {
   karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
   // Aus der Luft kann man nichts anfassen
   let naechste = objekte.aktualisiere(dt, pos);
+  if (ballon.faehrt) naechste = null;
+  // Wer auf der Palmeninsel war, kann mit dem Ballon ins Palmendorf fliegen
+  inselUhr -= dt;
+  if (laeuft && inselUhr <= 0) {
+    inselUhr = 1;
+    const palmendorf = ballon.ziele.find((z) => z.id === 'palmendorf');
+    if (palmendorf && !palmendorf.freigeschaltet && aufWelcherInsel(pos.x, pos.z) === 'Palmeninsel') ballon.freischalten('palmendorf');
+  }
   if (laeuft) tutorialPruefen(dt, naechste, pos);
   if (tauchen.taucht) naechste = tauchen.aktionText(pos);
   else if (spieler.fliegt) naechste = spieler.flugRest > 0 ? { bild: '🛬', text: 'Landen' } : null;
@@ -486,6 +505,7 @@ function sammleSpielstand() {
     base: base.alsDaten(),
     seilkanone: seilkanone.alsDaten(),
     tauchen: tauchen.alsDaten(),
+    ballon: ballon.alsDaten(),
     finale: finale.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
@@ -508,6 +528,7 @@ function wendeSpielstandAn(s) {
     base.ladeDaten(s.base || {});
     seilkanone.ladeDaten(s.seilkanone || {});
     tauchen.ladeDaten(s.tauchen || {});
+    ballon.ladeDaten(s.ballon || {});
     finale.ladeDaten(s.finale || {});
     ladeGefaellte(s.gefaellt);
     lagerfeuer.brennt = s.feuer || 0;
@@ -529,7 +550,7 @@ function wendeSpielstandAn(s) {
 }
 
 function speichern() {
-  if (laeuft && !boote.faehrt && !pferde.reitet && !seilkanone.beschaeftigt) speichereSpielstand(sammleSpielstand());
+  if (laeuft && !boote.faehrt && !pferde.reitet && !seilkanone.beschaeftigt && !ballon.faehrt && !tauchen.taucht) speichereSpielstand(sammleSpielstand());
 }
 setInterval(speichern, 10000);
 // Entdeckte Boote auf der Karte dort zeigen, wo sie gerade liegen
@@ -604,7 +625,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {
