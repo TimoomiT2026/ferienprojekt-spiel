@@ -212,6 +212,7 @@ export class Tauchen {
       roughness: 0.25,
       metalness: 0.1,
       flatShading: true, // Facetten wie bei einem geschliffenen Stein
+      fog: false, // der blaue Unterwasser-Nebel darf das Rot nicht verschlucken
     });
     this.stein = new THREE.Mesh(form, this.steinMaterial);
     this.steinGruppe.add(this.stein);
@@ -219,21 +220,21 @@ export class Tauchen {
     // Ein heller Kern innen drin (ganz weiß-rot = am grellsten)
     const kern = new THREE.Mesh(
       new THREE.SphereGeometry(STEIN_GROESSE * 0.55, 16, 12),
-      new THREE.MeshBasicMaterial({ color: new THREE.Color(9, 3, 2.2), transparent: true, opacity: 0.85, toneMapped: false, depthWrite: false })
+      new THREE.MeshBasicMaterial({ color: new THREE.Color(9, 1.2, 0.6), transparent: true, opacity: 0.85, toneMapped: false, depthWrite: false, fog: false })
     );
     this.stein.add(kern);
 
     // Der Lichtschein drumherum (ein „Sprite“ schaut immer zur Kamera)
     this.schein = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: leuchtBild(), color: new THREE.Color(5, 0.9, 0.6), transparent: true,
-      blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false,
+      map: leuchtBild(), color: new THREE.Color(5, 0.35, 0.18), transparent: true,
+      blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false,
     }));
     this.schein.scale.setScalar(4);
     this.steinGruppe.add(this.schein);
     // Strahlen, die sich langsam drehen – darum „kann man fast nicht hineinschauen“
     this.strahlen = new THREE.Sprite(new THREE.SpriteMaterial({
-      map: strahlenBild(), color: new THREE.Color(3, 0.7, 0.5), transparent: true,
-      blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false,
+      map: strahlenBild(), color: new THREE.Color(3, 0.3, 0.18), transparent: true,
+      blending: THREE.AdditiveBlending, depthWrite: false, toneMapped: false, fog: false,
     }));
     this.strahlen.scale.setScalar(6);
     this.steinGruppe.add(this.strahlen);

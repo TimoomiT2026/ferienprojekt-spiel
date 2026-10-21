@@ -166,6 +166,7 @@ const tiere = new Tiere(szene, hindernisse);
 const karte = new Karte(spielfeld);
 karte.beiInselEntdeckt = (name) => {
   meldung(`🏝️ Neue Insel entdeckt: ${name}!`, 4);
+  tutorial.neu('insel');
   if (name === 'Palmeninsel') zeigePalmendorf();
   zeigeAngelstellen();
 };
@@ -237,10 +238,11 @@ const tutorial = new Tutorial({ elternElement: spielfeld, tageszeit });
 let warBeimHaendler = false;
 // Wenn man etwas zum ersten Mal im Rucksack hat → Erklärung
 const NEUE_DINGE = [['schaufel', 'schaufel'], ['angel', 'angel'], ['tofufisch', 'fisch'], ['schuh', 'muell'], ['dose', 'muell'],
-  ['leine', 'leine'], ['fernrohr', 'fernrohr'], ['schwert', 'schwert']];
+  ['leine', 'leine'], ['fernrohr', 'fernrohr'], ['schwert', 'schwert'],
+  ['wertvolleMuenze', 'wertvolleMuenze'], ['taucherbrille', 'taucherbrille'], ['seilkanone', 'seilkanone']];
 function tutorialPruefen(dt, naechste, pos) {
   // Was ist gerade in der Nähe?
-  if (naechste && !spieler.fliegt) {
+  if (naechste && !spieler.fliegt && !tauchen.taucht && !ballon.faehrt) {
     if (naechste === werkbank.interaktion) tutorial.neu('werkbank');
     else if (naechste === lagerfeuer.interaktion) tutorial.neu('lagerfeuer');
     else if (naechste === base.baseIA) tutorial.neu('base');
@@ -251,6 +253,8 @@ function tutorialPruefen(dt, naechste, pos) {
     else if (boote.interaktionen.includes(naechste)) tutorial.neu('boot');
     else if (pferde.interaktionen.includes(naechste)) tutorial.neu('pferd');
     else if (pilze.interaktionen.includes(naechste)) tutorial.neu('zauberpilz');
+    else if (ballon.interaktionen.includes(naechste)) tutorial.neu('ballon');
+    else if (naechste.text === 'Ansprechen') tutorial.neu('bewohner');
   }
   for (const [ding, id] of NEUE_DINGE) if (rucksack.hat(ding)) tutorial.neu(id);
   if (rucksack.inDerHand === 'schwert' && holzInDerNaehe(pos.x, pos.z)) tutorial.neu('baum');
