@@ -32,7 +32,7 @@ Echte Spielestudios haben so eine Liste auch, sie heißt dort **„Backlog“**.
 Entscheidungen vom Game Designer (Tag 3):
 - 2 neue Inseln: **Klippeninsel** (hohe Felsen, oben das Versteck des Insadoriums) und **Palmeninsel** (zweites Dorf mit neuem Händler)
 - Insadorium erreicht man nur durch **Tauchen mit Taucherbrille** – und dafür muss man auf **beiden** neuen Inseln gewesen sein:
-  - Auf der **Palmeninsel** leben **10 Menschen**, weit verstreut. Man muss sie finden und ansprechen. Nur **einer** hat die Taucherbrille, die anderen sagen: „Ich hab sie nicht, versuch es bei einem anderen Inselbewohner!“
+  - Auf der **Palmeninsel** leben **13 Menschen** (Namen vom Game Designer: Ferdinand, Anton, Elea, Joshi, Max, Mina, Vincent, Johann, Etienne, Emil, Finn, Mucko, Sichel), weit verstreut. Man muss sie finden und ansprechen. Nur **einer** hat die Taucherbrille, die anderen sagen: „Ich hab sie nicht, versuch es bei einem anderen Inselbewohner!“
   - Die richtige Person leiht sie einem nur gegen **3 wertvolle Münzen – eine pro Insel**.
   - **Erst ab diesem Satz** ist auf jeder Insel eine wertvolle Münze in einem Grabehügel versteckt (vorher gäbe die Münze keinen Sinn).
   - Die Taucherbrille gibt es also **nicht** beim Händler.

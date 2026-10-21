@@ -2,7 +2,7 @@
 //  DIE INSELBEWOHNER auf der Palmeninsel 🌴 und die wertvollen Münzen 🏅
 //
 //  Idee vom Game Designer:
-//  - Auf der Palmeninsel leben 10 Menschen, weit verstreut.
+//  - Auf der Palmeninsel leben 13 Menschen, weit verstreut.
 //  - Man spricht sie an. Nur EINER hat die Taucherbrille 🤿.
 //    Die anderen sagen: „Ich habe sie nicht. Versuch es bei einem anderen Inselbewohner!“
 //  - Der Richtige leiht sie dir – aber nur für 3 wertvolle Münzen,
@@ -27,7 +27,7 @@ const MUENZE = 'wertvolleMuenze';
 // Das sagen ALLE, die die Taucherbrille nicht haben (Wunsch vom Game Designer)
 const ABSAGE = 'Ich habe die Taucherbrille nicht. Versuch es bei einem anderen Inselbewohner!';
 
-// ---------- Die 10 Bewohner (erfundene Fantasie-Namen) ----------
+// ---------- Die 13 Bewohner (Namen vom Game Designer) ----------
 // farben: wie beim Händler (shirt, hose, haare, haut, hut, bart)
 // extra:  was sie noch auf dem Kopf haben (Zöpfe, Dutt, Blumen …)
 // kind:   ein Kind ist kleiner
@@ -35,63 +35,81 @@ const ABSAGE = 'Ich habe die Taucherbrille nicht. Versuch es bei einem anderen I
 // nochmal: was sie sagen, wenn du sie zum zweiten Mal ansprichst
 const MENSCHEN = [
   {
-    id: 'kokolina', name: 'Kokolina', gesicht: '👩🏽',
-    farben: { shirt: '#ff8a65', hose: '#4f6fcf', haare: '#3b2416', haut: '#c98b62', bart: false }, extra: 'zoepfe',
-    hallo: 'Hallo, Fremder! Ich bin Kokolina und sammle die schönsten Muscheln der ganzen Insel. 🐚',
+    id: 'ferdinand', name: 'Ferdinand', gesicht: '🧒', kind: true,
+    farben: { shirt: '#ff8a65', hose: '#4f6fcf', haare: '#3b2416', haut: '#c98b62', bart: false }, extra: 'muetze', extraFarbe: '#2e86de',
+    hallo: 'Hallo! Ich bin Ferdinand und sammle die schönsten Muscheln der ganzen Insel. 🐚',
     nochmal: 'Schau mal, eine neue Muschel! Die Taucherbrille hab ich aber immer noch nicht.',
   },
   {
-    id: 'tiko', name: 'Tiko', gesicht: '🧒🏻', kind: true,
+    id: 'anton', name: 'Anton', gesicht: '🧒', kind: true,
     farben: { shirt: '#ffd23f', hose: '#2e8b57', haare: '#c8742c', haut: '#f1c7a3', bart: false }, extra: 'muetze', extraFarbe: '#e0412f',
-    hallo: 'Hi! Ich bin Tiko. Ich kann schon 100 Mal hintereinander hüpfen! Hüpf, hüpf!',
+    hallo: 'Hi! Ich bin Anton. Ich kann schon 100 Mal hintereinander hüpfen! Hüpf, hüpf!',
     nochmal: 'Hüpf, hüpf! Hast du sie schon gefunden?',
   },
   {
-    id: 'wellenbart', name: 'Opa Wellenbart', gesicht: '👴🏼',
-    farben: { shirt: '#6fb7d9', hose: '#e8dcc0', haare: '#f2f2ee', haut: '#e8b894', hut: '#e6c66a' },
-    hallo: 'Moin moin! Ich bin Opa Wellenbart. Ich wohne schon seit 80 Sommern auf dieser Insel.',
-    nochmal: 'Ach, du schon wieder! Mein Bart ist immer noch voller Sand.',
-  },
-  {
-    id: 'mirabelle', name: 'Mirabelle', gesicht: '👩🏻',
+    id: 'elea', name: 'Elea', gesicht: '🧒', kind: true,
     farben: { shirt: '#c77dff', hose: '#5a3f8c', haare: '#e3b04b', haut: '#f3cfb3', bart: false }, extra: 'blumen',
-    hallo: 'Oh, hallo! Ich bin Mirabelle. Riechst du die Blumen? Die hab ich selbst geflochten. 🌺',
-    nochmal: 'Hallo nochmal! Möchtest du auch einen Blumenkranz? Nur Spaß!',
+    hallo: 'Oh, hallo! Ich bin Elea. Riechst du die Blumen? Den Kranz hab ich selbst geflochten. 🌺',
+    nochmal: 'Hallo nochmal! Möchtest du auch einen Blumenkranz?',
   },
   {
-    id: 'bubu', name: 'Bubu', gesicht: '🧔🏾',
-    farben: { shirt: '#e76f51', hose: '#3d405b', haare: '#2a1a10', haut: '#8d5a3b', hut: '#8a6a3a' },
-    hallo: 'Hey! Ich bin Bubu. Ich mache die besten Kokos-Pfannkuchen der Welt! 🥥',
+    id: 'joshi', name: 'Joshi', gesicht: '🧒', kind: true,
+    farben: { shirt: '#e76f51', hose: '#3d405b', haare: '#2a1a10', haut: '#8d5a3b', hut: '#8a6a3a', bart: false },
+    hallo: 'Hey! Ich bin Joshi. Ich mache die besten Kokos-Pfannkuchen der Welt! 🥞',
     nochmal: 'Die Pfannkuchen sind gleich fertig! Aber eine Taucherbrille hab ich nicht.',
   },
   {
-    id: 'zora', name: 'Zora Sternfisch', gesicht: '👩🏿',
-    farben: { shirt: '#2a9d8f', hose: '#264653', haare: '#1d120c', haut: '#6b4429', bart: false }, extra: 'dutt',
-    hallo: 'Psst, ich bin Zora Sternfisch. Nachts zähle ich die Sterne. Gestern waren es 4.217! ⭐',
-    nochmal: '4.218 … 4.219 … oh, hallo! Wo war ich stehengeblieben?',
-  },
-  {
-    id: 'pepe', name: 'Pepe Palme', gesicht: '👨🏽',
+    id: 'max', name: 'Max', gesicht: '🧒', kind: true,
     farben: { shirt: '#90be6d', hose: '#6b4f2c', haare: '#4a2c17', haut: '#b97a52', bart: false }, extra: 'stirnband', extraFarbe: '#ff3d6e',
-    hallo: 'Hola! Ich bin Pepe Palme. Ich klettere auf JEDE Palme – sogar auf die ganz krummen! 🌴',
+    hallo: 'Hallo! Ich bin Max. Ich klettere auf JEDE Palme – sogar auf die ganz krummen! 🌴',
     nochmal: 'Ich war gerade wieder ganz oben! Von da sieht man die Klippeninsel.',
   },
   {
-    id: 'lumi', name: 'Lumi', gesicht: '👧🏼', kind: true,
-    farben: { shirt: '#ff70a6', hose: '#70d6ff', haare: '#f5d76e', haut: '#f6d2b8', bart: false }, extra: 'zoepfe',
-    hallo: 'Hallo! Ich bin Lumi. Hast du schon die bunten Fische im Meer gesehen? Die sind sooo schön! 🐠',
+    id: 'mina', name: 'Mina', gesicht: '🧒', kind: true,
+    farben: { shirt: '#2a9d8f', hose: '#264653', haare: '#1d120c', haut: '#6b4429', bart: false }, extra: 'dutt',
+    hallo: 'Psst, ich bin Mina. Nachts zähle ich die Sterne. Gestern waren es 4.217! ⭐',
+    nochmal: '4.218 … 4.219 … oh, hallo! Wo war ich stehengeblieben?',
+  },
+  {
+    id: 'vincent', name: 'Vincent', gesicht: '🧒', kind: true,
+    farben: { shirt: '#6fb7d9', hose: '#e8dcc0', haare: '#e3c77a', haut: '#e8b894', hut: '#e6c66a', bart: false },
+    hallo: 'Moin! Ich bin Vincent. Ich baue die höchsten Sandburgen der Insel. 🏰',
+    nochmal: 'Meine Sandburg hat jetzt schon drei Türme!',
+  },
+  {
+    id: 'johann', name: 'Johann', gesicht: '🧒', kind: true,
+    farben: { shirt: '#ff70a6', hose: '#70d6ff', haare: '#f5d76e', haut: '#f6d2b8', bart: false }, extra: 'muetze', extraFarbe: '#ffd23f',
+    hallo: 'Hallo! Ich bin Johann. Hast du schon die bunten Fische im Meer gesehen? Die sind sooo schön! 🐠',
     nochmal: 'Ich hab gerade einen lila Fisch gesehen!',
   },
   {
-    id: 'fipsi', name: 'Fipsi', gesicht: '🧓🏻',
-    farben: { shirt: '#f4a261', hose: '#5c677d', haare: '#9a9a9a', haut: '#eec3a3', bart: false }, extra: 'muetze', extraFarbe: '#3a86ff',
-    hallo: 'Gääähn … oh, hallo! Ich bin Fipsi. Ich schnarche so laut, dass die Möwen wegfliegen! 😴',
-    nochmal: 'Gääähn … ich wollte gerade ein Nickerchen machen.',
+    id: 'etienne', name: 'Etienne', gesicht: '🧒', kind: true,
+    farben: { shirt: '#f4a261', hose: '#5c677d', haare: '#5a3a22', haut: '#eec3a3', bart: false }, extra: 'muetze', extraFarbe: '#3a86ff',
+    hallo: 'Salut! Ich bin Etienne. Ich lasse jeden Tag meinen Drachen steigen. 🪁',
+    nochmal: 'Heute ist richtig guter Drachen-Wind!',
   },
   {
-    id: 'nalu', name: 'Nalu', gesicht: '👩🏾',
+    id: 'emil', name: 'Emil', gesicht: '🧒', kind: true,
     farben: { shirt: '#00b4d8', hose: '#023e8a', haare: '#2b1a12', haut: '#a8704a', bart: false }, extra: 'lang',
-    hallo: 'Hallo! Ich bin Nalu, die beste Taucherin der ganzen Palmeninsel. 🌊',
+    hallo: 'Hallo! Ich bin Emil. Niemand auf der Palmeninsel taucht so gern wie ich. 🌊',
+  },
+  {
+    id: 'finn', name: 'Finn', gesicht: '🧒', kind: true,
+    farben: { shirt: '#ffbe0b', hose: '#3a5a40', haare: '#8b5a2b', haut: '#d9a77c', bart: false }, extra: 'stirnband', extraFarbe: '#00b4d8',
+    hallo: 'Yo! Ich bin Finn. Ich bin der schnellste Surfer der ganzen Inselgruppe! 🏄',
+    nochmal: 'Die Wellen sind heute super! Aber eine Taucherbrille hab ich nicht.',
+  },
+  {
+    id: 'mucko', name: 'Mucko', gesicht: '🧒', kind: true,
+    farben: { shirt: '#8338ec', hose: '#2b2d42', haare: '#1d120c', haut: '#c98b62', hut: '#e63946', bart: false },
+    hallo: 'Hey, ich bin Mucko! Ich kann mit drei Kokosnüssen jonglieren. Guck mal! 🥥🥥🥥',
+    nochmal: 'Ups, eine ist runtergefallen! Nochmal von vorn …',
+  },
+  {
+    id: 'sichel', name: 'Sichel', gesicht: '🧒', kind: true,
+    farben: { shirt: '#06d6a0', hose: '#7b2cbf', haare: '#d4a373', haut: '#f3cfb3', bart: false }, extra: 'zoepfe',
+    hallo: 'Hallo, ich bin Sichel! Ich male Bilder von allen Tieren der Insel. 🎨',
+    nochmal: 'Gerade male ich eine Möwe. Die hält aber nie still!',
   },
 ];
 
@@ -195,7 +213,7 @@ export class Bewohner {
     this.zeigeHuegel();
   }
 
-  // ---------- Die 10 Menschen auf die Palmeninsel stellen ----------
+  // ---------- Die 13 Menschen auf die Palmeninsel stellen ----------
   baueLeute(szene) {
     const P = INSELN.find((I) => I.name === 'Palmeninsel');
     if (!P) return; // keine Palmeninsel? Dann keine Bewohner

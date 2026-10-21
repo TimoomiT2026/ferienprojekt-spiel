@@ -36,6 +36,6 @@
 | **Tutorial** | Eine Anleitung im Spiel selbst. Bei uns: kleine Sprechblasen, die etwas erklären, wenn man es zum ersten Mal sieht. |
 | **Playtest** | Andere Leute (z. B. Freunde) spielen das Spiel zum ersten Mal, und man schaut, wo sie hängen bleiben. Dafür haben wir das Tutorial gebaut. |
 | **Recycling** | Aus Müll etwas Neues machen: Aus dem alten Schuh vom Angeln wird eine Pferde-Leine. |
-| **Trigger** | Ein Auslöser: Etwas passiert erst, wenn vorher etwas anderes passiert ist. Bei uns: Erst wenn Nalu von den Münzen erzählt, gibt es die Münz-Hügel. |
+| **Trigger** | Ein Auslöser: Etwas passiert erst, wenn vorher etwas anderes passiert ist. Bei uns: Erst wenn die Person mit der Taucherbrille von den Münzen erzählt, gibt es die Münz-Hügel. |
 | **KI-Gegner / NPC** | Figuren im Spiel, die der Computer steuert, zum Beispiel die Inselbewohner. NPC heißt „Non-Player Character“ – keine echte Person spielt sie. |
 | **Finale** | Das große Ende eines Spiels. Bei uns: Konfetti und ein Dankeschön, wenn man das Insadorium findet. |

@@ -341,7 +341,7 @@ export const EINSTELLUNGEN = {
   tauchSichtweite: 30,
 
   // ---------- Inselbewohner & die wertvollen Münzen (Palmeninsel) ----------
-  // Auf der Palmeninsel wohnen 10 Menschen. EINER hat die Taucherbrille.
+  // Auf der Palmeninsel wohnen 13 Menschen. EINER hat die Taucherbrille.
   // Er leiht sie dir für 3 wertvolle Münzen – eine von jeder Insel.
   bewohner: {
     // Wo stehen sie? Richtung in Grad (0 = Osten, 90 = Süden, 180 = Westen, 270 = Norden)
@@ -349,8 +349,10 @@ export const EINSTELLUNGEN = {
     plaetze: [
       [0, 60], [300, 55], [40, 80], [90, 45], [120, 20],
       [200, 30], [270, 75], [220, 85], [130, 82], [175, 72],
+      [330, 82], [250, 50], [20, 30],
     ],
-    // Welcher Bewohner hat die Taucherbrille? (0 = der erste in der Liste oben … 9 = der letzte)
+    // Welcher Bewohner hat die Taucherbrille? (Zählen ab 0: 0 = Ferdinand … 9 = Emil … 12 = Sichel)
+    // Die Liste mit den Namen steht in js/bewohner.js.
     brilleBei: 9,
     // So viele wertvolle Münzen will er haben
     muenzenNoetig: 3,

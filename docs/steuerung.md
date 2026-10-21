@@ -52,7 +52,7 @@ Wenn nichts zu hören ist: Lautstärke hochdrehen und prüfen, ob das iPad auf *
 
 ## Neu in Etappe 3 · Das große Abenteuer
 - **Neue Inseln 🏝️:** Mit dem Boot weit aufs Meer fahren. Durchs Fernrohr 🔭 sieht man durch den Dunst. Auf der Karte gibt es dann „🌍 Alle Inseln“.
-- **Palmeninsel 🌴:** Dort leben 10 Menschen. „💬 Ansprechen“. Einer hat eine Taucherbrille – er will dafür 3 wertvolle Münzen 🏅 (eine von jeder Insel). Erst dann gibt es golden glitzernde Hügel (❓ auf der Karte). Schaufel in die Hand und graben!
+- **Palmeninsel 🌴:** Dort leben 13 Menschen. „💬 Ansprechen“. Einer hat eine Taucherbrille – er will dafür 3 wertvolle Münzen 🏅 (eine von jeder Insel). Erst dann gibt es golden glitzernde Hügel (❓ auf der Karte). Schaufel in die Hand und graben!
 - **Palmendorf:** zweiter Händler (Brot, Äpfel, Würmer, Holz).
 - **Seilkanone 🪝:** Werkbank: Seil ➰ (3 Schnüre), Widerhaken 🪝 (2 Eisenerz + 1 Stein), dann Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken). In die Hand, vor eine hohe Wand schauen, „Hochschießen“. Jeder Schuss braucht 1 Seil. Das Seil bleibt hängen: „Hochklettern“ / „Runterklettern“.
 - **Wind 🌬️:** Mit dem Zauberpilz kommt man nicht auf die Klippe.

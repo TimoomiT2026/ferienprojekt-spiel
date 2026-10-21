@@ -28,7 +28,7 @@ const AUFGABEN = [
   { titel: 'Spar 150 Münzen', tipp: 'Verkauf, was du findest. Bald brauchst du viel Geld für das große Abenteuer …', geschafft: (s) => s.rucksack.muenzen >= 150, belohnung: 25 },
   // ---------- Etappe 3: Das große Abenteuer ----------
   { titel: 'Entdecke eine neue Insel', tipp: 'Nimm ein Boot 🚣 und fahr aufs Meer hinaus. Mit dem Fernrohr 🔭 siehst du weiter!', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
-  { titel: 'Sprich mit den Bewohnern der Palmeninsel', tipp: 'Auf der Palmeninsel 🌴 leben 10 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
+  { titel: 'Sprich mit den Bewohnern der Palmeninsel', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
   { titel: 'Finde 3 wertvolle Münzen', tipp: 'Auf jeder Insel ist eine in einem golden glitzernden Grabehügel versteckt. Schau auf die Karte ❓!', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
   { titel: 'Hol dir die Taucherbrille', tipp: 'Bring die 3 Münzen zurück zur Person mit der Taucherbrille.', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.hat('taucherbrille'), belohnung: 5 },
   { titel: 'Bau eine Seilkanone', tipp: 'Werkbank: erst Seil (3 Schnüre) und Widerhaken (2 Eisenerz + 1 Stein), dann die Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken).', geschafft: (s) => s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
