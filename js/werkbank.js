@@ -124,7 +124,7 @@ export class Werkbank {
     }
     musik.pling();
     info.innerHTML = `${DINGE[id].bild} ${DINGE[id].name} gebaut! Nimm es im Rucksack in die Hand.`;
-    meldung(`🔨 Du hast ein ${DINGE[id].name} gebaut!`, 4);
+    meldung(`🔨 Du hast ${DINGE[id].artikel || 'ein'} ${DINGE[id].name} gebaut!`, 4);
     this.zeichnen();
   }
 }

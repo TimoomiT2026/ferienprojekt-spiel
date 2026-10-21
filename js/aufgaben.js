@@ -24,7 +24,7 @@ const AUFGABEN = [
   { titel: 'Iss deinen selbst gefangenen Fisch', tipp: 'Rucksack öffnen, Fisch antippen, „Essen“. Jetzt versorgst du dich selbst! 🎉', geschafft: (s) => s.aufgaben.fischGegessen, belohnung: 10 },
   { titel: 'Bau das große Zelt', tipp: 'Am Schild „BASE“ neben dem Zelt das Base-Menü öffnen und ausbauen.', geschafft: (s) => (s.base?.stufe || 1) >= 2, belohnung: 10 },
   { titel: 'Bau eine Holzhütte', tipp: 'Wieder im Base-Menü. Die Hütte hat eine Truhe für deine Schätze!', geschafft: (s) => (s.base?.stufe || 1) >= 3, belohnung: 15 },
-  { titel: 'Zähme ein Wildpferd', tipp: 'Kauf Äpfel im Dorf. Geh LANGSAM zu einem Pferd und füttere es 3 Mal.', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
+  { titel: 'Zähme ein Wildpferd', tipp: 'Kauf Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
   { titel: 'Spar 150 Münzen', tipp: 'Verkauf, was du findest. Bald brauchst du viel Geld für das große Abenteuer …', geschafft: (s) => s.rucksack.muenzen >= 150, belohnung: 25 },
 ];
 

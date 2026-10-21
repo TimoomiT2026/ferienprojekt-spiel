@@ -160,8 +160,6 @@ export const EINSTELLUNGEN = {
   scheuAbstand: 12,
   // Ab welchem Tempo erschrecken Wildpferde? (Meter pro Sekunde – langsam gehen ist ok)
   scheuTempo: 4,
-  // Wie weit bleibt dein Pferd hinter dir, wenn es dir folgt? (Meter)
-  folgeAbstand: 4,
   // Wie schnell kann man beim Reiten lenken? (größer = wendiger)
   reitLenkung: 2.4,
   // So nah muss man an ein Pferd ran, damit der Knopf "Füttern" kommt (Meter)

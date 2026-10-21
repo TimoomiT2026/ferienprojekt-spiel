@@ -41,6 +41,11 @@ Wenn nichts zu hören ist: Lautstärke hochdrehen und prüfen, ob das iPad auf *
 - **Händler:** Je mehr du vom Gleichen verkaufst, desto weniger zahlt er. Pro Tag kauft er höchstens 10 Sachen. Größere Rucksäcke (18 / 24 Plätze) gibt es bei ihm.
 - **Base-Menü:** am Schild „BASE“ neben dem Zelt. Dort baust du aus: großes Zelt → Hütte (mit Truhe 📦) → Garten (Karotten 🥕) → Haus mit Fischteich. Und ab der Hütte und Tag 3 den Pferdestall.
 - **Reisezelt ⛺:** bekommst du beim ersten Ausbau. Im Rucksack „Aufstellen“, dort nachts schlafen, danach wieder „Einpacken“. Braucht 3 Plätze!
-- **Pferde 🐴:** Kauf Äpfel im Dorf. Geh LANGSAM zu einem Wildpferd (Joystick nur ein bisschen schieben) und füttere es 3 Mal. Dann „Aufsteigen“ und reiten!
+- **Pferde 🐴:** Kauf Äpfel im Dorf und nimm einen in die Hand 🍎. Dann laufen die Wildpferde nicht weg, sondern kommen neugierig zu dir. 3 Mal „Füttern“ – jetzt ist es deins! „Aufsteigen“ = reiten.
+- **Leine 🪢:** An der Werkbank aus 1 altem Schuh 👞 (beim Angeln rausgefischt!) + 1 Schnur. Leine in die Hand → „Anleinen“ → das Pferd läuft mit. Am Stall „Anbinden“.
+- **Pferd füttern:** Mindestens alle 2 Tage einen Apfel oder eine Karotte 🥕 geben (in die Hand nehmen → „Füttern“). Sonst reißt es aus und ist wieder wild!
+- **Fliegen 🍄:** In der Luft kannst du jederzeit 🛬 „Landen“ drücken.
+- **Hunger 🍞:** Der Satt-Balken oben wird mit der Zeit leer – auch beim Schlafen. Ist er leer, bist du langsam.
+- **Nachts** schläft der Händler. Handeln geht nur am Tag.
 - **Zauberpilze 🍄:** leuchten im Wald (nachts besser zu sehen). Im Rucksack „✨ Essen“: 1 Minute fliegen. Sprungknopf festhalten = höher.
 - **Fernrohr 🔭:** an der Werkbank bauen (2 Eisenerz, 1 Gold, 1 Holz). In die Hand nehmen, „Durchschauen“, mit ➕/➖ oder zwei Fingern zoomen. Halte ein Boot 1 Sekunde in der Mitte, dann ist es entdeckt.

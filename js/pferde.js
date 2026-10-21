@@ -1,10 +1,14 @@
 // =============================================================
 //  PFERDE – Wildpferde auf den großen Wiesen
 //
-//  So geht's: Wildpferde sind scheu. Wer rennt, verscheucht sie.
-//  Wer langsam hingeht, kann sie mit Äpfeln füttern. Nach ein paar
-//  Äpfeln vertraut dir das Pferd: Es bekommt Sattel und Zaumzeug,
-//  läuft dir hinterher, und du kannst aufsteigen und reiten!
+//  So geht's: Wildpferde sind scheu. Wer auf sie zurennt, verscheucht sie.
+//  ABER: Hast du einen Apfel in der Hand, werden sie neugierig und
+//  kommen sogar zu dir! Nach ein paar Äpfeln vertraut dir das Pferd:
+//  Es bekommt Sattel und Zaumzeug, und du kannst aufsteigen und reiten.
+//
+//  Mit einer Leine (aus dem alten Schuh vom Angeln) kannst du dein
+//  Pferd führen und am Stall anbinden. Und: Ein Pferd braucht alle
+//  2 Tage Futter (Apfel oder Karotte) – sonst reißt es aus!
 //
 //  Trick fürs iPad (wie bei den Schafen): Alle Pferde teilen sich
 //  EINEN Körper, EINEN Hals mit Kopf, EINEN Schweif und je EIN
@@ -26,8 +30,13 @@ const aepfelZumZaehmen = () => E.aepfelZumZaehmen ?? 3;
 const reitTempo = () => E.reitTempo ?? 18;
 const scheuAbstand = () => E.scheuAbstand ?? 12;
 const scheuTempo = () => E.scheuTempo ?? 4;
-const folgeAbstand = () => E.folgeAbstand ?? 4;
 const reitLenkung = () => E.reitLenkung ?? 2.4;
+const fuetterRadius = () => E.fuetterRadius ?? 4.5;
+const neugierAbstand = () => E.neugierAbstand ?? 16;
+const leinenLaenge = () => E.leinenLaenge ?? 3.5;
+const leineReisstAb = () => E.leineReisstAb ?? 15;
+const hungerTage = () => E.pferdHungerTage ?? 1;
+const ausreissTage = () => E.pferdAusreissTage ?? 2;
 
 // Wie viele Herden, wie viele Pferde pro Herde?
 const ANZAHL_HERDEN = 2;
@@ -43,6 +52,8 @@ const REIT_BESCHLEUNIGUNG = 7;
 const REIT_BREMSE = 9;
 // So dick ist ein Pferd für Bäume und Felsen (Meter)
 const PFERD_RADIUS = 0.75;
+// Aus so vielen Stücken besteht die Leine
+const LEINEN_STUECKE = 12;
 
 // Eigener Zufall nur für die Pferde: immer dieselben Plätze und Farben
 const zufall = zufallMitSeed(4711);
@@ -334,6 +345,49 @@ function herzForm() {
   return g;
 }
 
+// ---------- Apfel, Karotte und Leine für die Hand ----------
+// Jedes Ding ist EINE Form mit eingebauten Farben (= nur 1 Pinselstrich)
+function handDing(teile) {
+  const mesh = new THREE.Mesh(mergeGeometries(teile), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.6 }));
+  mesh.castShadow = true;
+  mesh.visible = false;
+  return mesh;
+}
+function baueHandDinge() {
+  const ohneUv = (g) => {
+    if (g.attributes.uv) g.deleteAttribute('uv');
+    return g;
+  };
+  // Apfel: rote Kugel, oben etwas eingedellt, mit Stiel und Blatt
+  const apfel = new THREE.SphereGeometry(0.1, 16, 12);
+  const ap = apfel.attributes.position;
+  for (let i = 0; i < ap.count; i++) {
+    const y = ap.getY(i);
+    const delle = Math.exp(-((ap.getX(i) ** 2 + ap.getZ(i) ** 2) / 0.002)) * 0.03;
+    ap.setY(i, y * 0.92 - (y > 0 ? delle : 0));
+  }
+  apfel.computeVertexNormals();
+  const apfelTeile = [
+    stueck(ohneUv(apfel), 0, '#d42a24', { p: [0, -0.06, 0.02] }),
+    stueck(ohneUv(new THREE.CylinderGeometry(0.008, 0.01, 0.05, 5)), 0, '#5a3a1e', { p: [0, 0.03, 0.02], r: [0, 0, 0.2] }),
+    stueck(ohneUv(new THREE.SphereGeometry(1, 8, 6)), 0, '#3f9a3a', { s: [0.03, 0.006, 0.015], p: [0.025, 0.035, 0.02], r: [0, 0, 0.5] }),
+  ];
+  // Karotte: oranger Kegel mit grünem Kraut
+  const karotteTeile = [
+    stueck(ohneUv(new THREE.ConeGeometry(0.045, 0.24, 10)), 0, '#ee8a1c', { p: [0, -0.1, 0.03], r: [Math.PI, 0, 0] }),
+    stueck(ohneUv(new THREE.SphereGeometry(1, 8, 6)), 0, '#ee8a1c', { s: [0.045, 0.02, 0.045], p: [0, 0.02, 0.03] }),
+  ];
+  for (const w of [-0.35, 0, 0.35]) {
+    karotteTeile.push(stueck(ohneUv(new THREE.SphereGeometry(1, 6, 5)), 0, '#3f9a3a', { s: [0.012, 0.06, 0.012], p: [Math.sin(w) * 0.03, 0.07, 0.03], r: [0, 0, w] }));
+  }
+  // Leine: aufgerollt wie ein Lasso
+  const leineTeile = [
+    stueck(ohneUv(new THREE.TorusGeometry(0.1, 0.022, 6, 18)), 0, '#8a5a34', { p: [0, -0.1, 0.03], r: [0, Math.PI / 2, 0] }),
+    stueck(ohneUv(new THREE.TorusGeometry(0.085, 0.022, 6, 18)), 0, '#7a4a28', { p: [0.02, -0.09, 0.03], r: [0.3, Math.PI / 2, 0] }),
+  ];
+  return { apfel: handDing(apfelTeile), karotte: handDing(karotteTeile), leine: handDing(leineTeile) };
+}
+
 // ---------- Das Material: Fell, eigene Farben, Mähne, Ausrüstung ----------
 // Der Maler bekommt pro Pferd: Fellfarbe, Mähnenfarbe und ob Sattel & Zaumzeug drauf sind.
 function pferdeMaterial() {
@@ -412,7 +466,7 @@ function wiesenGroesse(x, z, hindernisse) {
 // =============================================================
 export class Pferde {
   constructor(szene, hindernisse, spiel) {
-    this.spiel = spiel; // { rucksack, meldung, musik, spieler, base }
+    this.spiel = spiel; // { rucksack, meldung, musik, spieler, base, tageszeit }
     this.hindernisse = hindernisse;
     this.zeit = 0;
     this.liste = [];
@@ -423,6 +477,9 @@ export class Pferde {
     this.spielerTempo = 0; // wie schnell die Figur gerade unterwegs ist
     this.letztePos = null;
     this.beiGezaehmt = null; // optional: wird aufgerufen, wenn ein Pferd zahm wird
+    this.beiAusgerissen = null; // optional: wird aufgerufen, wenn dein Pferd ausreißt
+    this.letzterTag = null; // für den Pferde-Hunger: welcher Tag war zuletzt?
+    this.pruefZeit = 0;
 
     this.platziere();
 
@@ -451,6 +508,24 @@ export class Pferde {
     for (const mesh of Object.values(this.teile)) this.gruppe.add(mesh);
     this.gruppe.add(this.herzen);
     szene.add(this.gruppe);
+
+    // Die Leine: 12 kurze, runde Stücke, die zusammen ein durchhängendes Seil ergeben
+    this.leine = new THREE.InstancedMesh(
+      new THREE.CylinderGeometry(0.028, 0.028, 1, 6, 1),
+      new THREE.MeshStandardMaterial({ color: '#8a5a34', roughness: 0.9 }),
+      LEINEN_STUECKE
+    );
+    this.leine.instanceMatrix.setUsage(THREE.DynamicDrawUsage);
+    this.leine.frustumCulled = false;
+    this.leine.visible = false;
+    this.gruppe.add(this.leine);
+    this.halfter = V(0, 0, 0); // hier ist die Leine am Pferdekopf festgemacht
+    this.handPunkt = V(0, 0, 0);
+
+    // Apfel, Karotte und Leine zum In-die-Hand-Nehmen
+    this.handDinge = baueHandDinge();
+    const handR = spiel.spieler?.handR;
+    if (handR) for (const ding of Object.values(this.handDinge)) handR.add(ding);
 
     this.baueInteraktionen();
     this.aktualisiere(0, V(0, 0, 0), 1);
@@ -529,16 +604,19 @@ export class Pferde {
     const self = this;
     const N = aepfelZumZaehmen;
     this._interaktionen = [];
-    // An jedem Wildpferd: Füttern
+    // An jedem Wildpferd: Füttern (dafür muss ein Apfel in der Hand sein)
     for (const p of this.liste) {
       this._interaktionen.push({
         pos: p.iaPos,
-        radius: 3.8,
+        get radius() {
+          return fuetterRadius();
+        },
         bild: '🍎',
         get text() {
           return p.vertrauen > 0 ? `Füttern (${p.vertrauen}/${N()})` : 'Füttern';
         },
-        aktiv: () => !self.eigenes && !p.gezaehmt && p.zustand !== 'flucht' && p.sichtbar,
+        // Mit Apfel in der Hand darf man auch ein flüchtendes Pferd füttern
+        aktiv: () => !self.eigenes && !p.gezaehmt && p.sichtbar && (p.zustand !== 'flucht' || self.hand === 'apfel'),
         ausfuehren: () => self.fuettern(p),
       });
     }
@@ -551,21 +629,21 @@ export class Pferde {
       radius: 3.2,
       bild: '🐴',
       text: 'Aufsteigen',
-      aktiv: () => !!self.eigenes && !self.reitet && ['folgen', 'warten'].includes(self.eigenes.zustand),
+      aktiv: () => !!self.eigenes && !self.reitet && ['warten', 'angeleint', 'angebunden'].includes(self.eigenes.zustand),
       ausfuehren: () => self.aufsteigen(),
     });
-    // Vorne am Kopf: Warte hier / Komm mit / In den Stall
+    // Vorne am Kopf: Füttern / Anleinen / Anbinden / Losbinden (je nachdem, was du in der Hand hast)
     this._interaktionen.push({
       pos: this.kopfPos,
-      radius: 1.8,
+      radius: 2.3,
       get bild() {
-        return self.kopfAktion().bild;
+        return self.kopfAktion()?.bild ?? '🐴';
       },
       get text() {
-        return self.kopfAktion().text;
+        return self.kopfAktion()?.text ?? '';
       },
-      aktiv: () => !!self.eigenes && !self.reitet && ['folgen', 'warten'].includes(self.eigenes.zustand),
-      ausfuehren: () => self.kopfAktion().los(),
+      aktiv: () => !!self.kopfAktion(),
+      ausfuehren: () => self.kopfAktion()?.los(),
     });
     // Beim Reiten: Absteigen (nur wenn daneben Platz ist)
     this._interaktionen.push({
@@ -576,14 +654,14 @@ export class Pferde {
       aktiv: () => self.reitet && self.absteigStelle !== null,
       ausfuehren: () => self.absteigen(),
     });
-    // Am Stall: Pferd holen
+    // Am Stall: Pferd an der Leine anbinden
     this._interaktionen.push({
       pos: this.stallPos,
-      radius: 4,
-      bild: '🐴',
-      text: 'Pferd holen',
-      aktiv: () => !!self.eigenes && self.eigenes.zustand === 'imStall' && !!self.stall,
-      ausfuehren: () => self.ausDemStall(),
+      radius: 5,
+      bild: '🪢',
+      text: 'Anbinden',
+      aktiv: () => !!self.eigenes && self.eigenes.zustand === 'angeleint' && self.amStall(self.eigenes),
+      ausfuehren: () => self.anbinden(),
     });
   }
 
@@ -599,55 +677,102 @@ export class Pferde {
     return this.spiel.base?.stall || null;
   }
 
+  // Was hast du gerade in der Hand? (z. B. 'apfel', 'leine' oder null)
+  get hand() {
+    return this.spiel.rucksack?.inDerHand ?? null;
+  }
+
+  // Welcher Tag ist heute? (null = wissen wir nicht, dann gibt es keinen Pferde-Hunger)
+  get tag() {
+    return this.spiel.tageszeit?.tag ?? null;
+  }
+
+  // Hat dein Pferd gerade Hunger?
+  get hatHunger() {
+    const p = this.eigenes;
+    if (!p || this.tag === null) return false;
+    return this.tag - p.letzteFuetterung >= hungerTage();
+  }
+
   // Für die Karte: wo sind die Pferde?
   get positionen() {
     return this.liste.map((p) => ({ x: p.x, z: p.z, eigenes: p === this.eigenes }));
   }
 
-  // Was macht der Knopf vorne am Kopf?
+  // Ist das Pferd nah genug am Stall zum Anbinden?
+  amStall(p) {
+    const st = this.stall;
+    return !!st && Math.hypot(p.x - st.x, p.z - st.z) < 9;
+  }
+
+  // Was macht der Knopf vorne am Kopf? Das hängt davon ab, was du in der Hand hast.
   kopfAktion() {
     const p = this.eigenes;
-    if (p && p.zustand === 'warten') return { bild: '🐴', text: 'Komm mit!', los: () => this.kommMit() };
-    if (this.stall) return { bild: '🏠', text: 'In den Stall', los: () => this.inDenStall() };
-    return { bild: '✋', text: 'Warte hier', los: () => this.warteHier() };
+    if (!p || this.reitet || !['warten', 'angeleint', 'angebunden'].includes(p.zustand)) return null;
+    const hand = this.hand;
+    if (hand === 'apfel' || hand === 'karotte') {
+      return { bild: hand === 'apfel' ? '🍎' : '🥕', text: 'Füttern', los: () => this.fuettereEigenes() };
+    }
+    if (hand === 'leine') {
+      if (p.zustand === 'angeleint') {
+        if (this.amStall(p)) return { bild: '🪢', text: 'Anbinden', los: () => this.anbinden() };
+        return { bild: '✋', text: 'Warte hier', los: () => this.loslassen() };
+      }
+      if (p.zustand === 'angebunden') return { bild: '🪢', text: 'Losbinden', los: () => this.anleinen() };
+      return { bild: '🪢', text: 'Anleinen', los: () => this.anleinen() };
+    }
+    // Nichts Passendes in der Hand: Der Knopf erklärt, was man braucht
+    if (this.hatHunger) return { bild: '🍎', text: 'Füttern', los: () => this.tippFutter() };
+    return { bild: '🪢', text: 'Anleinen', los: () => this.tippLeine() };
   }
 
-  kommMit() {
-    if (!this.eigenes) return;
-    this.eigenes.zustand = 'folgen';
-    this.spiel.meldung?.('🐴 Dein Pferd kommt mit dir mit.', 3);
+  tippFutter() {
+    const r = this.spiel.rucksack;
+    if (r.hat('apfel') || r.hat('karotte')) this.spiel.meldung?.('🍎 Nimm einen Apfel oder eine Karotte 🥕 in die Hand! (Rucksack 🎒 öffnen → antippen)', 5);
+    else this.spiel.meldung?.('🍎 Dein Pferd frisst Äpfel (beim Händler) oder Karotten 🥕 (aus deinem Garten).', 5);
   }
 
-  warteHier() {
-    if (!this.eigenes) return;
-    this.eigenes.zustand = 'warten';
-    this.eigenes.timer = 2;
+  tippLeine() {
+    if (this.spiel.rucksack.hat('leine')) this.spiel.meldung?.('🪢 Nimm die Leine in die Hand! (Rucksack 🎒 öffnen → Leine antippen)', 5);
+    else this.spiel.meldung?.('🪢 Du brauchst eine Leine! Bau sie an der Werkbank 🔨 aus einem alten Schuh 👞 (fischt man beim Angeln) und einer Schnur 🧵.', 7);
+  }
+
+  // ---------- Die Leine ----------
+  anleinen() {
+    const p = this.eigenes;
+    if (!p || this.hand !== 'leine') return;
+    const warAngebunden = p.zustand === 'angebunden';
+    p.zustand = 'angeleint';
+    p.steckZeit = 0;
+    this.spiel.musik?.pling?.();
+    this.spiel.meldung?.(warAngebunden ? '🪢 Losgebunden! Dein Pferd kommt an der Leine mit.' : '🪢 Angeleint! Dein Pferd läuft jetzt an der Leine mit dir mit.', 4);
+  }
+
+  loslassen() {
+    const p = this.eigenes;
+    if (!p) return;
+    p.zustand = 'warten';
+    p.timer = 2;
     this.spiel.meldung?.('✋ Dein Pferd wartet hier auf dich.', 3);
   }
 
-  inDenStall() {
+  anbinden() {
     const p = this.eigenes;
     if (!p || !this.stall) return;
-    p.zustand = 'zumStall';
+    p.zustand = 'angebunden';
     p.steckZeit = 0;
-    p.timer = 30; // spätestens dann ist es da
-    this.spiel.meldung?.('🏠 Dein Pferd trabt zum Stall.', 3);
-  }
-
-  ausDemStall() {
-    const p = this.eigenes;
-    if (!p) return;
-    p.zustand = 'folgen';
     this.spiel.musik?.pling?.();
-    this.spiel.meldung?.('🐴 Dein Pferd kommt aus dem Stall!', 3);
+    this.spiel.meldung?.('🏠 Angebunden! Dein Pferd steht jetzt sicher im Stall.', 4);
   }
 
   // ---------- Füttern & Zähmen ----------
   fuettern(p) {
     const { rucksack, meldung, musik } = this.spiel;
     if (this.eigenes || p.gezaehmt) return;
-    if (!rucksack.hat('apfel')) {
-      meldung?.('🍎 Pferde lieben Äpfel! Kauf welche beim Händler im Dorf.', 4);
+    if (this.hand !== 'apfel') {
+      if (this.hand === 'karotte') meldung?.('🥕 Zum Zähmen wollen Wildpferde Äpfel! Nimm einen Apfel 🍎 in die Hand.', 5);
+      else if (rucksack.hat('apfel')) meldung?.('🍎 Nimm einen Apfel in die Hand! (Rucksack 🎒 öffnen → Apfel antippen)', 5);
+      else meldung?.('🍎 Pferde lieben Äpfel! Kauf welche beim Händler im Dorf.', 4);
       return;
     }
     rucksack.nehmen('apfel', 1);
@@ -661,19 +786,124 @@ export class Pferde {
     }
     p.zustand = 'fressen';
     p.timer = 2.5;
-    const nochWieviele = N - p.vertrauen;
-    meldung?.(`🍎 Mampf! Das Pferd mag dich. Noch ${nochWieviele} ${nochWieviele === 1 ? 'Apfel' : 'Äpfel'}!`, 3.5);
+    const noch = N - p.vertrauen;
+    let text = `🍎 Mampf! Noch ${noch} ${noch === 1 ? 'Apfel' : 'Äpfel'}, dann vertraut es dir!`;
+    if (!rucksack.hat('apfel')) text += ' Kauf mehr Äpfel im Dorf.';
+    meldung?.(text, 4);
   }
 
   zaehmen(p) {
     p.gezaehmt = true;
-    p.zustand = 'folgen';
+    p.zustand = 'warten';
     p.timer = 2;
+    p.ausgerissen = false;
+    p.letzteFuetterung = this.tag ?? 1;
+    p.gewarntTag = 0;
     if (p.herde) p.herde = null; // es verlässt seine Herde
     this.eigenes = p;
+    this.letzterTag = this.tag;
     this.herzchen(p, 12);
-    this.spiel.meldung?.('💖 Das Pferd vertraut dir! Es ist jetzt DEIN Pferd und läuft dir nach. Steig auf! 🐴', 6);
+    this.spiel.meldung?.(`💖 Das Pferd vertraut dir! Es ist jetzt DEIN Pferd. Steig auf 🐴 oder führ es mit einer Leine 🪢. Füttere es alle ${ausreissTage()} Tage!`, 7);
     if (this.beiGezaehmt) this.beiGezaehmt(p);
+  }
+
+  // Dein eigenes Pferd füttern (Apfel oder Karotte in der Hand)
+  fuettereEigenes() {
+    const p = this.eigenes;
+    const { rucksack, meldung, musik } = this.spiel;
+    const futter = this.hand;
+    if (!p || (futter !== 'apfel' && futter !== 'karotte')) return;
+    const heute = this.tag ?? 1;
+    if (p.letzteFuetterung >= heute) {
+      this.herzchen(p, 2);
+      meldung?.('😊 Dein Pferd ist noch satt. Morgen freut es sich wieder über Futter!', 4);
+      return;
+    }
+    rucksack.nehmen(futter, 1);
+    p.letzteFuetterung = heute;
+    p.gewarntTag = 0;
+    p.frissZeit = 2.5;
+    musik?.pling?.();
+    this.herzchen(p, 6);
+    meldung?.(`${futter === 'apfel' ? '🍎' : '🥕'} Mampf! Dein Pferd ist satt und glücklich. 💖 Füttere es spätestens in ${ausreissTage()} Tagen wieder.`, 5);
+  }
+
+  // ---------- Hunger: Wer nicht gefüttert wird, reißt aus ----------
+  pruefeHunger(dt) {
+    const p = this.eigenes;
+    const heute = this.tag;
+    if (!p || heute === null) return;
+    // Neuer Tag? Dann gleich (nach ein paar Sekunden, damit "Guten Morgen" nicht drüber steht) nachschauen
+    if (heute !== this.letzterTag) {
+      this.letzterTag = heute;
+      this.pruefZeit = 5;
+    }
+    if (this.pruefZeit <= 0) return;
+    this.pruefZeit -= dt;
+    if (this.pruefZeit > 0) return;
+    const ohneFutter = heute - p.letzteFuetterung;
+    if (ohneFutter >= ausreissTage()) {
+      if (this.reitet) {
+        this.pruefZeit = 1; // beim Reiten reißt es nicht aus – erst wenn du absteigst
+        return;
+      }
+      this.ausreissen(p);
+    } else if (ohneFutter >= hungerTage() && p.gewarntTag !== heute) {
+      p.gewarntTag = heute;
+      const letzterTag = ohneFutter + 1 >= ausreissTage();
+      this.spiel.meldung?.(letzterTag
+        ? '🍎 Dein Pferd hat Hunger! Füttere es HEUTE mit einem Apfel oder einer Karotte 🥕 – sonst reißt es aus!'
+        : '🍎 Dein Pferd hat Hunger! Bring ihm einen Apfel oder eine Karotte 🥕.', 7);
+    }
+  }
+
+  ausreissen(p) {
+    p.gezaehmt = false;
+    p.vertrauen = 0;
+    this.eigenes = null;
+    // Es läuft zur nächsten Herde zurück
+    let herde = this.herden[0];
+    for (const h of this.herden) {
+      if (Math.hypot(h.x - p.x, h.z - p.z) < Math.hypot(herde.x - p.x, herde.z - p.z)) herde = h;
+    }
+    p.herde = herde;
+    p.steckZeit = 0;
+    p.frissZeit = 0;
+    const spieler = this.spiel.spieler?.figur?.position;
+    const weit = !spieler || Math.hypot(p.x - spieler.x, p.z - spieler.z) > 40;
+    if (herde && weit) {
+      // Keiner schaut zu: Dann ist es einfach schon bei seiner Herde
+      this.setzeZurHerde(p);
+      p.zustand = 'grasen';
+      p.timer = 4;
+    } else if (herde) {
+      p.zustand = 'flucht';
+      p.ausgerissen = true; // darf auch durch die Base laufen, bis es weg ist
+      p.zielX = herde.x + (zufall() - 0.5) * 6;
+      p.zielZ = herde.z + (zufall() - 0.5) * 6;
+      p.fluchtTempo = 9;
+      p.timer = 40;
+    }
+    this.spiel.meldung?.('💨 Dein Pferd hatte Hunger und ist ausgerissen! Jetzt ist es wieder wild. Mit Äpfeln kannst du es neu zähmen.', 8);
+    if (this.beiAusgerissen) this.beiAusgerissen(p);
+  }
+
+  // Stellt ein Pferd an einen freien Platz bei seiner Herde
+  setzeZurHerde(p) {
+    const h = p.herde;
+    if (!h) return;
+    for (let v = 0; v < 30; v++) {
+      const tx = h.x + (zufall() - 0.5) * 12, tz = h.z + (zufall() - 0.5) * 12;
+      if (this.wildDarf(tx, tz)) {
+        p.x = tx;
+        p.z = tz;
+        p.wy = bodenHoehe(tx, tz);
+        return;
+      }
+    }
+    p.x = h.heimX;
+    p.z = h.heimZ;
+    p.wy = bodenHoehe(p.x, p.z);
   }
 
   herzchen(p, anzahl) {
@@ -852,7 +1082,8 @@ export class Pferde {
 
   // ---------- Wildpferde erschrecken: die ganze Herde rennt weg ----------
   erschrecke(herde, spieler) {
-    const pferde = this.liste.filter((p) => p.herde === herde && !p.gezaehmt);
+    // Pferde, die schon einen Apfel von dir hatten, kennen dich – die bleiben ruhig
+    const pferde = this.liste.filter((p) => p.herde === herde && !p.gezaehmt && !p.vertrauen);
     if (pferde.length === 0) return;
     const mx = pferde.reduce((s, p) => s + p.x, 0) / pferde.length;
     const mz = pferde.reduce((s, p) => s + p.z, 0) / pferde.length;
@@ -886,21 +1117,54 @@ export class Pferde {
   // ---------- Das Gehirn der Wildpferde ----------
   denkeWild(p, dt, spieler, abstand, nacht) {
     p.timer -= dt;
-    const darf = (x, z) => this.wildDarf(x, z);
+    // Ein ausgerissenes Pferd darf auch durch die Base laufen, bis es bei seiner Herde ist
+    const darf = p.ausgerissen ? (x, z) => this.eigenDarf(x, z) : (x, z) => this.wildDarf(x, z);
+    // Mit einem Apfel in der Hand bist du kein Schreck, sondern spannend!
+    const apfel = this.hand === 'apfel' && !p.ausgerissen;
     const schnell = this.spielerTempo > scheuTempo();
 
     // Hilfe! Da kommt jemand angerannt!
-    if (p.zustand !== 'flucht' && abstand < scheuAbstand() && schnell && p.herde) {
+    if (p.zustand !== 'flucht' && abstand < scheuAbstand() && schnell && !apfel && !p.vertrauen && p.herde) {
       this.erschrecke(p.herde, spieler);
     }
 
     if (p.zustand === 'flucht') {
       p.kopf += (-0.1 - p.kopf) * Math.min(1, dt * 4);
       const rest = this.laufeZu(p, p.zielX, p.zielZ, p.fluchtTempo, dt, darf);
-      if (rest < 2.5 || p.timer < 0 || p.steckZeit > 2) {
+      // Apfel gesehen? Dann bleibt es stehen und schaut neugierig
+      const apfelGesehen = apfel && abstand < neugierAbstand();
+      if (rest < 2.5 || p.timer < 0 || p.steckZeit > 2 || apfelGesehen) {
         p.zustand = 'stehen';
         p.timer = 3 + zufall() * 3;
+        if (p.ausgerissen) {
+          p.ausgerissen = false;
+          if (!this.wildDarf(p.x, p.z)) this.setzeZurHerde(p);
+        }
       }
+      return;
+    }
+    // Apfel in deiner Hand? Dann wird das Pferd neugierig und kommt näher
+    if (apfel && abstand < neugierAbstand() && p.zustand !== 'fressen') p.zustand = 'neugierig';
+    if (p.zustand === 'neugierig') {
+      if (!apfel || abstand > neugierAbstand() + 4) {
+        p.zustand = 'stehen';
+        p.timer = 2;
+        return;
+      }
+      const nah = 2.9; // so nah kommt es (Mitte vom Pferd bis zu dir)
+      const zuDir = Math.atan2(spieler.x - p.x, spieler.z - p.z);
+      if (abstand > nah + 0.5 && p.steckZeit < 3) {
+        // Gemütlich zu dir hin – nicht rennen
+        const r = Math.atan2(p.x - spieler.x, p.z - spieler.z);
+        this.laufeZu(p, spieler.x + Math.sin(r) * nah, spieler.z + Math.cos(r) * nah, SCHRITT_TEMPO * 1.3, dt, darf);
+      } else {
+        this.bremse(p, dt, 6);
+        if (abstand <= nah + 0.5) p.steckZeit = 0;
+        if (p.tempo < 0.5) p.drehung = dreheZu(p.drehung, zuDir, dt * 1.5);
+      }
+      p.kopf += (0.05 - p.kopf) * Math.min(1, dt * 3);
+      p.kopfSeite += (THREE.MathUtils.clamp(winkelDiff(zuDir, p.drehung), -0.6, 0.6) - p.kopfSeite) * Math.min(1, dt * 3);
+      this.nichtDraengeln(p, dt);
       return;
     }
     if (p.zustand === 'fressen') {
@@ -955,7 +1219,11 @@ export class Pferde {
       }
     }
 
-    // Nicht ineinander laufen: sanft auseinanderschieben
+    this.nichtDraengeln(p, dt);
+  }
+
+  // Nicht ineinander laufen: sanft auseinanderschieben
+  nichtDraengeln(p, dt) {
     for (const anderes of this.liste) {
       if (anderes === p) continue;
       const dx = p.x - anderes.x, dz = p.z - anderes.z;
@@ -971,22 +1239,46 @@ export class Pferde {
   }
 
   // ---------- Das Gehirn von deinem Pferd ----------
+  //   warten     = steht da und grast
+  //   angeleint  = läuft dir an der Leine hinterher
+  //   angebunden = steht im Stall
+  //   geritten   = du sitzt drauf (das macht steuern())
   denkeEigenes(p, dt, spieler, abstand) {
     p.timer -= dt;
     const darf = (x, z) => this.eigenDarf(x, z);
     const stall = this.stall;
-    if (p.zustand === 'geritten') return; // das macht steuern()
+    if (p.zustand === 'geritten') return;
 
-    if (p.zustand === 'folgen') {
-      const folge = folgeAbstand();
-      if (abstand > folge + 1) {
-        // Hinterher! Je weiter weg, desto schneller (bis zum Galopp)
+    if (p.zustand === 'angeleint') {
+      // Leine weggepackt oder viel zu weit weg? Dann bleibt das Pferd stehen
+      if (this.hand !== 'leine') {
+        p.zustand = 'warten';
+        this.spiel.meldung?.('✋ Du hast die Leine eingepackt – dein Pferd wartet hier.', 4);
+      } else if (abstand > leineReisstAb()) {
+        p.zustand = 'warten';
+        this.spiel.meldung?.('😮 Die Leine ist dir aus der Hand gerutscht! Dein Pferd wartet hier.', 4);
+      }
+    }
+    if (p.zustand === 'angebunden' && !stall) p.zustand = 'warten';
+
+    // Frisst gerade: Kopf runter und kauen
+    if (p.frissZeit > 0) {
+      p.frissZeit -= dt;
+      this.bremse(p, dt, 6);
+      p.kopf += (0.25 + Math.sin(this.zeit * 9) * 0.06 - p.kopf) * Math.min(1, dt * 5);
+      return;
+    }
+
+    if (p.zustand === 'angeleint') {
+      const folge = leinenLaenge();
+      if (abstand > folge + 0.6) {
+        // Hinterher! Je weiter weg, desto schneller
         const r = Math.atan2(p.x - spieler.x, p.z - spieler.z);
         const zx = spieler.x + Math.sin(r) * folge, zz = spieler.z + Math.cos(r) * folge;
-        const tempo = THREE.MathUtils.clamp((abstand - folge) * 2, 1.2, 14);
+        const tempo = THREE.MathUtils.clamp((abstand - folge) * 2.5, 1.2, 14);
         this.laufeZu(p, zx, zz, tempo, dt, darf);
-        // Ganz festgesteckt und weit weg? Dann findet es den Weg schon (es taucht hinter dir auf)
-        if (p.steckZeit > 4 && abstand > 25 && darf(zx, zz)) {
+        // Ganz festgesteckt (z. B. hinter einem Baum)? Dann kommt es zu dir rüber
+        if (p.steckZeit > 3 && darf(zx, zz)) {
           p.x = zx;
           p.z = zz;
           p.steckZeit = 0;
@@ -1005,18 +1297,7 @@ export class Pferde {
       return;
     }
 
-    if (p.zustand === 'zumStall') {
-      if (!stall) {
-        p.zustand = 'warten';
-        return;
-      }
-      const rest = this.laufeZu(p, stall.x, stall.z, 6, dt, (x, z) => darf(x, z) || Math.hypot(x - stall.x, z - stall.z) < 4);
-      // Angekommen – oder steckt fest / ist weit weg von dir? Dann ist es einfach schon da.
-      if (rest < 1 || p.timer < 0 || p.steckZeit > 4 || abstand > 70) p.zustand = 'imStall';
-      return;
-    }
-
-    if (p.zustand === 'imStall' && stall) {
+    if (p.zustand === 'angebunden') {
       // Im Stall steht das Pferd in der Mitte und schaut nach vorne
       p.x += (stall.x - p.x) * Math.min(1, dt * 3);
       p.z += (stall.z - p.z) * Math.min(1, dt * 3);
@@ -1100,6 +1381,43 @@ export class Pferde {
 
     this.maleHerzen(dt);
     if (this.reitet) this.setzeFigur();
+    if (dt > 0) this.pruefeHunger(dt);
+    this.zeigeHandDinge();
+    this.maleLeine();
+  }
+
+  // Apfel, Karotte oder Leine in der Hand zeigen (beim Reiten und Rudern nicht)
+  zeigeHandDinge() {
+    const hand = this.reitet || this.spiel.boote?.faehrt ? null : this.hand;
+    for (const [id, ding] of Object.entries(this.handDinge)) ding.visible = hand === id;
+  }
+
+  // Die Leine von deiner Hand zum Kopf vom Pferd – sie hängt etwas durch
+  maleLeine() {
+    const p = this.eigenes;
+    const an = !!p && p.zustand === 'angeleint' && !!this.spiel.spieler?.handR;
+    this.leine.visible = an;
+    if (!an) return;
+    const a = this.spiel.spieler.handR.getWorldPosition(this.handPunkt);
+    a.y -= 0.08;
+    const b = this.halfter;
+    const weite = a.distanceTo(b);
+    const durchhang = Math.max(0, leinenLaenge() + 1 - weite) * 0.35 + 0.12;
+    const n = LEINEN_STUECKE;
+    for (let i = 0; i < n; i++) {
+      const t0 = i / n, t1 = (i + 1) / n;
+      _l0.lerpVectors(a, b, t0);
+      _l0.y -= 4 * t0 * (1 - t0) * durchhang;
+      _l1.lerpVectors(a, b, t1);
+      _l1.y -= 4 * t1 * (1 - t1) * durchhang;
+      const laenge = _l0.distanceTo(_l1);
+      _richtung.subVectors(_l1, _l0).normalize();
+      _q.setFromUnitVectors(_oben, _richtung);
+      _p.addVectors(_l0, _l1).multiplyScalar(0.5);
+      _a.compose(_p, _q, _s.set(1, laenge + 0.01, 1));
+      this.leine.setMatrixAt(i, _a);
+    }
+    this.leine.instanceMatrix.needsUpdate = true;
   }
 
   // ---------- Gangarten: Schritt, Trab, Galopp ----------
@@ -1141,6 +1459,8 @@ export class Pferde {
     const nick = -0.08 + p.kopf * 1.68 + kauen + galoppNick - 0.12 * p.galopp;
     _a.multiplyMatrices(_koerper, teil(0, HALS_PUNKT.y, HALS_PUNKT.z, nick, p.kopfSeite * 0.8, 0));
     setze(t.halsKopf, i, _a, p);
+    // Beim eigenen Pferd: Wo am Kopf hängt die Leine? (am Zaumzeug unter dem Kinn)
+    if (p === this.eigenes) this.halfter.set(0, 0.86, 1.22).applyMatrix4(_a);
 
     // Schweif: hängt, wedelt gegen Fliegen, fliegt beim Galopp nach hinten
     const wedel = Math.sin(p.wedeln * 2.2 + p.nr) * Math.max(0, Math.sin(p.wedeln * 0.37 + p.nr * 2)) * 0.35;
@@ -1244,11 +1564,13 @@ export class Pferde {
   alsDaten() {
     const e = this.eigenes;
     let zustand = e ? e.zustand : null;
-    if (zustand === 'geritten') zustand = 'warten';
-    if (zustand === 'zumStall') zustand = 'imStall';
+    // Beim Laden steht das Pferd erst mal still da (die Leine hält man dann nicht mehr)
+    if (zustand === 'geritten' || zustand === 'angeleint') zustand = 'warten';
     return {
       eigenes: e ? e.nr : -1,
       zustand,
+      gefuettert: e ? e.letzteFuetterung : null, // an welchem Tag zuletzt gefüttert
+      gewarnt: e ? e.gewarntTag || 0 : 0,
       pferde: this.liste.map((p) => ({ x: Math.round(p.x * 10) / 10, z: Math.round(p.z * 10) / 10, w: Math.round(p.drehung * 100) / 100, v: p.vertrauen })),
     };
   }
@@ -1270,8 +1592,14 @@ export class Pferde {
     if (e) {
       e.gezaehmt = true;
       e.herde = null;
-      e.zustand = ['folgen', 'warten', 'imStall'].includes(d.zustand) ? d.zustand : 'warten';
+      // Alte Spielstände kennen "imStall" und "zumStall" – das heißt jetzt "angebunden".
+      // "folgen" gibt es nicht mehr (ohne Leine läuft das Pferd nicht mit) – dann wartet es.
+      e.zustand = ['angebunden', 'imStall', 'zumStall'].includes(d.zustand) ? 'angebunden' : 'warten';
+      // Alter Spielstand ohne Fütter-Tag? Dann zählt heute als gefüttert (keine böse Überraschung)
+      e.letzteFuetterung = typeof d.gefuettert === 'number' ? d.gefuettert : this.tag ?? 1;
+      e.gewarntTag = d.gewarnt || 0;
       this.eigenes = e;
+      this.letzterTag = null; // gleich nach dem Laden einmal nachschauen, ob es Hunger hat
     }
   }
 }
@@ -1283,6 +1611,8 @@ const _q = new THREE.Quaternion(), _e = new THREE.Euler();
 const _p = new THREE.Vector3(), _s = new THREE.Vector3();
 const _eins = new THREE.Vector3(1, 1, 1);
 const _dickHinten = new THREE.Matrix4().makeScale(1.12, 1, 1.15); // Hinterbeine sind kräftiger
+const _l0 = new THREE.Vector3(), _l1 = new THREE.Vector3(), _richtung = new THREE.Vector3();
+const _oben = new THREE.Vector3(0, 1, 0);
 
 // Verschieben + drehen (Reihenfolge: erst zur Seite schauen, dann nicken)
 function teil(x, y, z, rx, ry, rz) {

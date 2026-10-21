@@ -161,7 +161,7 @@ boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild:
 // ---------- Pferde ----------
 // Die Base (mit dem Pferdestall) kommt später dazu – bis dahin gibt es keinen Stall
 const baseHalter = { base, get stall() { return this.base?.stall ?? null; } };
-const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter });
+const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter, tageszeit, boote });
 objekte.interaktionen.push(...pferde.interaktionen);
 aufgaben.spiel.base = base;
 aufgaben.spiel.haendler = haendler;
@@ -574,7 +574,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {

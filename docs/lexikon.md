@@ -33,3 +33,6 @@
 | **Upgrade** | Etwas verbessern, z. B. das Zelt zur Hütte ausbauen. |
 | **Freischalten** | Etwas wird erst möglich, wenn man etwas geschafft hat (Pferdestall erst ab Hütte und Tag 3). |
 | **Seed** | Eine Zahl, aus der die Welt „zufällig“ gebaut wird. Gleicher Seed = gleiche Welt. Unser Seed: 42. |
+| **Tutorial** | Eine Anleitung im Spiel selbst. Bei uns: kleine Sprechblasen, die etwas erklären, wenn man es zum ersten Mal sieht. |
+| **Playtest** | Andere Leute (z. B. Freunde) spielen das Spiel zum ersten Mal, und man schaut, wo sie hängen bleiben. Dafür haben wir das Tutorial gebaut. |
+| **Recycling** | Aus Müll etwas Neues machen: Aus dem alten Schuh vom Angeln wird eine Pferde-Leine. |

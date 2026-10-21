@@ -41,14 +41,14 @@ Echte Spielestudios haben so eine Liste auch, sie heißt dort **„Backlog“**.
 - [x] Hunger wird über Nacht nicht mehr zurückgesetzt (Satt-Balken)
 - [x] Beim Fliegen jederzeit landen (🛬)
 - [x] Händler schläft nachts
-- [ ] Pferde zähmen reparieren, Leine aus altem Schuh, am Stall anbinden, alle 2 Tage füttern
-- [ ] Musik: 2 neue Tagstücke + eigenes Nachtstück; Geräusche (Rascheln, Wasser, Angeln, Handeln)
-- [ ] Erklär-Sprechblasen beim ersten Mal + Tipps für neue Spieler
+- [x] Pferde zähmen reparieren, Leine aus altem Schuh, am Stall anbinden, alle 2 Tage füttern
+- [x] Musik: 2 neue Tagstücke + eigenes Nachtstück; Geräusche (Rascheln, Wasser, Angeln, Handeln)
+- [x] Erklär-Sprechblasen beim ersten Mal + Tipps für neue Spieler
 
 ## Farmen (Idee vom Game Designer, Tag 3)
 - [ ] Am Start 3 Felder beackern: **Karotten, Kartoffeln, Weizen**
 - [ ] Aus Weizen am Lagerfeuer **eigenes Brot backen**
-- [ ] Karotten als Futter für die Pferde
+- [x] Karotten als Futter für die Pferde (geht schon mit Garten-Karotten)
 - [ ] **Bratkartoffeln** machen 2 Tage satt
 
 ## Vom Game Designer (Tag 1)

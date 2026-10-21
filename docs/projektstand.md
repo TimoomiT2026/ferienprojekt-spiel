@@ -10,7 +10,8 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 - **Kreislauf:** graben → Schwert bauen → Holz fällen → Schnur + Angel bauen → Würmer → Tofu-Fisch → Feuerzeug → Lagerfeuer → grillen → selbst satt
 - **Aufgabenbuch** 📋 führt Schritt für Schritt durch (mit Münz-Belohnungen)
 - **Base** mit Menü am Schild „BASE“: Zelt → großes Zelt → Hütte mit Truhe → Hütte mit Karotten-Garten → Haus mit Fischteich; dazu Reisezelt (3 Rucksack-Plätze) und Pferdestall (ab Hütte und ab Tag 3)
-- **Pferde:** mit 3 Äpfeln zähmen (langsam nähern, sonst laufen sie weg), dann reiten
+- **Pferde:** Apfel in die Hand → Pferd wird neugierig, 3× füttern = gezähmt; Leine (Schuh + Schnur) zum Führen und am Stall Anbinden; alle 2 Tage füttern, sonst reißt es aus
+- **Vor Etappe 3:** bunte Fische, Satt-Balken (Hunger läuft auch beim Schlafen weiter), Landen beim Fliegen, Händler schläft nachts, weniger Münzen am Anfang + Aufgabe „Handeln“, 3 Tagstücke + eigenes Nachtstück, Umgebungsgeräusche, Erklär-Blasen für neue Spieler (js/tutorial.js)
 - **Zauberpilze** im Wald: 1 Minute fliegen (Sprungknopf halten = höher)
 - **Fernrohr:** zoomen, Boote entdecken (später andere Inseln). Durch Berge sieht man nicht.
 - **Karte & Navigation**, Tag/Nacht (5 + 3 Minuten), Wellen, Musik, automatisches Speichern
