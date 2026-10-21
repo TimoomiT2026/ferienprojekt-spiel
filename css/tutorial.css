@@ -1,0 +1,71 @@
+/* =============================================================
+   TUTORIAL-SPRECHBLASE 💬
+   Runde Comic-Blase rechts neben den Anzeigen oben links,
+   unter der Meldung – nie über Joystick, Aktions- oder Sprungknopf.
+   ============================================================= */
+#tutorial-blase {
+  position: absolute;
+  /* Links Platz lassen für Münzen, Rucksack und Aufgabenbuch */
+  left: max(calc(min(40vw, 320px) + 32px), calc(50% - 290px));
+  right: 16px;
+  max-width: 580px;
+  top: clamp(168px, 26vh, 240px);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px 14px 24px;
+  border-radius: 34px;
+  background: #fffdf5;
+  border: 4px solid #ffb02e;
+  box-shadow: 0 6px 0 #e3a03a, 0 12px 28px rgba(0, 0, 0, 0.22);
+  color: #3a2a18;
+  z-index: 12; /* über dem Spiel, aber unter den Fenstern (15) */
+  touch-action: none;
+  cursor: pointer;
+  opacity: 0;
+  pointer-events: none;
+  transform: scale(0.6) translateY(-20px);
+  transform-origin: 30% 100%;
+  transition: opacity 0.25s, transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+#tutorial-blase.sichtbar { opacity: 1; pointer-events: auto; transform: none; }
+#tutorial-blase.versteckt { opacity: 0 !important; pointer-events: none !important; }
+
+/* Zwei runde Pünktchen unten – wie bei einer Comic-Sprechblase */
+#tutorial-blase::before,
+#tutorial-blase::after {
+  content: '';
+  position: absolute;
+  border-radius: 50%;
+  background: #fffdf5;
+  border: 4px solid #ffb02e;
+}
+#tutorial-blase::before { width: 26px; height: 26px; left: 40px; bottom: -24px; }
+#tutorial-blase::after { width: 14px; height: 14px; left: 26px; bottom: -42px; }
+
+.tutorial-text {
+  flex: 1;
+  font-size: 20px;
+  line-height: 1.35;
+  font-weight: bold;
+}
+.tutorial-ok {
+  flex: none;
+  min-width: 76px;
+  height: 52px;
+  padding: 0 14px;
+  border: none;
+  border-radius: 26px;
+  background: #4caf50;
+  color: #fff;
+  font-size: 19px;
+  font-weight: bold;
+  box-shadow: 0 4px 0 #2f7d32;
+}
+.tutorial-ok:active { transform: translateY(3px); box-shadow: 0 1px 0 #2f7d32; }
+
+/* Kleine Bildschirme: etwas kompakter */
+@media (max-height: 600px) {
+  #tutorial-blase { padding: 10px 12px 10px 18px; }
+  .tutorial-text { font-size: 18px; }
+}

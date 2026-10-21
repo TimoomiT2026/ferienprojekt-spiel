@@ -34,6 +34,7 @@ import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
 import { ladeSpielstand, speichereSpielstand, loescheSpielstand } from './speicher.js';
 import { zeigeVorgeschichte } from './vorgeschichte.js';
+import { Tutorial } from './tutorial.js';
 import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
@@ -104,6 +105,7 @@ function schlafen() {
     schlafBild.classList.remove('sichtbar');
     schlaeft = false;
     meldung(`☀️ Guten Morgen! Tag ${tageszeit.tag} beginnt.`, 4);
+    tutorial.neu('schlafen');
   }, 3600);
 }
 
@@ -123,6 +125,7 @@ objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
 rucksack.beimEssen = (id) => {
   ueberleben.gegessen(id);
+  tutorial.neu('essen');
   aufgaben.gegessen(id);
 };
 
@@ -175,10 +178,47 @@ rucksack.beimBenutzen = (id) => {
     return;
   }
   spieler.fliegen();
+  tutorial.neu('fliegen');
   meldung('✨ Du kannst fliegen! Sprungknopf festhalten = höher, 🛬 = landen.', 5);
 };
 spieler.beiFlugWarnung = (s) => meldung(`⏳ Noch ${s} Sekunden, dann landest du!`, 4);
 spieler.beiFlugEnde = (selbst) => meldung(selbst ? '🛬 Du landest.' : '🍄 Der Zauber ist vorbei – du schwebst runter.', 4);
+
+// ---------- Tutorial: Erklär-Blasen beim ersten Mal ----------
+const tutorial = new Tutorial({ elternElement: spielfeld, tageszeit });
+let warBeimHaendler = false;
+// Wenn man etwas zum ersten Mal im Rucksack hat → Erklärung
+const NEUE_DINGE = [['schaufel', 'schaufel'], ['angel', 'angel'], ['tofufisch', 'fisch'], ['schuh', 'muell'], ['dose', 'muell'],
+  ['leine', 'leine'], ['fernrohr', 'fernrohr'], ['schwert', 'schwert']];
+function tutorialPruefen(dt, naechste, pos) {
+  // Was ist gerade in der Nähe?
+  if (naechste && !spieler.fliegt) {
+    if (naechste === werkbank.interaktion) tutorial.neu('werkbank');
+    else if (naechste === lagerfeuer.interaktion) tutorial.neu('lagerfeuer');
+    else if (naechste === base.baseIA) tutorial.neu('base');
+    else if (naechste.text === 'Graben') tutorial.neu('grabestelle');
+    else if (naechste.text === 'Handeln') tutorial.neu('haendler');
+    else if (naechste.text === 'Schläft') tutorial.neu('haendlerSchlaeft');
+    else if (angeln.interaktionen.includes(naechste)) tutorial.neu('angelstelle');
+    else if (boote.interaktionen.includes(naechste)) tutorial.neu('boot');
+    else if (pferde.interaktionen.includes(naechste)) tutorial.neu('pferd');
+    else if (pilze.interaktionen.includes(naechste)) tutorial.neu('zauberpilz');
+  }
+  for (const [ding, id] of NEUE_DINGE) if (rucksack.hat(ding)) tutorial.neu(id);
+  if (rucksack.inDerHand === 'schwert' && holzInDerNaehe(pos.x, pos.z)) tutorial.neu('baum');
+  if (rucksack.offen) tutorial.neu('rucksack');
+  if (karte.offen) tutorial.neu('karte');
+  if (aufgaben.offen) tutorial.neu('aufgabenbuch');
+  if (haendler.offen) warBeimHaendler = true;
+  if (ueberleben.hungrig) tutorial.neu('hunger');
+  tutorial.aktualisiere(dt, {
+    hatSchaufel: rucksack.hat('schaufel'),
+    rucksackVoll: rucksack.istVoll(),
+    muenzen: rucksack.muenzen,
+    fensterOffen: fensterOffen() || schlaeft || fernrohr.aktiv,
+    warBeimHaendler,
+  });
+}
 
 // ---------- Fernrohr ----------
 const fernrohr = new Fernrohr(kamera, spielfeld);
@@ -325,6 +365,7 @@ function spielSchleife() {
     dorf.haendler.visible = !nacht; // nachts geht der Händler schlafen
     if (nacht && haendler.offen) haendler.schliessen();
     if (laeuft) meldung(nacht ? '🌙 Es wird Nacht! Geh zu deinem Zelt und schlaf.' : '☀️ Die Sonne geht auf!', 5);
+    if (laeuft && nacht) tutorial.neu('nacht');
   }
 
   const pos = spieler.figur.position;
@@ -353,6 +394,7 @@ function spielSchleife() {
   karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
   // Aus der Luft kann man nichts anfassen
   let naechste = objekte.aktualisiere(dt, pos);
+  if (laeuft) tutorialPruefen(dt, naechste, pos);
   if (spieler.fliegt) naechste = spieler.flugRest > 0 ? { bild: '🛬', text: 'Landen' } : null;
   else if (!naechste && rucksack.inDerHand === 'schwert') {
     const holz = holzInDerNaehe(pos.x, pos.z);
@@ -456,6 +498,7 @@ window.addEventListener('pagehide', speichern);
 document.addEventListener('visibilitychange', () => document.hidden && speichern());
 
 const gespeichert = ladeSpielstand();
+if (!gespeichert) tutorial.zuruecksetzen(); // neues Spiel = alle Erklärungen wieder von vorn
 
 // ---------- Startbildschirm ----------
 const startBildschirm = document.getElementById('start');
@@ -481,7 +524,10 @@ function starte() {
     laeuft = true;
     document.getElementById('hud').classList.add('sichtbar');
     if (gespeichert) meldung(`👋 Willkommen zurück, Forscher! Tag ${tageszeit.tag}.`, 4);
-    else meldung('Finde die glitzernde Schaufel beim Zelt! ✨', 6);
+    else {
+      meldung('Finde die glitzernde Schaufel beim Zelt! ✨', 6);
+      tutorial.neu('start');
+    }
   };
   if (gespeichert) {
     wendeSpielstandAn(gespeichert);
