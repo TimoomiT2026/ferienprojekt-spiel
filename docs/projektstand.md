@@ -32,7 +32,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 - Inselgruppe mit anderen Materialien, Dörfern und Händlern
 - Hohe Klippen an den anderen Inseln → **Seilkanone** (Holz, Eisen, Seil, Widerhaken) – schwer zu schaffen
 - Heißluftballon (an der Base doppelt antippen → sofort ins Dorf)
-- **Das Insadorium** finden – so heißt das geheime Material (Name vom Game Designer, Tag 3). Aussehen: noch offen.
+- **Das Insadorium** finden – so heißt das geheime Material (Name vom Game Designer, Tag 3). Roter, grell leuchtender Stein, liegt unter Wasser. Finden = Ziel erreicht → Konfetti + Dankeschön-Nachricht (OHNE echten Namen, Repo ist öffentlich), danach Open World weiterspielen.
 
 ## Bekannte Schwächen
 - Auf dem iPad Air (2025) läuft es flüssig; am MacBook ruckelte es kurz am Anfang (Shader werden jetzt vorab vorbereitet)

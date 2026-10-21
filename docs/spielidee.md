@@ -44,3 +44,8 @@ Holz + Feuer kaufen → Lager bauen   →→→   nächster Morgen  →→→ wi
 
 ## Das geheime Material: Insadorium 🔮
 Der Forscher sucht auf der Inselgruppe nach dem **Insadorium**. Den Namen hat der Game Designer an Tag 3 erfunden.
+
+So sieht es aus (Entscheidung vom Game Designer):
+- Ein **Stein**, **rot**, der so **grell leuchtet**, dass man fast nicht hineinschauen kann
+- Er liegt **unter Wasser**
+- Wer ihn findet, hat das **Ziel erreicht**: Konfetti über den ganzen Bildschirm und eine Dankeschön-Nachricht fürs Spielen. Danach kann man ganz frei weiterspielen (Open World).

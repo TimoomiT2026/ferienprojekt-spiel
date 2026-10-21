@@ -61,6 +61,7 @@ export const EINSTELLUNGEN = {
     schnur: { holz: 2 }, // dünnes Holz, zur Schnur gebunden
     angel: { holz: 2, schnur: 1 },
     fernrohr: { eisenerz: 2, gold: 1, holz: 1 },
+    leine: { schuh: 1, schnur: 1 }, // Leder vom alten Schuh + Schnur = Pferde-Leine
   },
 
   // Wie oft kann man etwas benutzen, bevor es kaputt / leer ist?
@@ -108,6 +109,13 @@ export const EINSTELLUNGEN = {
   // ---------- Essen & Schlafen ----------
   // Wie schnell läuft man mit Hunger? (0.5 = halb so schnell)
   hungerTempo: 0.5,
+  // Satt-Balken: 100 = ganz satt. Er wird in 1 ganzen Tag (Tag + Nacht) leer.
+  // Auch beim Schlafen! Wer nicht isst und einfach schläft, wacht hungrig auf.
+  sattTage: 1,
+  // So viel macht jedes Essen satt (100 = ein ganzer Tag)
+  sattVon: { brot: 100, gegrillterFisch: 100, karotte: 40 },
+  // Ab so viel Satt-Balken kommt die Warnung "Du bekommst Hunger"
+  hungerWarnung: 25,
   // Wie viele Nächte darf man durchmachen, bevor es Ärger gibt?
   naechteOhneSchlaf: 2,
   // So viele Münzen verliert man dann
@@ -156,6 +164,19 @@ export const EINSTELLUNGEN = {
   folgeAbstand: 4,
   // Wie schnell kann man beim Reiten lenken? (größer = wendiger)
   reitLenkung: 2.4,
+  // So nah muss man an ein Pferd ran, damit der Knopf "Füttern" kommt (Meter)
+  fuetterRadius: 4.5,
+  // Mit einem Apfel in der Hand werden Wildpferde neugierig und kommen
+  // langsam zu dir – ab so viel Abstand (Meter)
+  neugierAbstand: 16,
+  // So lang ist die Leine: so weit hinter dir läuft dein Pferd (Meter)
+  leinenLaenge: 3.5,
+  // Wird der Abstand größer (z. B. beim Bootfahren), rutscht die Leine aus der Hand (Meter)
+  leineReisstAb: 15,
+  // Nach wie vielen Tagen ohne Futter hat dein Pferd Hunger?
+  pferdHungerTage: 1,
+  // Nach wie vielen Tagen ohne Futter reißt es aus und wird wieder wild?
+  pferdAusreissTage: 2,
 
   // ---------- Musik ----------
   // Wie laut ist die Musik? (0 = aus, 1 = ganz laut)

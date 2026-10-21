@@ -33,7 +33,23 @@ Echte Spielestudios haben so eine Liste auch, sie heißt dort **„Backlog“**.
 - [ ] Hohe Klippen an den anderen Inseln
 - [ ] Seilkanone bauen (Holz, Eisen, Seil, Widerhaken) – schwer zu schaffen!
 - [ ] Heißluftballon (Händler): an der Base doppelt antippen → sofort ins Dorf
-- [ ] Das **Insadorium** finden (so heißt das geheime Material!)
+- [ ] Das **Insadorium** finden (so heißt das geheime Material!): ein **roter Stein**, der so grell leuchtet, dass man fast nicht hinschauen kann. Er liegt **unter Wasser**. Wer ihn findet: Ziel erreicht! Konfetti über den ganzen Bildschirm + Dankeschön-Nachricht fürs Spielen, danach frei weiterspielen (Open World).
+
+## Vor Etappe 3 (Feedback Tag 3)
+- [x] Tofu-Fische sind bunt statt weiß
+- [x] Weniger Münzen für die ersten Aufgaben, frühe Aufgabe „Handeln“
+- [x] Hunger wird über Nacht nicht mehr zurückgesetzt (Satt-Balken)
+- [x] Beim Fliegen jederzeit landen (🛬)
+- [x] Händler schläft nachts
+- [ ] Pferde zähmen reparieren, Leine aus altem Schuh, am Stall anbinden, alle 2 Tage füttern
+- [ ] Musik: 2 neue Tagstücke + eigenes Nachtstück; Geräusche (Rascheln, Wasser, Angeln, Handeln)
+- [ ] Erklär-Sprechblasen beim ersten Mal + Tipps für neue Spieler
+
+## Farmen (Idee vom Game Designer, Tag 3)
+- [ ] Am Start 3 Felder beackern: **Karotten, Kartoffeln, Weizen**
+- [ ] Aus Weizen am Lagerfeuer **eigenes Brot backen**
+- [ ] Karotten als Futter für die Pferde
+- [ ] **Bratkartoffeln** machen 2 Tage satt
 
 ## Vom Game Designer (Tag 1)
 - [ ] **An jeder beliebigen Stelle ein Lager oder eine Mine bauen**

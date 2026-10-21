@@ -46,12 +46,16 @@ export class Objekte {
     this.interaktionen.push(this.schaufelInteraktion);
 
     // ---------- Der Händler im Dorf ----------
+    // Nachts schläft der Händler in seiner Hütte – dann kann man nicht handeln
     this.interaktionen.push({
       pos: spiel.dorf.haendlerWelt,
       radius: 4.5,
-      bild: '🧑‍🌾',
-      text: 'Handeln',
-      ausfuehren: () => spiel.haendlerOeffnen(),
+      get bild() { return spiel.tageszeit.istNacht() ? '💤' : '🧑‍🌾'; },
+      get text() { return spiel.tageszeit.istNacht() ? 'Schläft' : 'Handeln'; },
+      ausfuehren: () => {
+        if (spiel.tageszeit.istNacht()) spiel.meldung('💤 Pssst! Der Händler schläft. Komm morgen früh wieder.', 4);
+        else spiel.haendlerOeffnen();
+      },
     });
 
     this.baueGrabestellen(szene, hindernisse);

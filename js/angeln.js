@@ -110,6 +110,23 @@ function baueFischGeo() {
   return geo;
 }
 
+// Bunter Tofu-Fisch: blauer Rücken, oranger Bauch, rote Schwanzflosse
+function fischFaerben(geo) {
+  const p = geo.attributes.position;
+  const farben = new Float32Array(p.count * 3);
+  const ruecken = new THREE.Color('#2f78c8');
+  const bauch = new THREE.Color('#ffb347');
+  const flosse = new THREE.Color('#e8502a');
+  const c = new THREE.Color();
+  for (let i = 0; i < p.count; i++) {
+    if (p.getZ(i) < -0.3) c.copy(flosse);
+    else c.copy(bauch).lerp(ruecken, THREE.MathUtils.smoothstep(p.getY(i), -0.04, 0.1));
+    farben.set([c.r, c.g, c.b], i * 3);
+  }
+  geo.setAttribute('color', new THREE.BufferAttribute(farben, 3));
+  return geo;
+}
+
 // ---------- Die Angelrute (für die Hand der Figur) ----------
 // Griff unten am Ursprung, die Rute zeigt nach oben (+y), ca. 1,8 m lang.
 // Ganz oben sitzt ein unsichtbarer Punkt "angelSpitze" – dort hängt die Schnur.
@@ -335,8 +352,8 @@ export class Angeln {
 
     // Kleine Tofu-Fische, die ab und zu aus dem Wasser hüpfen
     this.springer = new THREE.InstancedMesh(
-      baueFischGeo(),
-      new THREE.MeshStandardMaterial({ color: '#f1e7cf', roughness: 0.7 }),
+      fischFaerben(baueFischGeo()),
+      new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 }),
       n
     );
     this.springer.frustumCulled = false;
@@ -377,7 +394,7 @@ export class Angeln {
     this.fang = new THREE.Group();
     this.fangModelle = {};
 
-    const fisch = faerben(baueFischGeo(), '#f6eed8');
+    const fisch = fischFaerben(baueFischGeo());
     fisch.scale(1.4, 1.4, 1.4);
     this.fangModelle.tofufisch = new THREE.Mesh(fisch, mat);
 

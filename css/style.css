@@ -406,3 +406,10 @@ button { font-family: inherit; cursor: pointer; }
 .platz.mitbelegt { background: #ece0c8; border-style: dashed; }
 .platz .bild.blass { opacity: 0.35; }
 .haendler-hinweis { font-size: 16px; color: #2d5a22; text-align: center; padding: 4px 8px 8px; }
+
+/* Satt-Balken neben dem Brot */
+#hunger-anzeige { display: inline-flex; align-items: center; gap: 8px; }
+.satt-balken { display: inline-block; width: 70px; height: 12px; border-radius: 8px; background: #e6e0d2; overflow: hidden; }
+.satt-balken span { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, #f0a93a, #6cbf3c); transition: width 0.5s; }
+#hunger-anzeige.knurrt { background: #fff1d6; }
+#hunger-anzeige.knurrt .satt-balken span { background: #e8892c; }

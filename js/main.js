@@ -122,7 +122,7 @@ const lagerfeuer = new Lagerfeuer(szene, hindernisse, { rucksack, meldung, musik
 objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
 rucksack.beimEssen = (id) => {
-  ueberleben.gegessen();
+  ueberleben.gegessen(id);
   aufgaben.gegessen(id);
 };
 
@@ -161,6 +161,7 @@ const baseHalter = { base, get stall() { return this.base?.stall ?? null; } };
 const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter });
 objekte.interaktionen.push(...pferde.interaktionen);
 aufgaben.spiel.base = base;
+aufgaben.spiel.haendler = haendler;
 aufgaben.spiel.pferde = pferde;
 
 // ---------- Zauberpilze & Fliegen ----------
@@ -174,10 +175,10 @@ rucksack.beimBenutzen = (id) => {
     return;
   }
   spieler.fliegen();
-  meldung('✨ Du kannst fliegen! Sprungknopf festhalten = höher.', 5);
+  meldung('✨ Du kannst fliegen! Sprungknopf festhalten = höher, 🛬 = landen.', 5);
 };
 spieler.beiFlugWarnung = (s) => meldung(`⏳ Noch ${s} Sekunden, dann landest du!`, 4);
-spieler.beiFlugEnde = () => meldung('🍄 Der Zauber ist vorbei – du schwebst runter.', 4);
+spieler.beiFlugEnde = (selbst) => meldung(selbst ? '🛬 Du landest.' : '🍄 Der Zauber ist vorbei – du schwebst runter.', 4);
 
 // ---------- Fernrohr ----------
 const fernrohr = new Fernrohr(kamera, spielfeld);
@@ -299,7 +300,7 @@ function spielSchleife() {
     if (!pausiert) {
       tageszeit.aktualisiere(dt);
       if (eingabe.aktion) {
-        if (spieler.fliegt) { /* in der Luft: nichts */ }
+        if (spieler.fliegt) spieler.landen(); // in der Luft: Aktion = landen
         else if (objekte.aktuelle) objekte.aktion();
         else if (rucksack.inDerHand === 'schwert') schwertSchlag();
         else if (rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) fernrohr.starten(spieler.figur.position, kameraWinkel);
@@ -321,6 +322,8 @@ function spielSchleife() {
   if (nacht !== warNacht) {
     warNacht = nacht;
     musik.setzeNacht(nacht);
+    dorf.haendler.visible = !nacht; // nachts geht der Händler schlafen
+    if (nacht && haendler.offen) haendler.schliessen();
     if (laeuft) meldung(nacht ? '🌙 Es wird Nacht! Geh zu deinem Zelt und schlaf.' : '☀️ Die Sonne geht auf!', 5);
   }
 
@@ -350,12 +353,12 @@ function spielSchleife() {
   karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
   // Aus der Luft kann man nichts anfassen
   let naechste = objekte.aktualisiere(dt, pos);
-  if (spieler.fliegt) naechste = null;
-  if (!naechste && rucksack.inDerHand === 'schwert') {
+  if (spieler.fliegt) naechste = spieler.flugRest > 0 ? { bild: '🛬', text: 'Landen' } : null;
+  else if (!naechste && rucksack.inDerHand === 'schwert') {
     const holz = holzInDerNaehe(pos.x, pos.z);
     naechste = holz ? { bild: '🪓', text: holz.art === 'baum' ? 'Fällen' : 'Zerschlagen' } : { bild: '⚔️', text: 'Schwingen' };
   }
-  if (!naechste && rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) naechste = { bild: '🔭', text: 'Durchschauen' };
+  if (!naechste && !spieler.fliegt && rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) naechste = { bild: '🔭', text: 'Durchschauen' };
   const zeigen = laeuft && naechste && !fensterOffen() && !fernrohr.aktiv;
   aktionsKnopf.classList.toggle('sichtbar', !!zeigen);
   if (zeigen) {

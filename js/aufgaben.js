@@ -8,19 +8,20 @@ import { knopf } from './steuerung.js';
 
 // tipp = was man tun muss, geschafft = wann es erledigt ist
 const AUFGABEN = [
-  { titel: 'Finde die Schaufel', tipp: 'Sie liegt glitzernd neben dem Zelt.', geschafft: (s) => s.rucksack.hat('schaufel'), belohnung: 5 },
+  { titel: 'Finde die Schaufel', tipp: 'Sie liegt glitzernd neben dem Zelt.', geschafft: (s) => s.rucksack.hat('schaufel'), belohnung: 2 },
   { titel: 'Nimm die Schaufel in die Hand', tipp: 'Rucksack 🎒 öffnen und die Schaufel antippen.', geschafft: (s) => s.rucksack.inDerHand === 'schaufel', belohnung: 0 },
-  { titel: 'Grab 3 Steine und 2 Eisenerz', tipp: 'An den glitzernden Erdhügeln graben. Am nächsten Morgen sind sie wieder voll.', geschafft: (s) => s.rucksack.anzahl('stein') >= 3 && s.rucksack.anzahl('eisenerz') >= 2, belohnung: 10 },
-  { titel: 'Bau ein Schwert', tipp: 'An der Werkbank 🔨 neben dem Zelt: 2 Eisenerz + 3 Steine.', geschafft: (s) => s.rucksack.hat('schwert'), belohnung: 10 },
-  { titel: 'Hack 4 Holz', tipp: 'Schwert in die Hand, vor einen Baum stellen und „Fällen“ drücken.', geschafft: (s) => s.rucksack.anzahl('holz') >= 4, belohnung: 10 },
-  { titel: 'Bau eine Schnur', tipp: 'An der Werkbank: 2 Holz werden zu einer dünnen Schnur.', geschafft: (s) => s.rucksack.hat('schnur') || s.rucksack.hat('angel'), belohnung: 5 },
-  { titel: 'Bau eine Angel', tipp: 'An der Werkbank: 2 Holz + 1 Schnur.', geschafft: (s) => s.rucksack.hat('angel'), belohnung: 10 },
-  { titel: 'Besorg Würmer', tipp: 'Würmer findet man manchmal beim Graben – oder man kauft sie im Dorf.', geschafft: (s) => s.rucksack.hat('koeder'), belohnung: 5 },
-  { titel: 'Angle einen Tofu-Fisch', tipp: 'Angel in die Hand und an eine Angelstelle 🎣 (auf der Karte 🗺️).', geschafft: (s) => s.rucksack.hat('tofufisch') || s.rucksack.hat('gegrillterFisch'), belohnung: 10 },
-  { titel: 'Bau ein Feuerzeug', tipp: 'An der Werkbank: 2 Steine + 1 Eisenerz + 1 Kohle.', geschafft: (s) => s.rucksack.hat('feuerzeug') || s.lagerfeuer.brennt > 0, belohnung: 10 },
-  { titel: 'Zünde das Lagerfeuer an', tipp: 'Am Lagerfeuer neben dem Zelt: 1 Holz + Feuerzeug.', geschafft: (s) => s.lagerfeuer.brennt > 0, belohnung: 5 },
-  { titel: 'Grill den Tofu-Fisch', tipp: 'Wenn das Feuer brennt: „Fisch grillen“ drücken.', geschafft: (s) => s.rucksack.hat('gegrillterFisch') || s.aufgaben.fischGegessen, belohnung: 5 },
-  { titel: 'Iss deinen selbst gefangenen Fisch', tipp: 'Rucksack öffnen, Fisch antippen, „Essen“. Jetzt versorgst du dich selbst! 🎉', geschafft: (s) => s.aufgaben.fischGegessen, belohnung: 20 },
+  { titel: 'Grab 3 Steine und 2 Eisenerz', tipp: 'An den glitzernden Erdhügeln graben. Am nächsten Morgen sind sie wieder voll.', geschafft: (s) => s.rucksack.anzahl('stein') >= 3 && s.rucksack.anzahl('eisenerz') >= 2, belohnung: 3 },
+  { titel: 'Verkauf etwas beim Händler', tipp: 'Das Dorf 🏘️ ist auf der Karte 🗺️. Beim Händler „Handeln“ drücken, dann „💰 Verkaufen“. (Nachts schläft er!)', geschafft: (s) => s.aufgaben.gehandelt || Object.keys(s.haendler?.verkauftHeute || {}).length > 0, belohnung: 5 },
+  { titel: 'Bau ein Schwert', tipp: 'An der Werkbank 🔨 neben dem Zelt: 2 Eisenerz + 3 Steine.', geschafft: (s) => s.rucksack.hat('schwert'), belohnung: 5 },
+  { titel: 'Hack 4 Holz', tipp: 'Schwert in die Hand, vor einen Baum stellen und „Fällen“ drücken.', geschafft: (s) => s.rucksack.anzahl('holz') >= 4, belohnung: 3 },
+  { titel: 'Bau eine Schnur', tipp: 'An der Werkbank: 2 Holz werden zu einer dünnen Schnur.', geschafft: (s) => s.rucksack.hat('schnur') || s.rucksack.hat('angel'), belohnung: 2 },
+  { titel: 'Bau eine Angel', tipp: 'An der Werkbank: 2 Holz + 1 Schnur.', geschafft: (s) => s.rucksack.hat('angel'), belohnung: 5 },
+  { titel: 'Besorg Würmer', tipp: 'Würmer findet man manchmal beim Graben – oder man kauft sie im Dorf.', geschafft: (s) => s.rucksack.hat('koeder'), belohnung: 2 },
+  { titel: 'Angle einen Tofu-Fisch', tipp: 'Angel in die Hand und an eine Angelstelle 🎣 (auf der Karte 🗺️).', geschafft: (s) => s.rucksack.hat('tofufisch') || s.rucksack.hat('gegrillterFisch'), belohnung: 5 },
+  { titel: 'Bau ein Feuerzeug', tipp: 'An der Werkbank: 2 Steine + 1 Eisenerz + 1 Kohle.', geschafft: (s) => s.rucksack.hat('feuerzeug') || s.lagerfeuer.brennt > 0, belohnung: 5 },
+  { titel: 'Zünde das Lagerfeuer an', tipp: 'Am Lagerfeuer neben dem Zelt: 1 Holz + Feuerzeug.', geschafft: (s) => s.lagerfeuer.brennt > 0, belohnung: 3 },
+  { titel: 'Grill den Tofu-Fisch', tipp: 'Wenn das Feuer brennt: „Fisch grillen“ drücken.', geschafft: (s) => s.rucksack.hat('gegrillterFisch') || s.aufgaben.fischGegessen, belohnung: 3 },
+  { titel: 'Iss deinen selbst gefangenen Fisch', tipp: 'Rucksack öffnen, Fisch antippen, „Essen“. Jetzt versorgst du dich selbst! 🎉', geschafft: (s) => s.aufgaben.fischGegessen, belohnung: 10 },
   { titel: 'Bau das große Zelt', tipp: 'Am Schild „BASE“ neben dem Zelt das Base-Menü öffnen und ausbauen.', geschafft: (s) => (s.base?.stufe || 1) >= 2, belohnung: 10 },
   { titel: 'Bau eine Holzhütte', tipp: 'Wieder im Base-Menü. Die Hütte hat eine Truhe für deine Schätze!', geschafft: (s) => (s.base?.stufe || 1) >= 3, belohnung: 15 },
   { titel: 'Zähme ein Wildpferd', tipp: 'Kauf Äpfel im Dorf. Geh LANGSAM zu einem Pferd und füttere es 3 Mal.', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
@@ -33,6 +34,7 @@ export class Aufgaben {
     this.spiel.aufgaben = this;
     this.nummer = 0;
     this.fischGegessen = false;
+    this.gehandelt = false; // schon einmal beim Händler verkauft?
     this.pruefZeit = 0;
 
     // Die kleine Anzeige oben links
@@ -74,6 +76,7 @@ export class Aufgaben {
     if (this.pruefZeit > 0 || this.nummer >= AUFGABEN.length) return;
     this.pruefZeit = 0.5;
     const a = AUFGABEN[this.nummer];
+    if (Object.keys(this.spiel.haendler?.verkauftHeute || {}).length > 0) this.gehandelt = true;
     if (!a.geschafft(this.spiel)) return;
     this.nummer++;
     if (a.belohnung) this.spiel.rucksack.aendereMuenzen(a.belohnung);
@@ -102,12 +105,16 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, gehandelt: this.gehandelt, version: 2 };
   }
 
   ladeDaten(d) {
-    this.nummer = Math.min(d.nummer || 0, AUFGABEN.length);
+    let nummer = d.nummer || 0;
+    // Alte Spielstände kannten die Händler-Aufgabe (Nummer 4) noch nicht
+    if (!d.version && nummer >= 3) nummer++;
+    this.nummer = Math.min(nummer, AUFGABEN.length);
     this.fischGegessen = !!d.fischGegessen;
+    this.gehandelt = !!d.gehandelt || (!d.version && nummer > 3);
     this.zeichnen();
   }
 }

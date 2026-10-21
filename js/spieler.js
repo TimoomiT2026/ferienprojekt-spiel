@@ -138,6 +138,15 @@ export class Spieler {
     return true;
   }
 
+  // Vorzeitig landen (z. B. um zu graben oder zu handeln).
+  // Der restliche Zauber ist dann aufgebraucht.
+  landen() {
+    if (!this.flugModus || this.flugZeit <= 0) return;
+    this.flugZeit = 0;
+    this.abhebZeit = 0;
+    this.beiFlugEnde?.(true);
+  }
+
   // Fliegt er gerade? (auch noch während der Landung)
   get fliegt() {
     return this.flugModus;
