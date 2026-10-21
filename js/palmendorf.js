@@ -32,7 +32,6 @@ function materialien() {
     stroh: new THREE.MeshStandardMaterial({ ...bild('reet.jpg'), ...normal('reet_normal.jpg', 1.3), vertexColors: true, roughness: 1, side: THREE.DoubleSide }),
     planken: new THREE.MeshStandardMaterial({ ...bild('planken.jpg'), ...normal('bretter_normal.jpg', 0.7), vertexColors: true, roughness: 0.85 }),
     stamm: new THREE.MeshStandardMaterial({ ...bild('rinde.jpg'), ...normal('rinde_normal.jpg'), vertexColors: true, roughness: 0.95 }),
-    stein: new THREE.MeshStandardMaterial({ ...bild('fels.jpg'), ...normal('fels_normal.jpg'), vertexColors: true, roughness: 0.95 }),
     bunt: new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.7 }),
     // Runde Fenster leuchten nachts warm (wie im ersten Dorf)
     fenster: new THREE.MeshStandardMaterial({ color: '#7a6a4a', emissive: '#ffb347', emissiveIntensity: 0, roughness: 0.2, metalness: 0.1 }),
@@ -224,7 +223,7 @@ function fackel(bs, m, x, zz) {
 function feuerStelle(bs, m, z) {
   for (let i = 0; i < 9; i++) {
     const w = (i / 9) * Math.PI * 2;
-    bs.add(m.stein, new THREE.IcosahedronGeometry(0.28, 1), M(V(Math.cos(w) * 0.85, 0.1, Math.sin(w) * 0.85), Q(z(), z(), z()), V(1, 0.6, 1)), { farbe: '#b8b0a4', uv: [0.5, 0.5] });
+    bs.add(m.bunt, new THREE.IcosahedronGeometry(0.28, 1), M(V(Math.cos(w) * 0.85, 0.1, Math.sin(w) * 0.85), Q(z(), z(), z()), V(1, 0.6, 1)), { farbe: i % 2 ? '#a8a29a' : '#bcb4a8' });
   }
   for (const w of [0.4, 0.4 + Math.PI]) {
     bs.add(m.stamm, new THREE.CylinderGeometry(0.28, 0.3, 2.2, 10), M(V(Math.cos(w) * 2.4, 0.25, Math.sin(w) * 2.4), Q(Math.PI / 2, 0, 0).premultiply(Q(0, -w, 0))), { farbe: '#c8b8a4', uv: [1, 1] });

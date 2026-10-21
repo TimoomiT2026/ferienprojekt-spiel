@@ -40,6 +40,7 @@ import { Tauchen } from './tauchen.js';
 import { Finale } from './finale.js';
 import { Ballon } from './ballon.js';
 import { Bewohner } from './bewohner.js';
+import { Palmendorf } from './palmendorf.js';
 import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
@@ -125,6 +126,9 @@ objekte.interaktionen.push(werkbank.interaktion);
 
 // ---------- Händler, Lagerfeuer, Essen & Schlafen ----------
 const haendler = new Haendler({ rucksack, meldung, musik, tageszeit, elternElement: spielfeld });
+// Das Palmendorf auf der Palmeninsel mit dem zweiten Händler 🌴
+const palmendorf = new Palmendorf(szene, hindernisse, { rucksack, meldung, musik, tageszeit, elternElement: spielfeld });
+objekte.interaktionen.push(...palmendorf.interaktionen);
 const lagerfeuer = new Lagerfeuer(szene, hindernisse, { rucksack, meldung, musik });
 objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
@@ -151,7 +155,7 @@ objekte.interaktionen.push(...ballon.interaktionen);
 const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen || bewohner.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen || bewohner.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);
@@ -160,7 +164,14 @@ const tiere = new Tiere(szene, hindernisse);
 
 // ---------- Karte & Navigation ----------
 const karte = new Karte(spielfeld);
-karte.beiInselEntdeckt = (name) => meldung(`🏝️ Neue Insel entdeckt: ${name}!`, 4);
+karte.beiInselEntdeckt = (name) => {
+  meldung(`🏝️ Neue Insel entdeckt: ${name}!`, 4);
+  if (name === 'Palmeninsel') zeigePalmendorf();
+};
+// Das Palmendorf erscheint auf der Karte, sobald man die Palmeninsel entdeckt hat
+function zeigePalmendorf() {
+  karte.punkt('palmendorf', { name: 'Palmendorf', bild: '🌴', x: palmendorf.mitte.x, z: palmendorf.mitte.z, sichtbar: true });
+}
 
 // ---------- Die 10 Inselbewohner auf der Palmeninsel (einer hat die Taucherbrille) ----------
 // (erst NACH dem Palmendorf bauen, damit niemand in einer Hütte steht)
@@ -239,7 +250,7 @@ function tutorialPruefen(dt, naechste, pos) {
   if (rucksack.offen) tutorial.neu('rucksack');
   if (karte.offen) tutorial.neu('karte');
   if (aufgaben.offen) tutorial.neu('aufgabenbuch');
-  if (haendler.offen) warBeimHaendler = true;
+  if (haendler.offen || palmendorf.haendler.offen) warBeimHaendler = true;
   if (ueberleben.hungrig) tutorial.neu('hunger');
   tutorial.aktualisiere(dt, {
     hatSchaufel: rucksack.hat('schaufel'),
@@ -372,6 +383,7 @@ function spielSchleife() {
     if (eingabe.rucksack && !karte.offen) {
       if (werkbank.offen) werkbank.schliessen();
       else if (haendler.offen) haendler.schliessen();
+      else if (palmendorf.haendler.offen) palmendorf.haendler.schliessen();
       else if (aufgaben.offen) aufgaben.schliessen();
       else if (base.offen) base.schliessen();
       else if (ballon.offen) ballon.schliessen();
@@ -413,6 +425,7 @@ function spielSchleife() {
     warNacht = nacht;
     musik.setzeNacht(nacht);
     dorf.haendler.visible = !nacht; // nachts geht der Händler schlafen
+    palmendorf.setzeNacht(nacht);
     if (nacht && haendler.offen) haendler.schliessen();
     if (laeuft) meldung(nacht ? '🌙 Es wird Nacht! Geh zu deinem Zelt und schlaf.' : '☀️ Die Sonne geht auf!', 5);
     if (laeuft && nacht) tutorial.neu('nacht');
@@ -451,6 +464,7 @@ function spielSchleife() {
     tempo: zuFuss ? spieler.tempoJetzt : 0,
   });
   dorf.aktualisiere(dt, himmel.helligkeit, pos);
+  palmendorf.aktualisiere(dt, himmel.helligkeit, pos);
   base.aktualisiere(dt, himmel.helligkeit);
   spieler.laterne.intensity = (1 - himmel.helligkeit) * 14;
 
@@ -531,6 +545,7 @@ function sammleSpielstand() {
     ballon: ballon.alsDaten(),
     inseln: karte.entdeckteInseln,
     bewohner: bewohner.alsDaten(),
+    palmendorf: palmendorf.alsDaten(),
     finale: finale.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
@@ -556,6 +571,8 @@ function wendeSpielstandAn(s) {
     ballon.ladeDaten(s.ballon || {});
     karte.ladeEntdeckteInseln(s.inseln);
     bewohner.ladeDaten(s.bewohner);
+    palmendorf.ladeDaten(s.palmendorf || {});
+    if (karte.entdeckteInseln.includes('Palmeninsel')) zeigePalmendorf();
     ballonTag = tageszeit.tag;
     finale.ladeDaten(s.finale || {});
     ladeGefaellte(s.gefaellt);
@@ -653,7 +670,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner, palmendorf,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {
