@@ -6,7 +6,7 @@
 // =============================================================
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { bodenHoehe, WASSER_HOEHE } from './gelaende.js';
+import { bodenHoehe, WASSER_HOEHE, zuSteilBergauf, istKlippenWand } from './gelaende.js';
 import { baueSchaufel, baueSchwert } from './figur.js';
 import { baueJunge, BEIN_LAENGE } from './junge.js';
 
@@ -159,7 +159,7 @@ export class Spieler {
 
   // Darf man hier landen? (fester Boden, kein Baum, kein Wasser)
   kannLanden(x, z) {
-    return bodenHoehe(x, z) > WASSER_HOEHE + 0.3 && this.kannStehen(x, z);
+    return bodenHoehe(x, z) > WASSER_HOEHE + 0.3 && this.kannStehen(x, z) && !istKlippenWand(x, z);
   }
 
   // Sucht in immer größeren Kreisen den nächsten Platz zum Landen
@@ -356,13 +356,14 @@ export class Spieler {
       const neuZ = pos.z + dz * schritt;
       const altX = pos.x, altZ = pos.z;
 
-      // Nicht ins tiefe Wasser und nicht durch Bäume/Felsen – sonst entlangrutschen
-      if (this.kannStehen(neuX, neuZ)) {
+      // Nicht ins tiefe Wasser, nicht durch Bäume/Felsen und keine Klippe hoch – sonst entlangrutschen
+      const geht = (x, z) => this.kannStehen(x, z) && !zuSteilBergauf(pos.x, pos.z, x, z, pos.y);
+      if (geht(neuX, neuZ)) {
         pos.x = neuX;
         pos.z = neuZ;
-      } else if (this.kannStehen(neuX, pos.z)) {
+      } else if (geht(neuX, pos.z)) {
         pos.x = neuX;
-      } else if (this.kannStehen(pos.x, neuZ)) {
+      } else if (geht(pos.x, neuZ)) {
         pos.z = neuZ;
       }
 

@@ -90,6 +90,8 @@ export class Haendler {
         const ding = DINGE[id];
         // Rucksack-Upgrades nur zeigen, wenn sie noch etwas bringen
         if (ding.upgradePlaetze && rucksack.plaetze.length >= ding.upgradePlaetze) continue;
+        // Sonder-Käufe (z. B. der Ballon): nur zeigen, wenn es sie gibt und man sie noch nicht hat
+        if (ding.sonderKauf && (!this.sonderKauf?.[id] || this.sonderKauf[id].gekauft())) continue;
         zeile(id, `${preis} 🪙`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
       }
     } else {
@@ -154,6 +156,17 @@ export class Haendler {
       return;
     }
     // Ein größerer Rucksack kommt nicht IN den Rucksack – er ERSETZT ihn
+    // Sonder-Kauf (z. B. der Ballon): kommt nicht in den Rucksack, ein anderer Teil des Spiels kümmert sich
+    const sonder = DINGE[id].sonderKauf && this.sonderKauf?.[id];
+    if (DINGE[id].sonderKauf) {
+      if (!sonder || sonder.gekauft()) return;
+      rucksack.aendereMuenzen(-preis);
+      musik.muenzen(Math.ceil(preis / 10));
+      musik.kasse();
+      this.info(sonder.kaufen());
+      this.zeichnen();
+      return;
+    }
     const upgrade = DINGE[id].upgradePlaetze;
     if (upgrade) {
       rucksack.aendereMuenzen(-preis);

@@ -1,0 +1,13 @@
+/* ---------- Heißluftballon: Ziel-Fenster ---------- */
+#ballon-fenster { width: min(520px, 92vw); }
+#ballon-fenster .fenster-kopf h2 { color: #b0362a; }
+.ballon-ziele { display: flex; flex-direction: column; gap: 14px; }
+.ballon-ziel {
+  display: flex; align-items: center; gap: 18px;
+  min-height: 84px; padding: 0 24px; border: none; border-radius: 42px;
+  background: #ffb02e; color: #fff; font-size: 28px; font-weight: bold;
+  box-shadow: 0 6px 0 #c77c00; text-align: left;
+}
+.ballon-ziel:active { transform: translateY(3px); box-shadow: 0 3px 0 #c77c00; }
+.ballon-ziel-bild { font-size: 46px; }
+.ballon-tipp { margin-top: 16px; color: #4a3a28; font-size: 18px; text-align: center; }

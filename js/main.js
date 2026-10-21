@@ -35,6 +35,7 @@ import { Ueberleben } from './ueberleben.js';
 import { ladeSpielstand, speichereSpielstand, loescheSpielstand } from './speicher.js';
 import { zeigeVorgeschichte } from './vorgeschichte.js';
 import { Tutorial } from './tutorial.js';
+import { Seilkanone } from './seilkanone.js';
 import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
@@ -163,6 +164,10 @@ boote.positionen.forEach((b, i) => karte.punkt(`boot${i}`, { name: 'Boot', bild:
 const baseHalter = { base, get stall() { return this.base?.stall ?? null; } };
 const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter, tageszeit, boote });
 objekte.interaktionen.push(...pferde.interaktionen);
+
+// ---------- Seilkanone (Klippen hochklettern) ----------
+const seilkanone = new Seilkanone(szene, { rucksack, meldung, musik, spieler, hindernisse, handFrei: () => !boote.faehrt && !pferde.reitet });
+objekte.interaktionen.push(...seilkanone.interaktionen);
 aufgaben.spiel.base = base;
 aufgaben.spiel.haendler = haendler;
 aufgaben.spiel.pferde = pferde;
@@ -172,7 +177,7 @@ const pilze = new Pilze(szene, { rucksack, meldung, musik, tageszeit, hinderniss
 objekte.interaktionen.push(...pilze.interaktionen);
 rucksack.beimBenutzen = (id) => {
   if (id !== 'zauberpilz') return;
-  if (boote.faehrt || pferde.reitet) {
+  if (boote.faehrt || pferde.reitet || seilkanone.beschaeftigt) {
     rucksack.hinein('zauberpilz'); // geht gerade nicht – zurück in den Rucksack
     meldung('Steig erst aus, dann kannst du fliegen!', 4);
     return;
@@ -340,17 +345,20 @@ function spielSchleife() {
     const pausiert = fensterOffen() || schlaeft;
     if (!pausiert) {
       tageszeit.aktualisiere(dt);
-      if (eingabe.aktion) {
+      if (eingabe.aktion && !seilkanone.beschaeftigt) {
         if (spieler.fliegt) spieler.landen(); // in der Luft: Aktion = landen
         else if (objekte.aktuelle) objekte.aktion();
         else if (rucksack.inDerHand === 'schwert') schwertSchlag();
         else if (rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) fernrohr.starten(spieler.figur.position, kameraWinkel);
+        else if (rucksack.inDerHand === 'seilkanone' && !boote.faehrt && !pferde.reitet) seilkanone.schiessen(spieler.figur.position, spieler.figur.rotation.y);
       }
       if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (pferde.reitet) pferde.steuern(dt, eingabe.richtung, kameraWinkel);
+      else if (seilkanone.beschaeftigt) { /* die Seilkanone bewegt die Figur selbst */ }
       else if (angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, kameraWinkel);
       else spieler.aktualisiere(dt, eingabe.richtung, eingabe.springen, kameraWinkel, eingabe.springenGehalten);
       angeln.aktualisiere(dt); // nach dem Spieler, damit die Arm-Haltung stimmt
+      seilkanone.aktualisiere(dt);
     }
     bewegeKamera(dt, eingabe.kameraDrehung, eingabe.kameraNeigung);
   } else {
@@ -413,6 +421,8 @@ function spielSchleife() {
     naechste = holz ? { bild: '🪓', text: holz.art === 'baum' ? 'Fällen' : 'Zerschlagen' } : { bild: '⚔️', text: 'Schwingen' };
   }
   if (!naechste && !spieler.fliegt && rucksack.inDerHand === 'fernrohr' && !boote.faehrt && !pferde.reitet) naechste = { bild: '🔭', text: 'Durchschauen' };
+  if (!naechste && !spieler.fliegt && rucksack.inDerHand === 'seilkanone' && !boote.faehrt && !pferde.reitet) naechste = seilkanone.aktionText(pos, spieler.figur.rotation.y);
+  if (seilkanone.beschaeftigt) naechste = null;
   const zeigen = laeuft && naechste && !fensterOffen() && !fernrohr.aktiv;
   aktionsKnopf.classList.toggle('sichtbar', !!zeigen);
   if (zeigen) {
@@ -460,6 +470,7 @@ function sammleSpielstand() {
     aufgaben: aufgaben.alsDaten(),
     objekte: objekte.alsDaten(),
     base: base.alsDaten(),
+    seilkanone: seilkanone.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
     boote: boote.liste.map((b) => ({ x: b.gruppe.position.x, z: b.gruppe.position.z, w: b.gruppe.rotation.y, entdeckt: b.entdeckt })),
@@ -479,6 +490,7 @@ function wendeSpielstandAn(s) {
     aufgaben.ladeDaten(s.aufgaben || {});
     objekte.ladeDaten(s.objekte || {});
     base.ladeDaten(s.base || {});
+    seilkanone.ladeDaten(s.seilkanone || {});
     ladeGefaellte(s.gefaellt);
     lagerfeuer.brennt = s.feuer || 0;
     (s.boote || []).forEach((d, i) => {
@@ -499,7 +511,7 @@ function wendeSpielstandAn(s) {
 }
 
 function speichern() {
-  if (laeuft && !boote.faehrt && !pferde.reitet) speichereSpielstand(sammleSpielstand());
+  if (laeuft && !boote.faehrt && !pferde.reitet && !seilkanone.beschaeftigt) speichereSpielstand(sammleSpielstand());
 }
 setInterval(speichern, 10000);
 // Entdeckte Boote auf der Karte dort zeigen, wo sie gerade liegen
@@ -574,7 +586,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {

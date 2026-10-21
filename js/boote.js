@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { zufallMitSeed } from './rauschen.js';
-import { bodenHoehe, WASSER_HOEHE } from './gelaende.js';
+import { bodenHoehe, WASSER_HOEHE, imErlaubtenMeer, istKlippenWand } from './gelaende.js';
 import { wellenHoehe, wasserZeit } from './wasser.js';
 
 // ---------- Zahlen zum Rumprobieren ----------
@@ -22,8 +22,7 @@ const BESCHLEUNIGUNG = 4;
 const BREMSEN = 3;
 // Wie stark rutscht das Boot in Kurven seitlich weg? (kleiner = mehr Driften)
 const DRIFT_BREMSE = 1.6;
-// Wie weit darf man aufs Meer raus? (Meter vom Inselmittelpunkt)
-const MEER_GRENZE = EINSTELLUNGEN.inselGroesse + 160;
+// Wie weit darf man aufs Meer raus? Bis 160 m vor jede Insel (steht in gelaende.js: imErlaubtenMeer)
 // Wie viel Wasser braucht das Boot unter dem Bug mindestens? (Meter)
 // Klein = man kann bis ganz nah an den Strand fahren.
 const BUG_MIN_TIEFE = 0.05;
@@ -36,7 +35,7 @@ const zufall = zufallMitSeed(2024);
 
 // Ist hier genug Wasser für ein Boot? (tiefe = wie tief es mindestens sein muss)
 function istWasser(x, z, tiefe = 0.35) {
-  return bodenHoehe(x, z) < WASSER_HOEHE - tiefe && Math.hypot(x, z) < MEER_GRENZE;
+  return bodenHoehe(x, z) < WASSER_HOEHE - tiefe && imErlaubtenMeer(x, z);
 }
 
 // ---------- Holz-Bild malen (statt einer Bilddatei) ----------
@@ -438,7 +437,8 @@ export class Boote {
   // Wo kann man aussteigen? Am liebsten auf richtiges Land (höher als 0.5 m),
   // sonst auf trockenen Strand (knapp über dem Wasser).
   sucheLandstelle(x, z) {
-    const darf = (lx, lz) => this.spieler.kannStehen(lx, lz);
+    // An einer Felswand kann man nicht aussteigen – nur am Strand
+    const darf = (lx, lz) => this.spieler.kannStehen(lx, lz) && !istKlippenWand(lx, lz);
     return naechstesLand(x, z, 4, darf, 0.5) || naechstesLand(x, z, 4, darf, 0.05);
   }
 

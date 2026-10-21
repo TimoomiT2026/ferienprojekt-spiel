@@ -13,6 +13,14 @@ export const SCHAUFEL_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hid
   <path d="M20 38 h24 v8 a12 12 0 0 1 -24 0 z" fill="#b9c2cc" stroke="#7d8894" stroke-width="2"/>
 </svg>`;
 
+// Die Seilkanone gibt es auch nicht als Emoji: runde rote Kanone mit Haken vorne
+export const SEILKANONE_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hidden="true">
+  <path d="M10 44 C 2 30, 22 16, 38 24 L 44 28 C 48 36, 40 46, 30 46 Z" fill="#d94a3a" stroke="#8e2a20" stroke-width="2"/>
+  <ellipse cx="42" cy="27" rx="5" ry="7" transform="rotate(30 42 27)" fill="#f2b53a"/>
+  <path d="M46 22 L 54 14 M54 14 c 6 -2 8 6 3 8 M54 14 c -2 -6 -9 -4 -7 1" stroke="#7d8894" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+  <circle cx="20" cy="48" r="7" fill="#9a6a3c" stroke="#5e3d1f" stroke-width="2"/>
+</svg>`;
+
 // Alle Dinge, die es im Spiel gibt
 //   werkzeug: kann man in die Hand nehmen
 //   essen:    kann man essen (zählt als Mahlzeit)
@@ -40,10 +48,17 @@ export const DINGE = {
   leine: { name: 'Leine', bild: '🪢', werkzeug: true, artikel: 'eine', text: 'Aus dem Leder vom alten Schuh. In die Hand nehmen, dann kannst du dein Pferd führen und am Stall anbinden.' },
   zauberpilz: { name: 'Zauberpilz', bild: '🍄', zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
   fernrohr: { name: 'Fernrohr', bild: '🔭', werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
+  seil: { name: 'Seil', bild: '➰', artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Jeder Schuss mit der Seilkanone braucht eins.' },
+  widerhaken: { name: 'Widerhaken', bild: '🪝', artikel: 'einen', text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone.' },
+  seilkanone: { name: 'Seilkanone', bild: SEILKANONE_BILD, werkzeug: true, artikel: 'eine', text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Jeder Schuss braucht 1 Seil.' },
+  taucherbrille: { name: 'Taucherbrille', bild: '🤿', artikel: 'eine', text: 'Damit kannst du tauchen! Geh an tiefes Wasser. Die Luft reicht aber nicht lange.' },
+  insadorium: { name: 'Insadorium', bild: '<span class="insadorium-bild">🔴</span>', text: 'DAS INSADORIUM! Der geheime rote Stein. Er leuchtet so grell, dass man fast nicht hinschauen kann.' },
   reisezelt: { name: 'Reisezelt', bild: '⛺', plaetze: 3, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
   // Diese beiden kommen nicht IN den Rucksack – sie ERSETZEN ihn
   rucksackGross: { name: 'Großer Rucksack', bild: '🎒', upgradePlaetze: 18, text: '18 Plätze statt 12.' },
   rucksackRiesig: { name: 'Riesen-Rucksack', bild: '🎒', upgradePlaetze: 24, text: '24 Plätze!' },
+  // Der Ballon kommt auch nicht in den Rucksack – er steht dann an der Base (siehe ballon.js)
+  ballon: { name: 'Heißluftballon', bild: '🎈', sonderKauf: true, text: 'Damit fliegst du ganz schnell ins Dorf!' },
 };
 
 const haltbarkeit = (id) => (EINSTELLUNGEN.haltbarkeit || {})[id] || 0;

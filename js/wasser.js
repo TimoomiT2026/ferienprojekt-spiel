@@ -4,8 +4,7 @@
 // =============================================================
 import * as THREE from 'three';
 import { rauschen } from './rauschen.js';
-import { WASSER_HOEHE, bodenHoehe } from './gelaende.js';
-import { EINSTELLUNGEN } from './einstellungen.js';
+import { WASSER_HOEHE, bodenHoehe, WELT } from './gelaende.js';
 
 // ---------- Zahlen zum Rumprobieren ----------
 // Die großen Wellen. Jede Welle hat:
@@ -100,8 +99,10 @@ function baueWellenTextur() {
 // Wie tief ist das Wasser überall? Das wird einmal als Bild gespeichert,
 // damit das Wasser am Strand hell und flach, draußen dunkel und tief aussieht.
 // Die Wellen schauen auch hier nach: am Strand werden sie flach.
-const KARTEN_GROESSE = (EINSTELLUNGEN.inselGroesse + 90) * 2;
-const KARTEN_PUNKTE = 256;
+// Das Bild deckt alle Inseln ab. Ein Bildpunkt = ca. 2,4 m (wie früher bei nur einer Insel).
+const KARTEN_GROESSE = WELT.halb * 2;
+const KARTEN_MITTE = new THREE.Vector2(WELT.mitteX, WELT.mitteZ);
+const KARTEN_PUNKTE = Math.min(1024, Math.ceil(KARTEN_GROESSE / 2.4));
 let tiefenDaten = null;
 function tiefenDatenHolen() {
   if (tiefenDaten) return tiefenDaten;
@@ -109,8 +110,8 @@ function tiefenDatenHolen() {
   tiefenDaten = new Uint8Array(n * n * 4);
   for (let y = 0; y < n; y++) {
     for (let x = 0; x < n; x++) {
-      const wx = ((x + 0.5) / n - 0.5) * KARTEN_GROESSE;
-      const wz = ((y + 0.5) / n - 0.5) * KARTEN_GROESSE;
+      const wx = ((x + 0.5) / n - 0.5) * KARTEN_GROESSE + KARTEN_MITTE.x;
+      const wz = ((y + 0.5) / n - 0.5) * KARTEN_GROESSE + KARTEN_MITTE.y;
       const tiefe = THREE.MathUtils.clamp((WASSER_HOEHE - bodenHoehe(wx, wz)) / 6, 0, 1);
       const i = (y * n + x) * 4;
       tiefenDaten[i] = tiefenDaten[i + 1] = tiefenDaten[i + 2] = Math.round(tiefe * 255);
@@ -131,8 +132,8 @@ function baueTiefenKarte() {
 function tiefeBei(x, z) {
   const d = tiefenDatenHolen();
   const n = KARTEN_PUNKTE;
-  const gx = THREE.MathUtils.clamp((x / KARTEN_GROESSE + 0.5) * n - 0.5, 0, n - 1);
-  const gz = THREE.MathUtils.clamp((z / KARTEN_GROESSE + 0.5) * n - 0.5, 0, n - 1);
+  const gx = THREE.MathUtils.clamp(((x - KARTEN_MITTE.x) / KARTEN_GROESSE + 0.5) * n - 0.5, 0, n - 1);
+  const gz = THREE.MathUtils.clamp(((z - KARTEN_MITTE.y) / KARTEN_GROESSE + 0.5) * n - 0.5, 0, n - 1);
   const ix = Math.min(n - 2, Math.floor(gx)), iz = Math.min(n - 2, Math.floor(gz));
   const fx = gx - ix, fz = gz - iz;
   const w = (a, b) => d[((iz + b) * n + ix + a) * 4] / 255;
@@ -238,12 +239,14 @@ export class Wasser {
       shader.uniforms.tTiefe = { value: tiefenKarte };
       shader.uniforms.uZeit = this.zeit;
       shader.uniforms.uGroesse = { value: KARTEN_GROESSE };
+      shader.uniforms.uMitte = { value: KARTEN_MITTE };
       shader.uniforms.uKamera = this.kamera;
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>
         uniform sampler2D tTiefe;
         uniform float uZeit;
         uniform float uGroesse;
+        uniform vec2 uMitte;
         uniform vec3 uKamera;
         varying vec3 vWP;
         varying float vWelle;
@@ -262,7 +265,7 @@ export class Wasser {
           // Wo liegt dieser Punkt in der Welt?
           vec2 p0 = (modelMatrix * vec4(position, 1.0)).xz;
           // Am Strand flache Wellen, draußen große. Weit weg von der Kamera keine.
-          float tiefeHier = texture2D(tTiefe, p0 / uGroesse + 0.5).r * 6.0;
+          float tiefeHier = texture2D(tTiefe, (p0 - uMitte) / uGroesse + 0.5).r * 6.0;
           float tw = clamp((tiefeHier - 0.1) / ${f(VOLLE_WELLEN_TIEFE - 0.1)}, 0.0, 1.0);
           float staerke = tw * (2.0 - tw);
           staerke *= 1.0 - smoothstep(${f(WELLEN_WEITE - 45)}, ${f(WELLEN_WEITE - 3)}, distance(p0, uKamera.xz));
@@ -279,9 +282,9 @@ export class Wasser {
           transformed += versatz;
           vWP = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform sampler2D tTiefe;\nuniform float uZeit;\nuniform float uGroesse;\nvarying vec3 vWP;\nvarying float vWelle;')
+        .replace('#include <common>', '#include <common>\nuniform sampler2D tTiefe;\nuniform float uZeit;\nuniform float uGroesse;\nuniform vec2 uMitte;\nvarying vec3 vWP;\nvarying float vWelle;')
         .replace('#include <color_fragment>', `#include <color_fragment>
-          float tiefe = texture2D(tTiefe, vWP.xz / uGroesse + 0.5).r * 6.0;
+          float tiefe = texture2D(tTiefe, (vWP.xz - uMitte) / uGroesse + 0.5).r * 6.0;
           // Flaches Wasser türkis, tiefes Wasser dunkelblau
           vec3 flach = vec3(0.16, 0.62, 0.62);
           vec3 tief = vec3(0.01, 0.12, 0.24);

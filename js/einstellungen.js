@@ -41,6 +41,40 @@ export const EINSTELLUNGEN = {
   // Nach wie vielen Tagen ist eine leere Grabestelle wieder voll?
   nachwachsTage: 2,
 
+  // ---------- Die Inselgruppe (Etappe 3) ----------
+  // Die Startinsel liegt in der Mitte (bei x = 0, z = 0) und ist oben eingestellt.
+  // Hier stehen die ANDEREN Inseln. Man erreicht sie mit dem Ruderboot.
+  //   x, z     = wo die Mitte der Insel liegt (Meter; x+ = Osten, z+ = Süden, z− = Norden)
+  //   radius   = wie weit die Küste ungefähr von der Mitte weg ist (Meter)
+  //   seed     = Zufallszahl für die Form (andere Zahl = andere Küste)
+  // Tipp: Zwischen zwei Küsten sollen 120–200 m Meer sein (Boot: ca. 15–25 Sekunden).
+  // Nicht zu nah an die Startinsel schieben (Mitte mindestens ca. 450 m weg)!
+  inseln: [
+    {
+      name: 'Klippeninsel',
+      x: 460, z: 110, radius: 90, seed: 7,
+      klippen: true,
+      klippenHoehe: 21, // so hoch ist das Plateau oben (Meter)
+      wandBreite: 5, // wie breit die Felswand ist (klein = steiler)
+      buchten: [195, 330], // Strand-Buchten: Richtung in Grad (0 = Osten, 90 = Süden, 180 = Westen, 270 = Norden)
+      buchtTiefe: 22, // wie weit die Buchten in die Insel hineingehen (Meter)
+      laguneRadius: 16, // der kleine See oben in der Mitte
+      laguneTiefe: 4.5, // so tief ist er (Meter)
+      baeume: 70, buesche: 60, gras: 16000,
+    },
+    {
+      name: 'Palmeninsel',
+      x: -465, z: 85, radius: 100, seed: 11,
+      huegelHoehe: 8, // ein sanfter Hügel in der Mitte (Meter)
+      dorfPlatz: { x: 28, z: -12, radius: 20, hoehe: 3 }, // flacher Platz fürs zweite Dorf (x, z von der Inselmitte aus)
+      palmen: 70, baeume: 18, buesche: 45, gras: 9000,
+    },
+  ],
+  // So nah (Meter vor der Küste) muss man kommen, damit eine neue Insel auf der Karte erscheint
+  inselEntdeckenAbstand: 110,
+  // Wie steil darf man bergauf laufen? (1 = 45 Grad). An den Klippen geht es nicht weiter.
+  maxSteigung: 1.4,
+
   // ---------- Graben ----------
   // Was findet man beim Graben, und wie oft?
   // Je größer die Zahl, desto häufiger. (Zusammen müssen es nicht 100 sein.)
@@ -62,6 +96,10 @@ export const EINSTELLUNGEN = {
     angel: { holz: 2, schnur: 1 },
     fernrohr: { eisenerz: 2, gold: 1, holz: 1 },
     leine: { schuh: 1, schnur: 1 }, // Leder vom alten Schuh + Schnur = Pferde-Leine
+    // Seilkanone (schwer zu schaffen!): erst Seil und Widerhaken bauen, dann die Kanone
+    seil: { schnur: 3 }, // 3 Schnüre zusammengedreht = ein starkes Seil
+    widerhaken: { eisenerz: 2, stein: 1 },
+    seilkanone: { holz: 4, eisenerz: 3, seil: 1, widerhaken: 1 },
   },
 
   // Wie oft kann man etwas benutzen, bevor es kaputt / leer ist?
@@ -104,6 +142,8 @@ export const EINSTELLUNGEN = {
     apfel: 4, // Pferdefutter
     rucksackGross: 60, // Rucksack mit 18 Plätzen
     rucksackRiesig: 120, // Rucksack mit 24 Plätzen
+    ballon: 150, // Heißluftballon – steht dann an der Base (nur einmal zu kaufen)
+    taucherbrille: 40, // zum Tauchen (siehe "Tauchen" unten)
   },
 
   // ---------- Essen & Schlafen ----------
@@ -214,4 +254,67 @@ export const EINSTELLUNGEN = {
   sinkTempo: 2,
   // Wie hoch kann man höchstens fliegen? (Meter über dem Boden)
   maxFlugHoehe: 40,
+
+  // ---------- Heißluftballon 🎈 ----------
+  ballon: {
+    // Wie lange dauert das Aufsteigen und das Landen? (Sekunden)
+    steigSekunden: 5,
+    sinkSekunden: 4.5,
+    // So hoch fliegt der Ballon über dem höchsten Berg auf dem Weg (Meter)
+    flugHoehe: 26,
+    // Wie schnell gleitet er? (Meter pro Sekunde – laufen ist 7)
+    tempo: 24,
+    // Das Gleiten dauert mindestens / höchstens so lange (Sekunden)
+    minGleitSekunden: 4,
+    maxGleitSekunden: 16,
+    // So schnell muss man zweimal tippen, damit es sofort losgeht (Sekunden)
+    doppelTippSekunden: 0.6,
+    // Hier steht der Ballon an der Base (Meter)
+    basePlatz: { x: 17, z: -2 },
+    // Wie laut faucht der Brenner? (0 = aus, 1 = laut)
+    brennerLautstaerke: 0.7,
+  },
+
+  // ---------- Tauchen & das Insadorium ----------
+  // Mit der Taucherbrille im Rucksack kann man an tiefem Wasser tauchen.
+  // Wie lange reicht die Luft? (Sekunden)
+  tauchLuft: 30,
+  // Ab so wenig Luft kommt die Warnung (Sekunden)
+  tauchLuftWarnung: 8,
+  // Wie schnell schwimmt man unter Wasser? (Meter pro Sekunde – laufen ist 7)
+  tauchTempo: 4.5,
+  // Sprungknopf festhalten = so schnell nach oben …
+  tauchSteigTempo: 3,
+  // … loslassen = so schnell langsam nach unten
+  tauchSinkTempo: 1.2,
+  // So tief muss das Wasser mindestens sein, damit man tauchen kann (Meter)
+  tauchMinTiefe: 1.5,
+  // Wie grell leuchtet das Insadorium? (größer = greller)
+  insadoriumLeuchten: 7,
+  // Wie dicht ist das Wasser? So weit (Meter) kann man unter Wasser sehen
+  tauchSichtweite: 30,
+
+  // ---------- Seilkanone ----------
+  // Kanone in die Hand, vor eine hohe Wand stellen, Hochschießen!
+  // Jeder Schuss braucht 1 Seil aus dem Rucksack, die Kanone bleibt.
+  seilkanone: {
+    // So viele Seile können höchstens gleichzeitig hängen
+    maxSeile: 3,
+    // So hoch muss die Wand mindestens sein (Meter) – sonst läuft man einfach hoch
+    wandMinHoehe: 6,
+    // So weit vor dir darf die Wand anfangen (Meter)
+    suchWeite: 25,
+    // Ab so viel Steigung zählt es als Wand (1 = 45 Grad)
+    wandSteil: 0.9,
+    // So breit darf die Wand höchstens sein (Meter, von unten bis zur Kante)
+    wandMaxBreite: 22,
+    // Unter so viel Steigung ist es oben wieder flach (die Kante)
+    kanteFlach: 0.35,
+    // Wie schnell fliegt der Haken? (Meter pro Sekunde)
+    hakenTempo: 28,
+    // Wie schnell klettert man am Seil? (Meter pro Sekunde)
+    kletterTempo: 2.6,
+    // Wie laut sind Plopp, Klonk und Knarzen? (0 = aus, 1 = laut)
+    lautstaerke: 0.8,
+  },
 };

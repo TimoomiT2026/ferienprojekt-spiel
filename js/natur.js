@@ -19,12 +19,16 @@ import * as THREE from 'three';
 import { mergeGeometries, mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { fbm, zufallMitSeed } from './rauschen.js';
-import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, DORF, WASSER_HOEHE } from './gelaende.js';
+import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, DORF, WASSER_HOEHE, INSELN, aktualisiereInseln } from './gelaende.js';
 import { textur } from './texturen.js';
 
 const zufall = zufallMitSeed(42);
 const R = EINSTELLUNGEN.inselGroesse;
 const STUECK = 80; // Seitenlänge eines Stücks in Metern
+
+// Fertige Formen und Materialien zum Wiederverwenden (für die anderen Inseln).
+// Gleiches Material = kein neues Grafik-Programm = schneller.
+const BAUSTEINE = {};
 
 // Die Zeit für den Wind (alle Pflanzen wackeln mit derselben Uhr)
 export const windZeit = { value: 0 };
@@ -401,7 +405,7 @@ export function buschInDerNaehe(x, z) {
 // Wie viel Gras und Farn wächst hier? 0 = nichts, 1 = dichte Wiese
 export function grasDichte(x, z) {
   const boden = gitterWerte(x, z);
-  if (boden.hoehe < 1.6 || boden.hoehe > 20) return 0;
+  if (boden.hoehe < 1.6 || (boden.hoehe > 20 && !boden.insel)) return 0;
   return Math.min(1, boden.wiese + boden.wald * 0.35) * (1 - boden.pfad);
 }
 
@@ -537,6 +541,7 @@ function baueBaeume(gruppe, hindernisse) {
   const laubBlatt = atlasWahl(blattMaterial('laub.png', 0.03, 2.5, 'laub', 0.025), [45, 34, 13, 8]);
   const nadelBlatt = blattMaterial('nadeln.png', 0.022, 1.5, 'tanne', 0.012);
   const groesser = { stueck: 110 }; // größere Stücke = weniger Malbefehle
+  Object.assign(BAUSTEINE, { laubFormen, tannenFormen, laubHolz, tannenHolz, laubBlatt, nadelBlatt });
 
   const nachForm = (liste, farben, welche) => [0, 1].map((f) => ({
     holz: liste.filter((b) => welche(b) === f),
@@ -604,6 +609,7 @@ function baueFelsen(gruppe, hindernisse) {
     n++;
   }
   formen.forEach((geo, i) => gruppe.add(inStuecken(geo, material, listen[i], { sichtweite: 220 })));
+  BAUSTEINE.felsForm = formen[0];
 }
 
 // Büsche: kleine, dichte Blätter-Wolken direkt am Boden
@@ -638,6 +644,7 @@ function baueBuesche(gruppe) {
   // Büsche nehmen meistens das dichte Buschlaub, manchmal Buche oder längliche Blätter
   const material = atlasWahl(blattMaterial('laub.png', 0.04, 0.2, 'busch', 0.02), [20, 20, 0, 60]);
   gruppe.add(inStuecken(form, material, liste, { sichtweite: 130 }));
+  Object.assign(BAUSTEINE, { buschForm: form, buschMaterial: material });
 }
 
 // Farne: ein Kranz aus gebogenen Wedeln, nur im Wald
@@ -789,6 +796,7 @@ function baueBlumen(gruppe) {
     }
   }
   gruppe.add(inStuecken(geo, material, liste, { sichtweite: 90, schatten: false }));
+  Object.assign(BAUSTEINE, { blumenForm: geo, blumenMaterial: material, blumenFarben: farben });
 }
 
 // Gras: Büschel aus zwei gekreuzten Bild-Karten mit echten Grashalmen
@@ -838,6 +846,207 @@ function baueGras(gruppe) {
     });
   }
   gruppe.add(inStuecken(geo, material, liste, { sichtweite: 70, schatten: false }));
+  Object.assign(BAUSTEINE, { grasForm: geo, grasMaterial: material });
+}
+
+// =============================================================
+//  PFLANZEN AUF DEN ANDEREN INSELN (Etappe 3)
+//  Jede Insel hat ihren eigenen Zufall – so stört sie die Startinsel nicht.
+// =============================================================
+
+// ---------- Palme: krummer Stamm + Kranz aus großen Wedeln ----------
+// Die Wedel sind dieselbe Form wie beim Farn – nur viel größer.
+function baueWedel(z, laenge, breite, w) {
+  const geo = new THREE.PlaneGeometry(breite, laenge, 1, 4);
+  geo.translate(0, laenge / 2, 0);
+  const p = geo.attributes.position;
+  const neigung = 1.1 + z() * 0.35;
+  for (let i = 0; i < p.count; i++) {
+    const t = p.getY(i) / laenge;
+    // erst schräg nach oben, dann hängt der Wedel weich nach unten
+    const winkel = neigung + t * t * 1.5;
+    const s = p.getY(i);
+    p.setXYZ(i, p.getX(i) * (1 - t * 0.55), Math.cos(winkel) * s * 0.9, Math.sin(winkel) * s);
+  }
+  geo.rotateY(w);
+  return geo;
+}
+
+function bauePalmenForm(z) {
+  const hoehe = 6.2, biegung = 1.4; // Palmen sind schief – wie vom Wind gebogen
+  const stamm = new THREE.CylinderGeometry(0.17, 0.27, hoehe, 8, 10, true);
+  const sp = stamm.attributes.position;
+  for (let i = 0; i < sp.count; i++) {
+    const y = sp.getY(i) + hoehe / 2;
+    const t = y / hoehe;
+    // dicke Ringe wie bei einer echten Palme
+    const ring = 1 + 0.08 * Math.max(0, Math.sin(y * 5.5));
+    sp.setXYZ(i, sp.getX(i) * ring + biegung * t * t, y < 0.01 ? -0.3 : y, sp.getZ(i) * ring);
+    stamm.attributes.uv.setY(i, t);
+  }
+  stamm.computeVertexNormals();
+  const holz = holzFertig([stamm], 4);
+  // Krone: 9 Wedel rundherum, oben ein kleiner grüner Knubbel
+  const spitze = new THREE.Vector3(biegung, hoehe - 0.1, 0);
+  const wedel = [];
+  for (let k = 0; k < 9; k++) {
+    const g = baueWedel(z, 2.9 + z() * 0.8, 1.05, (k / 9) * Math.PI * 2 + z() * 0.3);
+    g.translate(spitze.x, spitze.y, spitze.z);
+    const n = g.attributes.normal;
+    for (let i = 0; i < n.count; i++) n.setXYZ(i, 0, 1, 0); // wie von oben beleuchtet
+    wedel.push(g);
+  }
+  // innen dunkel, außen hell (falsches Umgebungslicht)
+  const krone = mitHelligkeit(mergeGeometries(wedel), (x, y, zz) => 0.5 + 0.6 * Math.min(1, Math.hypot(x - spitze.x, zz - spitze.z) / 2.6));
+  return { holz, blaetter: krone, spitze };
+}
+
+let palmenTeile = null;
+function palmenBausteine() {
+  if (palmenTeile) return palmenTeile;
+  const form = bauePalmenForm(zufallMitSeed(606));
+  const material = wenigGlanz(beideSeitenHell(mitWind(new THREE.MeshStandardMaterial({
+    map: textur('farn.png', { wiederholen: false }),
+    alphaTest: 0.5,
+    side: THREE.DoubleSide,
+    roughness: 0.8,
+    vertexColors: true,
+    color: new THREE.Color(1.1, 1.15, 0.95),
+  }), 0.035, 5.5, 'palme', 0.02)));
+  palmenTeile = { ...form, material };
+  return palmenTeile;
+}
+
+// Kopien in Stücke verteilen – auf den Inseln mit größeren Stücken (= weniger Malbefehle)
+const INSEL_STUECK = 150;
+
+function baueInselNatur(gruppe, hindernisse, insel) {
+  const E = (EINSTELLUNGEN.inseln || []).find((e) => e.name === insel.name) || {};
+  const z = zufallMitSeed(1000 + (E.seed ?? 1) * 31);
+  const B = BAUSTEINE;
+  const weite = insel.reichweite;
+  const punkt = () => [insel.x + (z() - 0.5) * 2 * weite, insel.z + (z() - 0.5) * 2 * weite];
+  const dorf = insel.dorfPlatz;
+  const lagune = insel.lagune;
+  // Darf hier etwas wachsen? (nicht am Dorfplatz, nicht in der Lagune)
+  const frei = (x, zz, abstand = 3) => {
+    if (dorf && Math.hypot(x - dorf.x, zz - dorf.z) < dorf.radius + abstand) return false;
+    if (lagune && Math.hypot(x - lagune.x, zz - lagune.z) < lagune.radius * 1.3 + abstand) return false;
+    return true;
+  };
+  const steil = (b) => b.fels > 0.3;
+
+  // ---- Bäume (nur die breiten Laubbäume und vollen Tannen) ----
+  const laub = [], tannen = [];
+  for (let versuch = 0; versuch < 4000 && laub.length + tannen.length < (E.baeume ?? 0); versuch++) {
+    const [x, zz] = punkt();
+    const b = gitterWerte(x, zz);
+    if (b.hoehe < 2.5 || steil(b) || b.sand > 0.5 || !frei(x, zz)) continue;
+    if (b.wald < 0.3 && z() > 0.15) continue; // außerhalb vom Wald nur wenige
+    const s = 0.75 + z() * 0.6;
+    const baum = {
+      x, z: zz, ziele: [], art: 'baum', schlaege: 0, weg: false,
+      matrix: m4().compose(v3(x, b.hoehe - 0.15, zz), new THREE.Quaternion().setFromAxisAngle(hochAchse, z() * 6.3), v3(s, s * (0.85 + z() * 0.3), s)),
+    };
+    (z() < (insel.klippen ? 0.3 : 0.1) ? tannen : laub).push(baum);
+    baum.hindernis = hindernisse.hinzufuegen(x, zz, 0.45 * s);
+    holzStellen.push(baum);
+  }
+  const mitFarbe = (liste, h, sat, hell) => liste.map((b) => ({ ...b, besitzer: b, farbe: new THREE.Color().setHSL(h + z() * 0.07, sat, hell + z() * 0.15) }));
+  const gross = { stueck: INSEL_STUECK };
+  gruppe.add(inStuecken(B.laubFormen[0].holz, B.laubHolz, laub, gross));
+  gruppe.add(inStuecken(B.laubFormen[0].blaetter, B.laubBlatt, mitFarbe(laub, 0.2, 0.35, 0.8), gross));
+  if (tannen.length) {
+    gruppe.add(inStuecken(B.tannenFormen[0].holz, B.tannenHolz, tannen, gross));
+    gruppe.add(inStuecken(B.tannenFormen[0].blaetter, B.nadelBlatt, mitFarbe(tannen, 0.3, 0.25, 0.72), gross));
+  }
+
+  // ---- Palmen: am Strand und auf dem sandigen Boden ----
+  if (E.palmen) {
+    const P = palmenBausteine();
+    const palmen = [];
+    for (let versuch = 0; versuch < 6000 && palmen.length < E.palmen; versuch++) {
+      const [x, zz] = punkt();
+      const b = gitterWerte(x, zz);
+      if (b.hoehe < 1.3 || b.hoehe > 7 || steil(b) || !frei(x, zz, 4)) continue;
+      if (b.sand < 0.4 && z() > 0.35) continue; // am liebsten im Sand
+      const s = 0.8 + z() * 0.45;
+      const q = new THREE.Quaternion().setFromAxisAngle(hochAchse, z() * 6.3);
+      const palme = {
+        x, z: zz, ziele: [], art: 'baum', schlaege: 0, weg: false,
+        matrix: m4().compose(v3(x, b.hoehe - 0.1, zz), q, v3(s, s * (0.85 + z() * 0.35), s)),
+      };
+      palme.hindernis = hindernisse.hinzufuegen(x, zz, 0.35 * s);
+      holzStellen.push(palme);
+      palmen.push(palme);
+    }
+    gruppe.add(inStuecken(P.holz, B.laubHolz, palmen, gross));
+    gruppe.add(inStuecken(P.blaetter, P.material, palmen.map((p) => ({ ...p, besitzer: p, farbe: new THREE.Color().setHSL(0.22 + z() * 0.06, 0.4, 0.75 + z() * 0.15) })), gross));
+  }
+
+  // ---- Büsche ----
+  const buesche = [];
+  for (let versuch = 0; versuch < 3000 && buesche.length < (E.buesche ?? 0); versuch++) {
+    const [x, zz] = punkt();
+    const b = gitterWerte(x, zz);
+    if (b.hoehe < 1.8 || steil(b) || b.sand > 0.6 || !frei(x, zz)) continue;
+    const s = 0.6 + z() * 0.8;
+    const busch = {
+      x, z: zz, ziele: [], art: 'busch', schlaege: 0, weg: false,
+      matrix: m4().compose(v3(x, b.hoehe - 0.12, zz), new THREE.Quaternion().setFromAxisAngle(hochAchse, z() * 6.3), v3(s * 1.2, s, s * 1.2)),
+      farbe: new THREE.Color().setHSL(0.21 + z() * 0.08, 0.32, 0.7 + z() * 0.15),
+    };
+    buesche.push(busch);
+    holzStellen.push(busch);
+  }
+  gruppe.add(inStuecken(B.buschForm, B.buschMaterial, buesche, { sichtweite: 130, stueck: INSEL_STUECK }));
+
+  // ---- Felsbrocken (auf der Klippeninsel mehr) ----
+  const felsen = [];
+  for (let versuch = 0; versuch < 800 && felsen.length < (insel.klippen ? 30 : 10); versuch++) {
+    const [x, zz] = punkt();
+    const b = gitterWerte(x, zz);
+    if (b.hoehe < 1 || steil(b) || !frei(x, zz, 2)) continue;
+    const s = 0.5 + z() * z() * 2.2;
+    felsen.push({
+      x, z: zz,
+      matrix: m4().compose(v3(x, b.hoehe + s * 0.12, zz), new THREE.Quaternion().setFromEuler(new THREE.Euler(z() * 0.4, z() * 6.3, z() * 0.4)), v3(s * 1.3, s * 0.8, s)),
+      farbe: new THREE.Color().setScalar(0.85 + z() * 0.25),
+    });
+    hindernisse.hinzufuegen(x, zz, s * 1.05);
+  }
+  gruppe.add(inStuecken(B.felsForm, felsMat, felsen, { sichtweite: 220, stueck: INSEL_STUECK }));
+
+  // ---- Blumen (in Grüppchen auf der Wiese) ----
+  const blumen = [];
+  for (let versuch = 0; versuch < 300 && blumen.length < (insel.klippen ? 700 : 300); versuch++) {
+    const [mx, mz] = punkt();
+    const farbe = new THREE.Color(B.blumenFarben[Math.floor(z() * B.blumenFarben.length)]);
+    for (let k = 0; k < 10; k++) {
+      const x = mx + (z() - 0.5) * 6, zz = mz + (z() - 0.5) * 6;
+      const b = gitterWerte(x, zz);
+      if (b.hoehe < 1.8 || b.wiese < 0.6 || !frei(x, zz, 1)) continue;
+      const s = 0.7 + z() * 0.6;
+      blumen.push({ x, z: zz, matrix: m4().compose(v3(x, b.hoehe, zz), new THREE.Quaternion().setFromAxisAngle(hochAchse, z() * 6.3), v3(s, s, s)), farbe });
+    }
+  }
+  gruppe.add(inStuecken(B.blumenForm, B.blumenMaterial, blumen, { sichtweite: 90, schatten: false }));
+
+  // ---- Gras ----
+  const gras = [];
+  for (let k = 0; k < (E.gras ?? 0) * 3 && gras.length < (E.gras ?? 0); k++) {
+    const [x, zz] = punkt();
+    const b = gitterWerte(x, zz);
+    if (b.hoehe < 1.6 || !frei(x, zz, 0)) continue;
+    if (z() > b.wiese + b.wald * 0.35) continue;
+    const s = 0.7 + z() * 0.7;
+    gras.push({
+      x, z: zz,
+      matrix: m4().compose(v3(x, b.hoehe - 0.04, zz), new THREE.Quaternion().setFromAxisAngle(hochAchse, z() * Math.PI), v3(s, s * (0.8 + z() * 0.5), s)),
+      farbe: new THREE.Color().setHSL(0.17 + z() * 0.08, 0.3 + z() * 0.2, 0.74 + z() * 0.2),
+    });
+  }
+  gruppe.add(inStuecken(B.grasForm, B.grasMaterial, gras, { sichtweite: 70, schatten: false }));
 }
 
 export function baueNatur(szene, hindernisse) {
@@ -851,6 +1060,9 @@ export function baueNatur(szene, hindernisse) {
   // Diese beiden haben ihren eigenen Zufall (stören die anderen nicht)
   baueFarne(gruppe);
   baueSteinchen(gruppe);
+  // Die anderen Inseln (Etappe 3) – ganz am Ende, damit sich auf der
+  // Startinsel nichts verschiebt (Spielstände merken sich die Nummern der Bäume!)
+  for (const insel of INSELN.slice(1)) baueInselNatur(gruppe, hindernisse, insel);
   holzGitterBauen();
   szene.add(gruppe);
 }
@@ -867,6 +1079,7 @@ export function wenigerDetails() {
 // Jedes Bild: Wind weiterlaufen lassen, nur nahe Stücke zeigen
 export function aktualisiereNatur(dt, spielerPos) {
   windZeit.value += dt;
+  aktualisiereInseln(spielerPos); // ferne Inseln nicht malen
   for (const s of alleStuecke) {
     s.mesh.visible = Math.hypot(s.mitte.x - spielerPos.x, s.mitte.y - spielerPos.z) < s.sichtweite * detail + s.groesse * 0.7;
   }

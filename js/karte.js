@@ -6,15 +6,24 @@
 //  So findet man das Zelt immer wieder!
 // =============================================================
 import { EINSTELLUNGEN } from './einstellungen.js';
-import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, WASSER_HOEHE } from './gelaende.js';
+import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, WASSER_HOEHE, WELT, INSELN } from './gelaende.js';
 import { knopf } from './steuerung.js';
 
-// Wie viele Meter zeigt die Karte vom Inselmittelpunkt aus? (in jede Richtung)
-const BEREICH = EINSTELLUNGEN.inselGroesse + 70;
+// Die Karte zeigt ALLE Inseln: ein Quadrat um die ganze Inselgruppe.
+// BEREICH = wie viele Meter von der Kartenmitte bis zum Rand, MX/MZ = Kartenmitte
+const BEREICH = WELT.halb;
+const MX = WELT.mitteX, MZ = WELT.mitteZ;
 // Wie viele Pixel hat das Kartenbild? (mehr = schärfer, aber langsamer)
-const BILD_PIXEL = 768;
+const BILD_PIXEL = 1024;
 // An wie vielen Punkten messen wir die Höhe? (dazwischen wird gemischt)
-const MESS_PUNKTE = 241;
+const MESS_PUNKTE = 401;
+// Die Startinsel (bis hier gibt es Pfad und Dorf)
+const START_BEREICH = EINSTELLUNGEN.inselGroesse * 1.3;
+// Auf welcher Insel liegt (x, z)? 0 = Startinsel oder Meer, 1, 2, … = neue Inseln
+function inselNummer(x, z) {
+  for (let i = 1; i < INSELN.length; i++) if (Math.hypot(x - INSELN[i].x, z - INSELN[i].z) < INSELN[i].reichweite) return i;
+  return 0;
+}
 // Ab wie vielen Metern ist man "angekommen"?
 const ZIEL_ABSTAND = 6;
 
@@ -66,18 +75,23 @@ function maleKarte(canvas) {
   const wald = new Float32Array(N * N);
   const pfad = new Float32Array(N * N);
   const dorf = new Float32Array(N * N);
+  const insel = new Uint8Array(N * N);
 
   // 1) Überall die Höhe messen (wie ein Landvermesser)
   for (let j = 0; j < N; j++) {
-    const z = -BEREICH + j * schritt;
+    const z = MZ - BEREICH + j * schritt;
     for (let i = 0; i < N; i++) {
-      const x = -BEREICH + i * schritt;
+      const x = MX - BEREICH + i * schritt;
       const k = j * N + i;
       const h = bodenHoehe(x, z);
+      const nr = inselNummer(x, z);
+      const amStart = Math.hypot(x, z) < START_BEREICH;
       hoehe[k] = h;
-      wald[k] = h > 1.6 && istWald(x, z) ? 1 : 0;
-      pfad[k] = Math.hypot(x, z) < BEREICH ? abstandZumPfad(x, z) : 99;
-      dorf[k] = abstandZumDorf(x, z);
+      insel[k] = nr;
+      // Wald: auf der Startinsel wie immer, auf den neuen Inseln aus deren Bodenarten
+      wald[k] = h > 1.6 && (nr ? gitterWerte(x, z).wald > 0.35 : istWald(x, z)) ? 1 : 0;
+      pfad[k] = amStart ? abstandZumPfad(x, z) : 99;
+      dorf[k] = amStart ? abstandZumDorf(x, z) : 99;
     }
   }
 
@@ -140,9 +154,12 @@ function maleKarte(canvas) {
         const g = [mische(F.wiese[0], F.wiese2[0], fleck * 0.6), mische(F.wiese[1], F.wiese2[1], fleck * 0.6), mische(F.wiese[2], F.wiese2[2], fleck * 0.6)];
         mischeFarbe(c, g, gras);
         mischeFarbe(c, F.wald, lies(wald) * 0.75 * gras);
-        const felsig = Math.max(glatt(lies(steil), 0.12, 0.3), glatt(h, 15, 22));
+        // Fels: an steilen Hängen. Auf der Startinsel auch hoch oben am Berg
+        // (das Plateau der Klippeninsel ist oben aber grün).
+        const neueInsel = insel[k] > 0;
+        const felsig = Math.max(glatt(lies(steil), 0.12, 0.3), neueInsel ? 0 : glatt(h, 15, 22));
         mischeFarbe(c, F.fels, felsig * gras);
-        mischeFarbe(c, F.schnee, glatt(h, 29, 35));
+        if (!neueInsel) mischeFarbe(c, F.schnee, glatt(h, 29, 35));
         // Trampelpfad und Dorfplatz
         mischeFarbe(c, F.erde, (1 - glatt(lies(pfad), 1.8, 3.2)) * 0.95);
         mischeFarbe(c, F.erde, (1 - glatt(lies(dorf), 7, 10)) * 0.6);
@@ -189,12 +206,12 @@ function maleKarte(canvas) {
   }
   ctx.putImageData(bild, 0, 0);
 
-  maleBaeume(ctx, wald, hoehe, N);
+  maleBaeume(ctx, wald, hoehe, N, insel);
   maleVerzierung(ctx, P);
 }
 
 // Kleine Bäumchen-Symbole im Wald – wie auf einer gemalten Karte
-function maleBaeume(ctx, wald, hoehe, N) {
+function maleBaeume(ctx, wald, hoehe, N, insel) {
   const P = BILD_PIXEL;
   const zufall = wuerfel(42);
   const abstand = 11;
@@ -206,7 +223,7 @@ function maleBaeume(ctx, wald, hoehe, N) {
       const j = Math.round((by / (P - 1)) * (N - 1));
       if (i < 0 || j < 0 || i >= N || j >= N) continue;
       const k = j * N + i;
-      if (wald[k] < 1 || hoehe[k] > 16 || zufall() < 0.25) continue;
+      if (wald[k] < 1 || (hoehe[k] > 16 && !insel[k]) || zufall() < 0.25) continue;
       const r = 2.6 + zufall() * 1.6;
       ctx.fillStyle = 'rgba(30, 55, 25, 0.35)'; // Schatten
       ctx.beginPath();
@@ -228,13 +245,13 @@ function maleBaeume(ctx, wald, hoehe, N) {
 function maleVerzierung(ctx, P) {
   const proMeter = P / (BEREICH * 2);
 
-  // Feines Gitter alle 50 Meter (wie Längen- und Breitengrade)
+  // Feines Gitter alle 100 Meter (wie Längen- und Breitengrade)
   ctx.strokeStyle = 'rgba(90, 60, 30, 0.13)';
   ctx.lineWidth = 1;
-  for (let m = -250; m <= 250; m += 50) {
-    const p = (m + BEREICH) * proMeter;
-    ctx.beginPath(); ctx.moveTo(p, 0); ctx.lineTo(p, P); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(0, p); ctx.lineTo(P, p); ctx.stroke();
+  for (let m = -Math.floor(BEREICH / 100) * 100; m <= BEREICH; m += 100) {
+    const px = (m - MX + BEREICH) * proMeter, pz = (m - MZ + BEREICH) * proMeter;
+    ctx.beginPath(); ctx.moveTo(px, 0); ctx.lineTo(px, P); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(0, pz); ctx.lineTo(P, pz); ctx.stroke();
   }
 
   // Kleine Wellen im tiefen Meer (nur in den Ecken, dort ist sicher Wasser)
@@ -242,9 +259,9 @@ function maleVerzierung(ctx, P) {
   ctx.strokeStyle = 'rgba(230, 245, 245, 0.55)';
   ctx.lineWidth = 2;
   ctx.lineCap = 'round';
-  for (let n = 0; n < 40; n++) {
+  for (let n = 0; n < 120; n++) {
     const x = zufall() * P, y = zufall() * P;
-    const mx = x / proMeter - BEREICH, mz = y / proMeter - BEREICH;
+    const mx = x / proMeter - BEREICH + MX, mz = y / proMeter - BEREICH + MZ;
     if (bodenHoehe(mx, mz) > -5 || bodenHoehe(mx + 10, mz) > -5) continue;
     ctx.beginPath();
     ctx.moveTo(x - 9, y);
@@ -293,8 +310,8 @@ function maleVerzierung(ctx, P) {
   }
   ctx.restore();
 
-  // Maßstab unten links: 50 Meter
-  const lang = 50 * proMeter;
+  // Maßstab unten links: 100 Meter
+  const lang = 100 * proMeter;
   const mx = 26, my = P - 30;
   ctx.fillStyle = 'rgba(245, 232, 200, 0.85)';
   ctx.fillRect(mx - 8, my - 24, lang + 16, 38);
@@ -306,7 +323,7 @@ function maleVerzierung(ctx, P) {
   ctx.font = 'bold 14px Georgia, serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillText('50 m', mx + lang / 2, my - 7);
+  ctx.fillText('100 m', mx + lang / 2, my - 7);
 
   // Verbrannter, dunkler Papierrand
   const rand = ctx.createRadialGradient(P / 2, P / 2, P * 0.42, P / 2, P / 2, P * 0.74);
@@ -315,6 +332,50 @@ function maleVerzierung(ctx, P) {
   rand.addColorStop(1, 'rgba(60, 35, 10, 0.6)');
   ctx.fillStyle = rand;
   ctx.fillRect(0, 0, P, P);
+}
+
+// Unentdeckte Inseln verstecken wir unter Wolken mit einem "?".
+// Entdeckte Inseln bekommen ihren Namen auf die Karte.
+function maleNebel(canvas, entdeckt) {
+  const P = 512;
+  canvas.width = canvas.height = P;
+  const ctx = canvas.getContext('2d');
+  ctx.clearRect(0, 0, P, P);
+  const proMeter = P / (BEREICH * 2);
+  const ort = (x, z) => [(x - MX + BEREICH) * proMeter, (z - MZ + BEREICH) * proMeter];
+  INSELN.slice(1).forEach((I, nr) => {
+    const [cx, cy] = ort(I.x, I.z);
+    const r = I.reichweite * proMeter;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    if (!entdeckt.has(I.name)) {
+      // Dicke, weiche Wolken (immer gleich, damit sie nicht zappeln)
+      const zufall = wuerfel(99 + nr);
+      for (let k = 0; k < 26; k++) {
+        const w = zufall() * Math.PI * 2, d = Math.sqrt(zufall()) * r * 0.75;
+        const x = cx + Math.cos(w) * d, y = cy + Math.sin(w) * d;
+        const g = ctx.createRadialGradient(x, y, 0, x, y, r * (0.35 + zufall() * 0.25));
+        g.addColorStop(0, 'rgba(244, 236, 214, 1)');
+        g.addColorStop(0.6, 'rgba(240, 230, 205, 0.95)');
+        g.addColorStop(1, 'rgba(240, 230, 205, 0)');
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(x, y, r * 0.6, 0, Math.PI * 2);
+        ctx.fill();
+      }
+      ctx.font = `bold ${Math.round(r * 0.55)}px Georgia, serif`;
+      ctx.fillStyle = 'rgba(107, 74, 43, 0.75)';
+      ctx.fillText('?', cx, cy);
+    } else {
+      ctx.font = 'bold 15px Georgia, serif';
+      ctx.lineWidth = 4;
+      ctx.strokeStyle = 'rgba(245, 232, 200, 0.95)';
+      ctx.fillStyle = '#6b4a2b';
+      const y = cy - r * 0.78;
+      ctx.strokeText(I.name, cx, y);
+      ctx.fillText(I.name, cx, y);
+    }
+  });
 }
 
 // Der Pfeil als SVG-Bild (zeigt nach oben)
@@ -336,6 +397,8 @@ export class Karte {
     this.pfeilWinkel = 0;
     this.erreichtZeit = 0; // wie lange "Ziel erreicht!" noch angezeigt wird
     this.spieler = { x: 0, z: 0, winkel: 0 };
+    this.entdeckt = new Set(); // Namen der neuen Inseln, die man schon gesehen hat
+    this.beiInselEntdeckt = null; // optional: wird aufgerufen, wenn man eine neue Insel findet
 
     const hud = elternElement.querySelector('#hud') || elternElement;
 
@@ -363,6 +426,7 @@ export class Karte {
       </div>
       <div id="karte-blatt">
         <canvas id="karte-bild"></canvas>
+        <canvas id="karte-nebel" style="position:absolute;inset:0;width:100%;height:100%;pointer-events:none"></canvas>
         <svg id="karte-linie" viewBox="0 0 1000 1000" preserveAspectRatio="none">
           <line x1="0" y1="0" x2="0" y2="0" />
         </svg>
@@ -375,6 +439,8 @@ export class Karte {
       </div>`;
     elternElement.appendChild(this.fenster);
     this.blatt = this.fenster.querySelector('#karte-blatt');
+    this.nebel = this.fenster.querySelector('#karte-nebel');
+    maleNebel(this.nebel, this.entdeckt);
     this.punkteEbene = this.fenster.querySelector('#karte-punkte');
     this.ichElement = this.fenster.querySelector('#karte-ich');
     this.linie = this.fenster.querySelector('#karte-linie line');
@@ -427,7 +493,27 @@ export class Karte {
   // Welt-Meter → Prozent auf der Karte (Norden = oben)
   aufKarte(x, z) {
     const klemme = (v) => Math.min(98, Math.max(2, v));
-    return { links: klemme(((x + BEREICH) / (BEREICH * 2)) * 100), oben: klemme(((z + BEREICH) / (BEREICH * 2)) * 100) };
+    return { links: klemme(((x - MX + BEREICH) / (BEREICH * 2)) * 100), oben: klemme(((z - MZ + BEREICH) / (BEREICH * 2)) * 100) };
+  }
+
+  // ---------- Neue Inseln entdecken ----------
+  // Eine Insel zeigt sich auf der Karte, wenn man nah genug dran war
+  entdeckeInsel(name) {
+    if (this.entdeckt.has(name) || !INSELN.some((I) => I.name === name)) return false;
+    this.entdeckt.add(name);
+    maleNebel(this.nebel, this.entdeckt);
+    if (this.beiInselEntdeckt) this.beiInselEntdeckt(name);
+    return true;
+  }
+
+  // Für den Spielstand
+  get entdeckteInseln() {
+    return [...this.entdeckt];
+  }
+
+  ladeEntdeckteInseln(liste) {
+    this.entdeckt = new Set((liste || []).filter((n) => INSELN.some((I) => I.name === n)));
+    maleNebel(this.nebel, this.entdeckt);
   }
 
   // Einen Punkt auf die Karte setzen (oder ändern)
@@ -535,6 +621,12 @@ export class Karte {
     this.spieler.z = spielerPos.z;
     this.spieler.winkel = figurWinkel || 0;
     if (this._offen) this.zeichneSpieler();
+
+    // Ist eine neue Insel nah? Dann erscheint sie auf der Karte
+    for (let i = 1; i < INSELN.length; i++) {
+      const I = INSELN[i];
+      if (!this.entdeckt.has(I.name) && Math.hypot(spielerPos.x - I.x, spielerPos.z - I.z) < I.radius + EINSTELLUNGEN.inselEntdeckenAbstand) this.entdeckeInsel(I.name);
+    }
 
     // "Ziel erreicht!" noch kurz stehen lassen, dann ausblenden
     if (this.erreichtZeit > 0) {
