@@ -42,3 +42,5 @@
 | **Kommentar** | Ein Satz im Code hinter `//`. Den liest nur der Mensch, nicht der Computer. |
 | **Experimentieren** | Eine Sache ändern und schauen, was passiert. So finden Spieleentwickler heraus, was Spaß macht. |
 | **Lokal** | Etwas läuft nur auf deinem eigenen Computer – niemand anders sieht es. |
+| **Ereignis** | Etwas, das im Spiel passiert und das sich das Spiel merkt (z. B. „Fisch gefangen“). Daraus schreibt die Inselzeitung ihre Artikel. |
+| **KI-Gegner** | Die anderen Boote bei der Zauberpilz-Rallye. Der Computer steuert sie – absichtlich nicht perfekt, damit du gewinnen kannst. |

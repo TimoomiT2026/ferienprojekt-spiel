@@ -181,11 +181,12 @@ export function verbindeEreignisse(ereignisse, s = {}) {
     ueberleben.aktualisiere = function (...a) {
       const warHungrig = this.hungrig;
       const tag = this.letzterTag, geschlafen = this.geschlafen;
+      const abgedeckt = this.limo || this.kaffee > 0; // Kaffee/Nacht-Limo: zählt nicht als wache Nacht
       const geld = s.rucksack?.muenzen ?? 0;
       const r = alt.apply(this, a);
       if (!warHungrig && this.hungrig) melde('hunger');
       // Genau ein Tag weiter und NICHT geschlafen → eine wache Nacht
-      if (this.letzterTag === tag + 1 && !geschlafen) melde('nicht-geschlafen', { strafe: Math.max(0, geld - (s.rucksack?.muenzen ?? geld)) });
+      if (this.letzterTag === tag + 1 && !geschlafen && !abgedeckt) melde('nicht-geschlafen', { strafe: Math.max(0, geld - (s.rucksack?.muenzen ?? geld)) });
       return r;
     };
   }

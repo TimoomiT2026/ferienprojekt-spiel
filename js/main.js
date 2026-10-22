@@ -43,6 +43,8 @@ import { Bewohner } from './bewohner.js';
 import { Palmendorf } from './palmendorf.js';
 import { Markt } from './markt.js';
 import { Rallye } from './rallye.js';
+import { Ereignisse, verbindeEreignisse } from './ereignisse.js';
+import { Zeitung } from './zeitung.js';
 import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
@@ -72,6 +74,7 @@ const wasser = new Wasser(szene);
 const himmel = new Himmel(szene, renderer);
 const dorf = new Dorf(szene, hindernisse);
 const tageszeit = new Tageszeit();
+const ereignisse = new Ereignisse(tageszeit); // merkt sich, was passiert – für die Inselzeitung
 const spieler = new Spieler(szene, hindernisse);
 const steuerung = new Steuerung(spielfeld);
 const musik = new Musik();
@@ -150,6 +153,10 @@ const base = new Base(szene, hindernisse, { rucksack, meldung, musik, tageszeit,
 base.beiNeuerInteraktion = (ia) => objekte.interaktionen.push(ia);
 objekte.interaktionen.push(...base.interaktionen);
 
+// ---------- Briefkasten & Inselzeitung 📬 (am Morgen jedes Markttags) ----------
+const zeitung = new Zeitung(szene, hindernisse, { base, tageszeit, meldung, musik, elternElement: spielfeld, ereignisse });
+objekte.interaktionen.push(...zeitung.interaktionen);
+
 // ---------- Heißluftballon 🎈 ----------
 const ballon = new Ballon(szene, hindernisse, { spieler, meldung, musik, haendler, elternElement: spielfeld });
 objekte.interaktionen.push(...ballon.interaktionen);
@@ -157,7 +164,7 @@ objekte.interaktionen.push(...ballon.interaktionen);
 const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);
@@ -179,7 +186,7 @@ function zeigePalmendorf() {
 }
 
 // ---------- Wochenmarkt im Palmendorf 🛒 (alle 3 Spieltage) ----------
-const markt = new Markt(szene, hindernisse, { rucksack, meldung, musik, tageszeit, elternElement: spielfeld, karte, ueberleben, ereignisse: null });
+const markt = new Markt(szene, hindernisse, { rucksack, meldung, musik, tageszeit, elternElement: spielfeld, karte, ueberleben, ereignisse });
 objekte.interaktionen.push(...markt.interaktionen);
 
 // ---------- Die 10 Inselbewohner auf der Palmeninsel (einer hat die Taucherbrille) ----------
@@ -206,7 +213,7 @@ ballon.spiel.boote = boote; // damit beim Rudern/Reiten "Steig erst ab" kommt
 ballon.spiel.pferde = pferde;
 
 // ---------- Zauberpilz-Rallye 🍄🚣 (am Markttag im Palmendorf) ----------
-const rallye = new Rallye(szene, hindernisse, { rucksack, meldung, musik, spieler, kamera, tageszeit, elternElement: spielfeld, boote, pferde, ereignisse: null });
+const rallye = new Rallye(szene, hindernisse, { rucksack, meldung, musik, spieler, kamera, tageszeit, elternElement: spielfeld, boote, pferde, ereignisse });
 objekte.interaktionen.push(...rallye.interaktionen);
 objekte.interaktionen.push(...pferde.interaktionen);
 
@@ -412,6 +419,7 @@ function spielSchleife() {
       else if (ballon.offen) ballon.schliessen();
       else if (bewohner.offen) bewohner.schliessen();
       else if (markt.offen) markt.schliessen();
+      else if (zeitung.offen) zeitung.schliessen();
       else rucksack.offen ? rucksack.schliessen() : rucksack.oeffnen();
     }
     if (karte.offen && rucksack.offen) rucksack.schliessen();
@@ -473,6 +481,7 @@ function spielSchleife() {
   lagerfeuer.aktualisiere(dt);
   if (laeuft) {
     ueberleben.aktualisiere();
+    zeitung.aktualisiere(dt);
     aufgaben.aktualisiere(dt);
   }
   tiere.aktualisiere(dt, pos, himmel.helligkeit);
@@ -547,6 +556,7 @@ function schwertSchlag() {
     const bekommen = schlagen(holz);
     musik.graben();
     if (bekommen > 0) {
+      ereignisse.melde('baum', { art: holz.art });
       const passt = rucksack.hinein('holz', bekommen);
       meldung(passt ? `🪵 +${bekommen} Holz!` : 'Der Rucksack ist voll – das Holz bleibt liegen.', 3);
     }
@@ -577,6 +587,8 @@ function sammleSpielstand() {
     palmendorf: palmendorf.alsDaten(),
     markt: markt.alsDaten(),
     rallye: rallye.alsDaten(),
+    ereignisse: ereignisse.alsDaten(),
+    zeitung: zeitung.alsDaten(),
     finale: finale.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
@@ -589,6 +601,8 @@ function wendeSpielstandAn(s) {
   try {
     rucksack.ladeDaten(s.rucksack || {});
     tageszeit.ladeDaten(s.tageszeit || {});
+    ereignisse.ladeDaten(s.ereignisse || {});
+    zeitung.ladeDaten(s.zeitung || {});
     ueberleben.ladeDaten(s.ueberleben || {});
     haendler.ladeDaten(s.haendler || {});
     if (s.pferde) pferde.ladeDaten(s.pferde);
@@ -706,9 +720,12 @@ try {
 spielSchleife();
 
 // Für automatische Tests: Spielzustand von außen ablesbar machen
+// Alle Ereignisse für die Zeitung automatisch mitschreiben (erst hier, wenn alle "bei…"-Funktionen gesetzt sind)
+verbindeEreignisse(ereignisse, { rucksack, angeln, objekte, base, pferde, karte, tauchen, ballon, bewohner, ueberleben, spieler });
+
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye, ereignisse, zeitung,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {
