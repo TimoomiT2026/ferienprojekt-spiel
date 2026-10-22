@@ -1,0 +1,131 @@
+/* =============================================================
+   DIE INSELZEITUNG 📰 "Der Inselbote"
+   Holzrahmen wie alle Spiel-Fenster, innen ein Zeitungsblatt:
+   großer Zeitungsname, Spalten, Schlagzeilen, Fotos mit Klebestreifen.
+   ============================================================= */
+#zeitung-fenster {
+  --band: #2f8fe0; --band-dunkel: #13508f;
+  width: min(860px, 96vw);
+  --zeitung-papier: #fdf9ee;
+  --zeitung-tinte: #2b2118;
+}
+
+.zeitung-blatt {
+  position: relative;
+  padding: 14px 18px 18px;
+  border-radius: 6px;
+  background:
+    radial-gradient(ellipse at 0% 0%, rgba(255, 255, 255, 0.8), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(120, 90, 40, 0.025) 0 2px, transparent 2px 4px),
+    var(--zeitung-papier);
+  box-shadow: 0 2px 0 #d9c9a6, 0 6px 14px rgba(60, 40, 10, 0.18), inset 0 0 0 1px #e4d6b6;
+  color: var(--zeitung-tinte);
+  transform: rotate(-0.4deg);
+}
+
+/* ---------- Zeitungskopf ---------- */
+.zeitung-kopf { text-align: center; border-bottom: 4px double var(--zeitung-tinte); padding-bottom: 6px; margin-bottom: 14px; }
+.zeitung-name {
+  font-size: clamp(40px, 8vw, 66px); font-weight: 800; line-height: 1;
+  letter-spacing: 0.02em; color: #e0553a;
+  text-shadow: 2px 0 0 var(--zeitung-tinte), -2px 0 0 var(--zeitung-tinte), 0 2px 0 var(--zeitung-tinte), 0 -2px 0 var(--zeitung-tinte),
+    2px 2px 0 var(--zeitung-tinte), -2px 2px 0 var(--zeitung-tinte), 2px -2px 0 var(--zeitung-tinte), -2px -2px 0 var(--zeitung-tinte), 0 5px 0 var(--zeitung-tinte);
+  padding-top: 6px;
+}
+.zeitung-zeile {
+  display: flex; justify-content: space-between; gap: 10px; flex-wrap: wrap;
+  margin-top: 8px; padding: 3px 4px 0;
+  border-top: 2px solid var(--zeitung-tinte);
+  font-size: 17px; font-weight: 700;
+}
+
+/* ---------- Spalten ---------- */
+.zeitung-spalten {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 16px 22px;
+  align-items: start;
+}
+.zeitung-artikel, .zeitung-kasten { min-width: 0; }
+.zeitung-artikel.gross { grid-column: 1 / -1; display: grid; grid-template-columns: 1.25fr 1fr; gap: 6px 20px; align-items: center; }
+.zeitung-artikel.gross h3 { grid-column: 1 / -1; font-size: 34px; }
+.zeitung-artikel h3 {
+  font-size: 25px; font-weight: 800; line-height: 1.1; margin-bottom: 8px;
+  color: var(--zeitung-tinte);
+}
+.zeitung-artikel p { font-size: 18px; line-height: 1.4; font-weight: 500; }
+.zeitung-artikel.gross p { font-size: 20px; }
+.zeitung-artikel p::first-letter { font-size: 1.6em; font-weight: 800; color: #e0553a; }
+
+/* ---------- Fotos: weißer Rand, leicht schief, Klebestreifen ---------- */
+.zeitung-foto {
+  position: relative; margin: 4px 4px 12px;
+  padding: 7px 7px 9px; background: #fff;
+  border-radius: 4px;
+  box-shadow: 0 3px 0 #e2d4b2, 0 6px 12px rgba(40, 25, 5, 0.25);
+  transform: rotate(var(--dreh, -1deg));
+}
+.zeitung-foto::before {
+  content: ''; position: absolute; top: -9px; left: 50%; width: 64px; height: 20px;
+  transform: translateX(-50%) rotate(-3deg);
+  background: rgba(255, 236, 150, 0.75); border: 1px solid rgba(180, 150, 60, 0.4);
+}
+.zeitung-foto-svg { display: block; width: 100%; height: auto; aspect-ratio: 320 / 200; border-radius: 2px; }
+.klein-foto { max-width: 300px; margin: 6px auto 10px; }
+
+/* ---------- Kästen (Markt, Rallye, Zahlen, Wetter, Witz) ---------- */
+.zeitung-kasten {
+  padding: 10px 14px 12px; border-radius: 14px;
+  border: 3px solid var(--zeitung-tinte);
+  background: #fffdf6;
+  box-shadow: 0 4px 0 var(--zeitung-tinte);
+  font-size: 18px; line-height: 1.35;
+}
+.zeitung-kasten h4 {
+  margin: -10px -14px 8px; padding: 4px 14px 2px;
+  border-radius: 10px 10px 0 0; border-bottom: 3px solid var(--zeitung-tinte);
+  background: #ffd23f; font-size: 21px; font-weight: 800;
+}
+.zeitung-kasten.markt h4 { background: #7be36a; }
+.zeitung-kasten.rallye h4 { background: #ff9fc8; }
+.zeitung-kasten.zahlen h4 { background: #9fe2ff; }
+.zeitung-kasten.wetter h4 { background: #bfe9ff; }
+.zeitung-kasten .klein { font-size: 15px; opacity: 0.8; }
+.zeitung-kasten .schlagzeile { font-size: 22px; font-weight: 800; margin-bottom: 4px; }
+.zeitung-kasten.markt { grid-column: 1 / -1; }
+
+.z-staende { list-style: none; display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 8px 18px; margin-top: 6px; }
+.z-stand-name { font-weight: 800; font-size: 18px; border-bottom: 2px dashed #c9b48a; margin-bottom: 2px; }
+.z-ware { display: flex; align-items: center; gap: 6px; font-size: 17px; line-height: 1.25; padding: 1px 0; }
+.z-ware-bild { flex: none; width: 30px; height: 30px; font-size: 24px; line-height: 30px; text-align: center; }
+.z-ware-bild .spiel-bild { width: 30px; height: 30px; }
+.z-ware-name { flex: 1; }
+.z-preis { white-space: nowrap; font-size: 18px; }
+.z-preis s { opacity: 0.55; font-size: 15px; }
+.z-preis .muenze-klein .spiel-bild, .zeitung-kasten .muenze-klein svg { width: 18px; height: 18px; vertical-align: -3px; }
+
+.zahlen ul { list-style: none; display: flex; flex-wrap: wrap; gap: 4px 14px; }
+.zahlen li { font-size: 17px; }
+.zahl-bild { margin-right: 4px; }
+.wetter-bild { font-size: 30px; vertical-align: -6px; }
+.witz .antwort { margin-top: 6px; padding-top: 6px; border-top: 2px dashed #c9b48a; font-style: italic; }
+
+/* ---------- Leerer Briefkasten ---------- */
+.zeitung-leer { text-align: center; padding: 10px 20px 16px; font-size: 21px; line-height: 1.4; }
+.zeitung-leer-bild { font-size: 80px; line-height: 1.1; }
+.zeitung-leer p { margin-top: 8px; }
+
+.zeitung-blaettern { margin-top: 16px; }
+.zeitung-blaettern .gesperrt { pointer-events: none; }
+
+/* ---------- Schmale Bildschirme: eine Spalte ---------- */
+@media (max-width: 700px) {
+  .zeitung-spalten { grid-template-columns: 1fr; }
+  .zeitung-artikel.gross { display: block; }
+  .zeitung-artikel.gross h3 { font-size: 28px; }
+  .zeitung-kasten.markt { grid-row: auto; }
+  .zeitung-blatt { padding: 10px 12px 14px; }
+}
+@media (max-height: 600px) {
+  .zeitung-artikel h3 { font-size: 22px; }
+  .zeitung-artikel.gross h3 { font-size: 28px; }
+  .zeitung-name { font-size: 46px; }
+}

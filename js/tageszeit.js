@@ -9,6 +9,28 @@ export class Tageszeit {
   constructor() {
     this.zeit = 0; // Sekunden seit Sonnenaufgang
     this.tag = 1;
+    // Nacht-Limo 🍋 (Wochenmarkt): Ist sie getrunken, wird DIESE (oder die nächste) Nacht taghell.
+    this.helleNacht = false;
+    this.helleNachtWert = 0; // 0 = normale Nacht, 1 = ganz hell (wird weich überblendet, himmel.js liest das)
+  }
+
+  // Nacht-Limo getrunken: Die Nacht wird hell (bis zum Morgen)
+  starteHelleNacht() {
+    this.helleNacht = true;
+  }
+
+  // Wo steht die Zaubersonne in der hellen Nacht? (wie sonnenWinkel)
+  zauberSonnenWinkel() {
+    return (EINSTELLUNGEN.markt?.limo?.sonnenHoehe ?? 0.42) * Math.PI;
+  }
+
+  // Weich hell werden – und kurz vor Sonnenaufgang langsam wieder normal
+  helleNachtBlenden(dt) {
+    const L = EINSTELLUNGEN.markt?.limo || {};
+    let ziel = this.helleNacht && this.istNacht() ? 1 : 0;
+    if (ziel) ziel = Math.min(1, this.restSekunden() / (L.auslaufSekunden ?? 20));
+    const schritt = dt / (L.uebergangSekunden ?? 4);
+    this.helleNachtWert += Math.max(-schritt, Math.min(schritt, ziel - this.helleNachtWert));
   }
 
   get tagSekunden() {
@@ -24,7 +46,9 @@ export class Tageszeit {
     if (this.zeit >= this.tagSekunden + this.nachtSekunden) {
       this.zeit = 0;
       this.tag++;
+      this.helleNacht = false; // am Morgen ist die Limo-Wirkung vorbei
     }
+    this.helleNachtBlenden(dt);
   }
 
   istNacht() {
@@ -40,6 +64,20 @@ export class Tageszeit {
   schlafen() {
     this.zeit = 0;
     this.tag++;
+    this.helleNacht = false;
+    this.helleNachtWert = 0;
+  }
+
+  // Für den Spielstand (alte Spielstände kennen "helleNacht" noch nicht)
+  alsDaten() {
+    return { zeit: this.zeit, tag: this.tag, helleNacht: this.helleNacht };
+  }
+
+  ladeDaten(d = {}) {
+    this.zeit = d.zeit ?? 0;
+    this.tag = d.tag ?? 1;
+    this.helleNacht = !!d.helleNacht;
+    this.helleNachtWert = this.helleNacht && this.istNacht() ? 1 : 0;
   }
 
   // Wo steht die Sonne? Winkel in Bogenmaß: 0 = Osten, PI/2 = ganz oben, PI = Westen

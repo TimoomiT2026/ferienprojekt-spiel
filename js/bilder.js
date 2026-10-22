@@ -45,6 +45,10 @@ const VERLAEUFE = {
   erde: ['#9a6a3e', '#6a4222'],
   pferd: ['#e6ad78', '#bf7a42', '#8a4f24'],
   wandWeiss: ['#ffffff', '#f3e8d2', '#ddc79e'],
+  // Wochenmarkt: Kaffee, Limo und der Nachthimmel auf dem Limo-Etikett
+  kaffee: ['#b07a4e', '#6b3d1f', '#3e2210'],
+  limo: ['#fffbc0', '#ffe347', '#f2b400'],
+  nacht: ['#8a9cff', '#4148c0', '#22246e'],
 };
 
 // Runde Verläufe (Licht kommt von links oben)
@@ -500,6 +504,31 @@ export const BILDER = {
     `<circle cx="30" cy="21" r="2.6" fill="${RAND}" stroke="none"/><circle cx="29.2" cy="20.2" r=".9" fill="#fff" stroke="none"/>` +
     `<ellipse cx="14" cy="38" rx="1.6" ry="1.1" fill="${RAND}" stroke="none"/>` +
     glanz(38, 30, 2, 6, 15, 0.45)
+  ),
+  // --- Wochenmarkt (Etappe 4) ---
+  // Kaffee: dampfende Tasse auf einer Untertasse
+  kaffee: bild(
+    `<ellipse cx="31" cy="50" rx="23" ry="5.5" fill="${F('creme')}"/>` +
+    strich('M44 30c8-2 11 3 9 7s-5 6-10 5', '#f6eedc', 4) +
+    `<path d="M13 27c0 14 5 23 17 23s17-9 17-23z" fill="${F('creme')}"/>` +
+    `<path d="M14.5 35c1 3 31 3 31 0l-.7 4c-1 3-29 3-29.6 0z" fill="${F('rot')}" stroke-width="1.6"/>` +
+    `<ellipse cx="30" cy="27" rx="17" ry="4.8" fill="${F('creme')}"/>` +
+    `<ellipse cx="30" cy="27.5" rx="13.5" ry="3.2" fill="${F('kaffee')}" stroke-width="1.6"/>` +
+    linie('M22 20c-3-3 3-5 0-9M30 19c-3-3 3-5 0-9M38 20c-3-3 3-5 0-9', '#a9a39a', 2.2, 0.9) +
+    glanz(19, 37, 1.6, 6, 10, 0.7)
+  ),
+  // Nacht-Limo: gelbe Limo in der Flasche, auf dem Etikett ein Mond
+  nachtLimo: bild(
+    `<path d="M27 10h10v3c0 3 2 5 4 7 3 4 4 7 4 12v18c0 4-3 6-6 6H25c-3 0-6-2-6-6V32c0-5 1-8 4-12 2-2 4-4 4-7z" fill="${F('glas')}"/>` +
+    `<path d="M20.5 31h23v19c0 3-2 4.5-4.5 4.5h-14c-2.5 0-4.5-1.5-4.5-4.5z" fill="${F('limo')}" stroke-width="1.6"/>` +
+    `<rect x="25.5" y="5" width="13" height="7" rx="2.5" fill="${F('rot')}"/>` +
+    `<circle cx="32" cy="41" r="8.5" fill="${F('nacht')}" stroke-width="1.8"/>` +
+    '<path d="M34.5 35.5a6 6 0 1 0 2.5 10 4.8 4.8 0 1 1-2.5-10z" fill="#fff3a6" stroke-width="1"/>' +
+    glanz(23.5, 27, 1.4, 5.5, 8, 0.75) +
+    `<circle cx="51" cy="47" r="8" fill="${F('limo')}"/>` +
+    '<circle cx="51" cy="47" r="5.3" fill="#fffbd6" stroke-width="1.4"/>' +
+    linie('M51 42v10M46 47h10M47.5 43.5l7 7M54.5 43.5l-7 7', '#f2c400', 1.3) +
+    funkeln(50, 14, 4.5, '#fff4a8') + funkeln(12, 22, 3.5, '#fff4a8')
   ),
   // ---------- Sonstiges (Fenster-Titel) ----------
   truhe: bild(

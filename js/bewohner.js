@@ -34,7 +34,7 @@ const ABSAGE = 'Ich habe die Taucherbrille nicht. Versuch es bei einem anderen I
 // kind:   ein Kind ist kleiner
 // hallo:  wie sie dich begrüßen (ihre Eigenheit)
 // nochmal: was sie sagen, wenn du sie zum zweiten Mal ansprichst
-const MENSCHEN = [
+export const MENSCHEN = [ // (export: die Inselzeitung malt sie auch)
   {
     id: 'ferdinand', name: 'Ferdinand', gesicht: '🧒', kind: true,
     farben: { shirt: '#ff8a65', hose: '#4f6fcf', haare: '#3b2416', haut: '#c98b62', bart: false }, extra: 'muetze', extraFarbe: '#2e86de',

@@ -16,6 +16,10 @@ export class Ueberleben {
     this.gewarnt = false;
     this.naechteWach = 0;
     this.geschlafen = false;
+    // Wochenmarkt: Kaffee ☕ = eine Nacht ohne Schlaf zählt nicht (wartet, bis man sie braucht)
+    this.kaffee = 0;
+    // Nacht-Limo 🍋 = die helle Nacht zählt nicht als "nicht geschlafen" (nur diese eine Nacht)
+    this.limo = false;
     this.letzterTag = spiel.tageszeit.tag;
     this.letzteZeit = this.spielZeit();
     this.anzeige = document.getElementById('hunger-anzeige');
@@ -45,6 +49,18 @@ export class Ueberleben {
     this.geschlafen = true;
   }
 
+  // Kaffee getrunken. Gibt false zurück, wenn man schon genug Kaffee intus hat.
+  kaffeeGetrunken() {
+    if (this.kaffee >= (EINSTELLUNGEN.markt?.kaffeeHoechstens ?? 1)) return false;
+    this.kaffee++;
+    return true;
+  }
+
+  // Nacht-Limo getrunken: Die nächste Nacht zählt nicht als "nicht geschlafen"
+  limoGetrunken() {
+    this.limo = true;
+  }
+
   // Jedes Bild: Satt-Balken leeren und prüfen, ob ein neuer Tag angefangen hat
   aktualisiere() {
     const { tageszeit, rucksack, meldung, spieler } = this.spiel;
@@ -71,10 +87,23 @@ export class Ueberleben {
     if (t.tag !== this.letzterTag) {
       this.letzterTag = t.tag;
       // Schlafen
+      // Wach geblieben, aber mit Nacht-Limo oder Kaffee? Dann zählt die Nacht nicht.
+      let zaehltNicht = false;
+      if (!this.geschlafen && this.limo) {
+        zaehltNicht = true;
+        setTimeout(() => meldung('🍋 Was für eine helle Nacht! Du bist gar nicht müde.', 6), 4500);
+      } else if (!this.geschlafen && this.kaffee > 0) {
+        zaehltNicht = true;
+        this.kaffee--;
+        setTimeout(() => meldung('☕ Dank Kaffee warst du die ganze Nacht wach – und bist gar nicht müde!', 6), 4500);
+      }
+      this.limo = false; // die Limo wirkt nur eine Nacht
       if (this.geschlafen) this.naechteWach = 0;
-      else this.naechteWach++;
+      else if (!zaehltNicht) this.naechteWach++;
       this.geschlafen = false;
-      if (this.naechteWach >= EINSTELLUNGEN.naechteOhneSchlaf) {
+      if (zaehltNicht) {
+        // nichts passiert – keine Müdigkeit
+      } else if (this.naechteWach >= EINSTELLUNGEN.naechteOhneSchlaf) {
         const verlust = Math.min(rucksack.muenzen, EINSTELLUNGEN.schlafStrafe);
         rucksack.aendereMuenzen(-verlust);
         this.naechteWach = 0;
@@ -98,7 +127,7 @@ export class Ueberleben {
   }
 
   alsDaten() {
-    return { satt: this.satt, naechteWach: this.naechteWach };
+    return { satt: this.satt, naechteWach: this.naechteWach, kaffee: this.kaffee, limo: this.limo };
   }
 
   ladeDaten(d) {
@@ -106,6 +135,8 @@ export class Ueberleben {
     if (typeof d.satt === 'number') this.satt = d.satt;
     else this.satt = d.hungrig ? 0 : d.gegessenHeute ? 100 : 50;
     this.naechteWach = d.naechteWach || 0;
+    this.kaffee = d.kaffee || 0; // alte Spielstände: kein Kaffee
+    this.limo = !!d.limo;
     this.gewarnt = this.satt <= EINSTELLUNGEN.hungerWarnung;
     this.letzterTag = this.spiel.tageszeit.tag;
     this.letzteZeit = this.spielZeit();

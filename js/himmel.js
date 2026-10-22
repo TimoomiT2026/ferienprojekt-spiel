@@ -438,6 +438,13 @@ export class Himmel {
     const S = THREE.MathUtils.smoothstep;
     const winkel = tageszeit.sonnenWinkel();
     const richtung = this.sonnenRichtung.set(Math.cos(winkel), Math.sin(winkel), 0.35).normalize();
+    // Nacht-Limo 🍋: In einer "hellen Nacht" scheint eine Zaubersonne (siehe tageszeit.js)
+    const zauber = tageszeit.helleNachtWert || 0;
+    if (zauber > 0) {
+      const zw = tageszeit.zauberSonnenWinkel();
+      this._zauber = this._zauber || new THREE.Vector3();
+      richtung.lerp(this._zauber.set(Math.cos(zw), Math.sin(zw), 0.35).normalize(), zauber).normalize();
+    }
     const hoehe = richtung.y;
     const hell = S(hoehe, -0.12, 0.22);
     // "abend" = wie golden das Licht ist (kurz vor/nach Sonnenauf- und -untergang)

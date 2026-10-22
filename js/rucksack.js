@@ -55,6 +55,9 @@ export const DINGE = {
   rucksackRiesig: { name: 'Riesen-Rucksack', bild: BILDER.rucksackRiesig, upgradePlaetze: 24, text: '24 Plätze!' },
   // Der Ballon kommt auch nicht in den Rucksack – er steht dann an der Base (siehe ballon.js)
   ballon: { name: 'Heißluftballon', bild: BILDER.ballon, sonderKauf: true, text: 'Damit fliegst du ganz schnell ins Dorf!' },
+  // Vom Wochenmarkt im Palmendorf (Etappe 4) – trinken: true = Knopf "Trinken" im Rucksack
+  kaffee: { name: 'Kaffee', bild: BILDER.kaffee, trinken: true, text: 'Luxus! Trinken = eine Nacht ohne Schlaf zählt nicht. Du bleibst hellwach.' },
+  nachtLimo: { name: 'Nacht-Limo', bild: BILDER.nachtLimo, trinken: true, artikel: 'eine', text: 'Luxus! Trinken = diese Nacht (oder die nächste) wird taghell – und zählt nicht als „nicht geschlafen“.' },
 };
 
 const haltbarkeit = (id) => (EINSTELLUNGEN.haltbarkeit || {})[id] || 0;
@@ -78,6 +81,8 @@ export class Rucksack {
     this.beiAenderung = () => {}; // wenn sich ändert, was man in der Hand hat
     this.beimEssen = () => {}; // wenn man etwas isst
     this.beimBenutzen = () => {}; // wenn man ein Zauberding benutzt (z. B. Zauberpilz)
+    // wenn man etwas trinkt (Kaffee, Nacht-Limo). Gibt er false zurück, bleibt das Getränk im Rucksack.
+    this.beimTrinken = () => true;
     // Andere Teile des Spiels können eigene Knöpfe anbieten, z. B. "Reisezelt aufstellen"
     // Rückgabe: Liste von [Text, Funktion]
     this.extraKnoepfe = () => [];
@@ -238,6 +243,13 @@ export class Rucksack {
     this.schliessen();
   }
 
+  // Trinken (Kaffee, Nacht-Limo): erst fragen, ob es gerade geht – dann ist es weg
+  trinken(id) {
+    if (this.beimTrinken(id) === false) return;
+    this.nehmen(id, 1);
+    this.zeichnen();
+  }
+
   essen(id) {
     this.nehmen(id, 1);
     this.beimEssen(id);
@@ -307,6 +319,7 @@ export class Rucksack {
     }
     if (ding.essen) neuerKnopf('😋 Essen', 'gruen', () => this.essen(platz.id));
     if (ding.zauber) neuerKnopf('✨ Essen', 'blau', () => this.benutzen(platz.id));
+    if (ding.trinken) neuerKnopf('🥤 Trinken', 'gruen', () => this.trinken(platz.id));
     for (const [text, wasPassiert] of this.extraKnoepfe(platz.id)) neuerKnopf(text, 'blau', wasPassiert);
     if (ding.wichtig) return; // Wichtige Dinge kann man nicht wegwerfen
     neuerKnopf('🗑️ 1 wegwerfen', 'rot', () => this.wegwerfen(this.gewaehlt, false));

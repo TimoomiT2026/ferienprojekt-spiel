@@ -439,7 +439,130 @@ export const EINSTELLUNGEN = {
     lautstaerke: 0.8,
   },
 
+  // ---------- Etappe 4: Inselzeitung 📬 (js/zeitung.js) ----------
+  // Am Morgen von jedem Markttag liegt "Der Inselbote" im Briefkasten an der Base.
+  zeitung: {
+    // Wo steht der Briefkasten? (von der Base aus: x = nach rechts, z = nach vorne zur Tür)
+    briefkastenX: 3.6,
+    briefkastenZ: 2.4,
+    // So nah muss man ran, damit "📬 Briefkasten" erscheint (Meter)
+    radius: 2.0,
+    // So viele "Fotos" kommen in jede Zeitung
+    fotos: 3,
+    // So viele Ereignisse merkt sich das Spiel höchstens (ältere werden vergessen)
+    maxEreignisse: 200,
+    // So viele alte Zeitungen kann man noch lesen
+    maxAusgaben: 30,
+    // So viele Sekunden nach Sonnenaufgang kommt die Meldung "Die Inselzeitung ist da!"
+    meldungNachSekunden: 7,
+    // So stark wackelt der Briefkasten, wenn eine neue Zeitung drin ist
+    wackeln: 0.08,
+  },
+
   // ---------- Etappe 4: Wochenmarkt ----------
   // Alle wie viele Spieltage ist Markt im Palmendorf? (3 = Tag 3, 6, 9 …)
-  markt: { alleTage: 3 },
+  markt: {
+    alleTage: 3,
+    // Die drei Marktstände (Entscheidungen des Game Designers). Sie verkaufen NUR – ankaufen tut weiter der Händler.
+    // 🍎 Obst & Gemüse: günstiger als beim normalen Händler (dort: Brot 25, Apfel 4)
+    obstPreise: { brot: 18, apfel: 2, karotte: 4 },
+    // ☕ Kaffee (Luxus!) und 🍋 Nacht-Limo (Luxus!) – Preise vom Game Designer
+    kaffeePreise: { kaffee: 35 },
+    limoPreise: { nachtLimo: 40 },
+    // 💎 Steine, Metall & Edelsteine: etwas teurer, als man beim Verkaufen bekommt
+    //    (Verkaufen bringt: Kohle 3, Eisenerz 6, Gold 15, Edelstein 40)
+    steinPreise: { kohle: 6, eisenerz: 12, gold: 30, edelstein: 75 },
+    // Wie viele Kaffees wirken höchstens gleichzeitig? (1 = erst wieder, wenn der alte "verbraucht" ist)
+    kaffeeHoechstens: 1,
+    // Die Nacht-Limo: so hell wird die Nacht
+    limo: {
+      // So viele Sekunden dauert es, bis es hell wird (und abends wieder)
+      uebergangSekunden: 4,
+      // So viele Sekunden vor Sonnenaufgang wird es langsam wieder normal
+      auslaufSekunden: 20,
+      // Wo steht die Zaubersonne? (0 = Osten am Horizont, 0.5 = ganz oben, 1 = Westen)
+      sonnenHoehe: 0.42,
+    },
+    // So viele Sekunden nach Sonnenaufgang kommt die Meldung "Heute ist Wochenmarkt!"
+    meldungNachSekunden: 7,
+    // Ab so viel Metern Abstand werden die Stände nicht gemalt (wie das Palmendorf)
+    sichtweite: 320,
+    // So nah muss man an einen Stand, damit der Knopf "Handeln" kommt (Meter)
+    handelRadius: 3.5,
+  },
+
+  // ---------- Etappe 4: Zauberpilz-Rallye 🍄🚣 (js/rallye.js) ----------
+  rallye: {
+    teilnahme: 10, // so viel kostet das Mitmachen (Game Designer)
+    gewinn: 50, // so viel bekommt der Sieger – aber nur 1× pro Markttag
+    runden: 1, // wie viele Runden ein Rennen hat
+    // Die Strecke: Punkte auf dem Meer vor der Palmeninsel (x, z). Eine weiche Kurve geht durch alle durch.
+    // Der erste Punkt ist die Start- und Ziellinie. (Reihenfolge = Fahrtrichtung)
+    punkte: [
+      [-335, 40], [-335, 120], [-322, 180], [-290, 212], [-248, 212], [-225, 180], // runter und die große Kurve
+      [-232, 140], [-262, 115], [-262, 80], [-232, 50], // die S-Kurve
+      [-225, 0], [-230, -36], [-243, -52], [-258, -50], [-266, -32], // die enge Haarnadel 📌
+      [-282, -2], [-315, 12], // zurück zum Ziel
+    ],
+    breite: 17, // so breit ist die Bahn (Meter) – breit genug zum Überholen
+    bojenAbstand: 9, // alle so viele Meter schwimmt links und rechts eine Boje
+    bojenFarben: { links: ['#ff4d4d', '#ffffff'], rechts: ['#ffd23a', '#2f8fe0'] },
+    // Der Stand am Strand vor dem Palmendorf und der Steg zur Startlinie
+    stand: { x: -392, z: 48 },
+    steg: { von: [-386, 48], bis: [-351, 48] },
+    standRadius: 4, // so nah muss man an den Stand für den Knopf
+    startAbstand: 8, // so viele Meter vor der Linie stehen die Boote beim Start
+    countdown: 3, // 3 – 2 – 1 – LOS!
+
+    // ---- Wie fahren die Rennboote? (für dich und die KI gleich!) ----
+    maxTempo: 10.5, // Höchsttempo (Meter pro Sekunde; ein normales Ruderboot schafft 9)
+    beschleunigung: 4.5, // so schnell kommt das Boot in Fahrt
+    bremsen: 5, // so schnell wird es langsamer (Wasser bremst)
+    drehTempo: 2.2, // so schnell dreht sich das Boot
+    griff: 5, // so fest hält das Wasser das Boot in der Kurve. Kleiner = man rutscht früher raus
+    rutschBremse: 0.35, // wie viel Tempo das Rutschen kostet
+    rutschGriff: 0.5, // wenn das Boot einmal rutscht, hält das Wasser nur noch halb so gut (wie auf Eis!)
+    rutschAb: 2.5, // ab so viel seitlichem Tempo (m/s) rutscht das Boot
+    ausserhalbTempo: 0.45, // außerhalb der Bahn gibt es nicht mal mehr die Hälfte vom Tempo
+    zurueckAbstand: 30, // so weit weg von der Bahn → zurück auf die Strecke
+    bootAbstand: 2.6, // so nah kommen sich zwei Boote, dann stoßen sie sich sanft ab
+
+    // ---- Zauberpilze = Turbo ----
+    // [wo auf der Strecke (0 = Start, 0.5 = Hälfte), wie weit rechts (+) oder links (−) in Metern]
+    pilze: [[0.07, 0], [0.2, -4], [0.36, 4], [0.47, 0], [0.62, -4], [0.8, 3], [0.93, -2]],
+    pilzFarben: ['#e5243b', '#9b3dff'],
+    pilzRadius: 2.6, // so nah muss man durchfahren
+    pilzGroesse: 1,
+    turboDauer: 2, // Sekunden
+    turboTempo: 1.5, // so viel schneller (1.5 = anderthalb mal so schnell)
+    turboSchub: 12, // so schnell kommt der Turbo
+
+    // ---- Die KI-Gegner ----
+    //  koennen    = wie nah sie an die Kurven-Grenze gehen (1 = perfekt)
+    //  tempo      = Höchsttempo im Vergleich zu dir (1 = gleich schnell)
+    //  fehler     = wie oft sie zu schnell in eine Kurve fahren (0.2 = jede 5. Kurve)
+    //  pilzChance = wie oft sie einen Zauberpilz erwischen
+    //  spur       = wo sie am liebsten fahren (− links, + rechts)
+    gegner: [
+      { name: 'Kapitän Kokosnuss', farbe: '#e5243b', fahne: '#ffffff', koennen: 0.97, tempo: 0.99, fehler: 0.12, pilzChance: 0.6, spur: -2.5,
+        figur: { shirt: '#e5243b', hose: '#efe2c0', haare: '#2a1d14', haut: '#b97a4e', hut: '#e8cf8a' } },
+      { name: 'Flitze-Möwe', farbe: '#ffb02e', fahne: '#2f8fe0', koennen: 0.94, tempo: 0.97, fehler: 0.2, pilzChance: 0.45, spur: 2.5,
+        figur: { shirt: '#ffffff', hose: '#2f8fe0', haare: '#c8a060', haut: '#f0c8a0', bart: false } },
+      { name: 'Käpt\'n Krabbe', farbe: '#4caf50', fahne: '#ff7ac8', koennen: 0.9, tempo: 0.95, fehler: 0.25, pilzChance: 0.35, spur: 0,
+        figur: { shirt: '#4caf50', hose: '#5a4632', haare: '#8a8a8a', haut: '#d9a77c', hut: '#7a5236' } },
+      { name: 'Paddel-Panda', farbe: '#9b3dff', fahne: '#ffe14d', koennen: 0.86, tempo: 0.93, fehler: 0.3, pilzChance: 0.25, spur: 4,
+        figur: { shirt: '#222222', hose: '#ffffff', haare: '#111111', haut: '#f4ead3', bart: false } },
+    ],
+    spielerBoot: { farbe: '#2f8fe0', fahne: '#ffd23a' },
+    fehlerStaerke: 0.5, // so viel zu schnell ist die KI bei einem Fehler (0.5 = 50 % mehr Kurven-Schwung)
+    kurveAbRadius: 45, // ab so einer engen Kurve (Radius in Metern) zählt es als "Kurve"
+
+    // ---- Sonstiges ----
+    kameraFaktor: 1.3, // beim Rennen ist die Kamera etwas weiter weg
+    kameraFolgen: 2.5, // so schnell dreht die Kamera hinter das Boot
+    zielWarten: 12, // so viele Sekunden nach deinem Ziel geht es zurück zum Steg
+    wartenNachKI: 45, // wenn alle KI im Ziel sind und du nach so vielen Sekunden noch nicht: Rennen vorbei
+    konfetti: 90, // so viele Konfetti-Schnipsel beim Sieg
+    sichtweite: 350, // ab so viel Metern Abstand werden Bojen & Co. nicht gemalt
+  },
 };

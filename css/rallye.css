@@ -1,0 +1,130 @@
+/* =============================================================
+   ZAUBERPILZ-RALLYE 🍄 – Anzeigen beim Bootsrennen (js/rallye.js)
+   ============================================================= */
+
+/* Rechts oben: Platz, Zeit, wie weit man ist, Aufgeben */
+#rallye-hud {
+  position: absolute;
+  top: calc(max(16px, env(safe-area-inset-top)) + 96px);
+  right: 16px;
+  display: none;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 10px;
+}
+#rallye-hud.sichtbar { display: flex; }
+.rallye-schild {
+  padding: 3px 18px 0;
+  border-radius: 26px;
+  border: 3px solid var(--holz-rand);
+  background: linear-gradient(180deg, #fffaf0, #f6e4bc);
+  box-shadow: 0 4px 0 var(--holz-rand);
+  color: var(--tinte);
+  font-size: 24px;
+  font-weight: 800;
+  line-height: 1.5;
+  white-space: nowrap;
+}
+.rallye-platz b { font-size: 32px; color: #c2410c; }
+.rallye-balken {
+  width: 190px;
+  height: 18px;
+  border-radius: 9px;
+  border: 3px solid var(--holz-rand);
+  background: #f0dcae;
+  overflow: hidden;
+  box-shadow: 0 3px 0 var(--holz-rand);
+}
+.rallye-balken span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(180deg, #c58cff, #9b3dff);
+}
+#rallye-hud .rallye-aufgeben {
+  padding: 4px 14px 1px;
+  border-radius: 20px;
+  border: 3px solid var(--holz-rand);
+  background: linear-gradient(180deg, #fff, #e8dcc6);
+  box-shadow: 0 3px 0 var(--holz-rand);
+  color: var(--tinte);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* Großer Countdown in der Mitte: 3 – 2 – 1 – LOS! */
+#rallye-countdown {
+  position: absolute;
+  left: 50%;
+  top: 38%;
+  transform: translate(-50%, -50%) scale(0.5);
+  font-size: 150px;
+  font-weight: 800;
+  line-height: 1;
+  color: #ffd23a;
+  -webkit-text-stroke: 6px var(--holz-rand);
+  text-shadow: 0 8px 0 var(--holz-rand), 0 14px 24px rgba(0, 0, 0, 0.35);
+  opacity: 0;
+  pointer-events: none;
+}
+#rallye-countdown.sichtbar { animation: rallye-zahl 0.9s ease-out forwards; }
+#rallye-countdown.los { color: #7ee04a; }
+@keyframes rallye-zahl {
+  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
+  25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+  80% { opacity: 1; transform: translate(-50%, -50%) scale(0.95); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
+}
+
+/* Hinweis unten in der Mitte: TURBO! / Aus der Bahn! */
+#rallye-hinweis {
+  position: absolute;
+  left: 50%;
+  bottom: 150px;
+  transform: translateX(-50%);
+  padding: 6px 22px 2px;
+  border-radius: 24px;
+  border: 4px solid var(--holz-rand);
+  background: linear-gradient(180deg, #fffaf0, #f8e9c6);
+  box-shadow: 0 5px 0 var(--holz-rand);
+  color: var(--tinte);
+  font-size: 26px;
+  font-weight: 800;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
+}
+#rallye-hinweis.sichtbar { opacity: 1; }
+#rallye-hinweis.turbo { background: linear-gradient(180deg, #ffd6f6, #e59bff); color: #5a1080; font-size: 34px; }
+#rallye-hinweis.warnung { background: linear-gradient(180deg, #e3f4ff, #a9dcff); color: #0f4a7a; }
+
+/* Ergebnis-Fenster */
+#rallye-fenster { --band: #9b3dff; --band-dunkel: #5a1a9a; width: min(520px, 92vw); text-align: center; }
+.rallye-gross { font-size: 30px; line-height: 1.3; color: var(--tinte); }
+.rallye-pokal { font-size: 72px; line-height: 1.1; }
+.rallye-gewinn { display: inline-flex; align-items: center; gap: 6px; font-size: 34px; font-weight: 800; color: #7a4b00; }
+.rallye-gewinn svg { width: 40px; height: 40px; }
+.rallye-klein { font-size: 19px; font-weight: 600; margin-top: 6px; }
+.rallye-liste { list-style: none; margin: 12px auto 4px; max-width: 360px; counter-reset: platz; }
+.rallye-liste li {
+  counter-increment: platz;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 3px 12px 0;
+  margin: 4px 0;
+  border-radius: 14px;
+  background: var(--fach);
+  border: 2px solid var(--fach-rand);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--tinte);
+}
+.rallye-liste li::before { content: counter(platz) "."; width: 28px; text-align: right; }
+.rallye-liste li i { width: 16px; height: 16px; border-radius: 50%; border: 2px solid var(--holz-rand); }
+.rallye-liste li span { margin-left: auto; font-variant-numeric: tabular-nums; }
+.rallye-liste li.du { background: #fff3b0; border-color: #f29a12; }
+
+/* Konfetti über allem */
+.rallye-konfetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
