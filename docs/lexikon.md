@@ -39,3 +39,6 @@
 | **Trigger** | Ein Auslöser: Etwas passiert erst, wenn vorher etwas anderes passiert ist. Bei uns: Erst wenn die Person mit der Taucherbrille von den Münzen erzählt, gibt es die Münz-Hügel. |
 | **KI-Gegner / NPC** | Figuren im Spiel, die der Computer steuert, zum Beispiel die Inselbewohner. NPC heißt „Non-Player Character“ – keine echte Person spielt sie. |
 | **Finale** | Das große Ende eines Spiels. Bei uns: Konfetti und ein Dankeschön, wenn man das Insadorium findet. |
+| **Kommentar** | Ein Satz im Code hinter `//`. Den liest nur der Mensch, nicht der Computer. |
+| **Experimentieren** | Eine Sache ändern und schauen, was passiert. So finden Spieleentwickler heraus, was Spaß macht. |
+| **Lokal** | Etwas läuft nur auf deinem eigenen Computer – niemand anders sieht es. |
