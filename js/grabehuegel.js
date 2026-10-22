@@ -29,8 +29,8 @@ const SORTEN = {
   },
   Palmeninsel: {
     seed: 23,
-    erdeDunkel: '#8a6a43', erde: '#bf9b66', erdeHell: '#e2c995',
-    rand: '#d2ba8e',
+    erdeDunkel: '#7a5a36', erde: '#a8845a', erdeHell: '#c8a877',
+    rand: '#9c9663',
     nass: '#5e4628',
     hoehe: 0.46,
     steine: 2, steinGroesse: 0.06, steinFarben: ['#b0a898', '#8f877a'],
@@ -45,7 +45,7 @@ const SORTEN = {
     nass: '#1f1812',
     hoehe: 0.45,
     steine: 10, steinGroesse: 0.13, steinFarben: ['#8a877f', '#6b6964', '#9c968b', '#5b5955'],
-    wurzeln: 1, gras: 2, grasFarben: ['#4c6526', '#89a648'],
+    wurzeln: 1, gras: 2, grasFarben: ['#3b5420', '#6f8a36'],
     muscheln: 0, moos: 4,
     kruemel: ['#3e2f23', '#5c493a', '#77746c', '#8a877f'],
   },
@@ -71,7 +71,8 @@ function erdhaufen(S, x, z) {
   const umriss = 1 + 0.12 * Math.sin(2 * a + S.p1) + 0.07 * Math.sin(3 * a + S.p2) + 0.04 * Math.sin(5 * a + S.p3);
   const q = r / umriss;
   let h;
-  if (q < 1) h = S.hoehe * Math.pow(1 - q * q, 0.85) + 0.02;
+  // runde Kuppe oben, weicher Fuß unten (wie ein echter Haufen)
+  if (q < 1) h = S.hoehe * (0.55 * (Math.cos(q * Math.PI) + 1) / 2 + 0.45 * Math.pow(1 - q * q, 0.85)) + 0.03;
   else if (q < 1.25) h = 0.03 - 0.03 * ((q - 1) / 0.25); // lose Erde rund um den Haufen
   else h = -0.3 * Math.min(1, (q - 1.25) / 0.2); // ganz außen verschwindet der Rand im Boden
   // Beulen und Klumpen
@@ -208,8 +209,8 @@ function beiwerk(S, zufall, teile, hoeheFn, { mitWurzeln = true, randStart = 1.0
     teile.push(fertig(hinlegen(g, x, y + gr * 0.15, z, zufall, 0.6), 0));
     // Auf der Klippeninsel wächst Moos auf manchen Steinen
     if (i < S.moos) {
-      const m = klumpen(zufall, gr * 0.75, 0.35, 0.35, () => zwischen(farbe(S.grasFarben[0]), farbe(S.grasFarben[1]), zufall() * 0.5));
-      teile.push(fertig(hinlegen(m, x, y + gr * 0.5, z, zufall, 0.2), 0));
+      const m = klumpen(zufall, gr * 0.6, 0.4, 0.4, () => zwischen(farbe(S.grasFarben[0]), farbe(S.grasFarben[1]), zufall() * 0.35));
+      teile.push(fertig(hinlegen(m, x + gr * 0.15, y + gr * 0.32, z, zufall, 0.2), 0));
     }
   }
   // Wurzeln: kommen aus dem Haufen und tauchen wieder in den Boden

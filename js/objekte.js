@@ -211,7 +211,9 @@ export class Objekte {
     const form = kruemelForm();
     this.kruemel = new THREE.InstancedMesh(form.geometrie, form.material, 24);
     this.kruemel.frustumCulled = false;
-    this.kruemel.visible = false; // nur sichtbar, solange Brocken fliegen
+    // Am Anfang sichtbar (aber winzig klein), damit das Grafik-Programm gleich vorbereitet wird.
+    // Danach wird es nur gemalt, solange Brocken fliegen.
+    const winzig = new THREE.Matrix4().makeScale(0, 0, 0);
     this.kruemelDaten = [];
     for (let i = 0; i < 24; i++) {
       this.kruemelDaten.push({
@@ -220,6 +222,7 @@ export class Objekte {
         dreh: 0, groesse: 1,
       });
       this.kruemel.setColorAt(i, new THREE.Color('#6b4527'));
+      this.kruemel.setMatrixAt(i, winzig);
     }
     szene.add(this.kruemel);
   }
