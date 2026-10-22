@@ -41,7 +41,7 @@ const SORTEN = {
   Klippeninsel: {
     seed: 37,
     erdeDunkel: '#33261c', erde: '#5c493a', erdeHell: '#7e6c5b',
-    rand: '#8a8672',
+    rand: '#a3a27a',
     nass: '#1f1812',
     hoehe: 0.45,
     steine: 10, steinGroesse: 0.13, steinFarben: ['#8a877f', '#6b6964', '#9c968b', '#5b5955'],
