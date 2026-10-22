@@ -70,11 +70,11 @@ Antworten vom Game Designer (Tag 4):
 - [ ] **Briefkasten an der Base** 📬: einmal pro Woche morgens die **Inselgruppen-Zeitung** – lustige Bilder von Menschen und Tieren der Insel in skurrilen Situationen, Angebote vom Wochenmarkt, Ergebnis und Sieger der letzten Challenge
 
 ## Vor Etappe 4 (Feedback Tag 4)
-- [ ] Grabehügel hochwertiger (nicht mehr wie aus Version 1)
-- [ ] Eigene Spielegrafiken statt Apple-Emojis (Rucksack, Händler, Werkbank, Menüs)
-- [ ] Beim Angeln steht man IM Steg statt darauf (Bug)
-- [ ] Truhe an der Base: gibt es schon ab Stufe 3 (Hütte) – besser zeigen/erklären
-- [ ] Schöner Spaten, echte Grabe-Bewegung, schöneres Schwert, Bäume fällen mit Animation
+- [x] Grabehügel hochwertiger (nicht mehr wie aus Version 1)
+- [x] Eigene Spielegrafiken statt Apple-Emojis (Rucksack, Händler, Werkbank, Menüs)
+- [x] Beim Angeln steht man IM Steg statt darauf (Bug)
+- [x] Truhe an der Base: gibt es schon ab Stufe 3 (Hütte) – besser zeigen/erklären
+- [x] Schöner Spaten, echte Grabe-Bewegung, schöneres Schwert, Bäume fällen mit Animation
 - Entschieden: Kokosnuss kann man nicht essen. Das Spiel heißt **Inselspiel**.
 
 ## Vor Etappe 3 (Feedback Tag 3)
