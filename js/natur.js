@@ -452,8 +452,17 @@ function starteBewegung(h, art) {
   const richtung = new THREE.Vector3(dx / d, 0, dz / d);
   const achse = new THREE.Vector3(richtung.z, 0, -richtung.x); // Kipp-Achse quer zur Richtung
   if (!h.hoehe) h.hoehe = new THREE.Vector3().setFromMatrixColumn(h.matrix, 1).length(); // wie groß ist der Baum?
-  bewegungen.set(h, { art, zeit: 0, achse, richtung, aufgeschlagen: false });
   const fuss = _fuss.setFromMatrixPosition(h.matrix);
+  // Wie weit kann er kippen, bis er am Hang aufliegt? (sonst fällt er in den Berg hinein)
+  let ganz = Math.PI / 2 - 0.1;
+  if (art === 'fallen') {
+    const laenge = 4 * h.hoehe;
+    for (let w = 0.3; w < ganz; w += 0.02) {
+      const x = fuss.x + richtung.x * Math.sin(w) * laenge, z = fuss.z + richtung.z * Math.sin(w) * laenge;
+      if (fuss.y + Math.cos(w) * laenge < bodenHoehe(x, z) + 0.6) { ganz = w; break; }
+    }
+  }
+  bewegungen.set(h, { art, zeit: 0, achse, richtung, ganz, aufgeschlagen: false });
   if (art === 'wackeln') {
     // Treffer am Stamm: Holzsplitter fliegen zu uns, oben rieseln Blätter
     const treffer = fuss.clone().add(new THREE.Vector3(-richtung.x * 0.35, 1.0, -richtung.z * 0.35));
@@ -491,7 +500,7 @@ function aktualisiereBewegungen(dt) {
       if (t >= dauer) bewegungen.delete(h);
     } else if (b.art === 'fallen') {
       const fall = F.fallDauer ?? 1.6, liegen = F.liegenDauer ?? 0.7, weg = F.weg ?? 0.5;
-      const ganz = Math.PI / 2 - 0.1; // fast flach (der Boden ist nicht ganz eben)
+      const ganz = b.ganz; // fast flach (am Hang etwas weniger)
       let winkel, runter = 0, groesse = 1;
       if (t < fall) {
         // Erst ganz langsam, dann immer schneller – wie echte Schwerkraft
@@ -501,7 +510,7 @@ function aktualisiereBewegungen(dt) {
         if (!b.aufgeschlagen) {
           // RUMMS! Blätter und Splitter spritzen dort, wo die Krone aufschlägt
           b.aufgeschlagen = true;
-          const krone = _fuss.setFromMatrixPosition(h.matrix).addScaledVector(b.richtung, 3.5 * h.hoehe);
+          const krone = _fuss.setFromMatrixPosition(h.matrix).addScaledVector(b.richtung, 3.5 * h.hoehe * Math.sin(ganz));
           krone.y = bodenHoehe(krone.x, krone.z) + 0.8;
           teilchenWerfen(krone.clone(), (F.blaetter ?? 8) * 2, 'blatt', b.richtung, 2.2 * h.hoehe, true);
           teilchenWerfen(krone.clone(), F.splitter ?? 6, 'splitter', b.richtung);

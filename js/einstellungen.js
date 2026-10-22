@@ -189,7 +189,7 @@ export const EINSTELLUNGEN = {
   holzProBusch: 1,
   // Wie wackelt und fällt ein Baum? (Sekunden und Winkel)
   baumFallen: {
-    wackelWinkel: 0.07, // so weit neigt sich der Baum bei einem Treffer
+    wackelWinkel: 0.1, // so weit neigt sich der Baum bei einem Treffer
     wackelDauer: 1.1, // so lange schwingt er nach
     fallDauer: 1.6, // so lange kippt er um (wird dabei immer schneller)
     liegenDauer: 0.7, // so lange liegt er am Boden
