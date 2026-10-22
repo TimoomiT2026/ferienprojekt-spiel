@@ -325,7 +325,7 @@ export const ballon = (farbe1 = '#ec4630', farbe2 = '#ffd23f') =>
   linie('M-12 -6L-8 14M12 -6L8 14', '#7a5a40', 2) +
   pfad('M0 -70C-30 -70 -34 -36 -12 -8H12C34 -36 30 -70 0 -70Z', farbe1) + pfad('M0 -70C-12 -70 -14 -36 -5 -8H5C14 -36 12 -70 0 -70Z', farbe2) +
   glanz(-14, -52, 4, 9, 15, 0.45) + `<rect x="-10" y="14" width="20" height="14" rx="3" fill="${V('holz')}"/>` + linie('M-10 19h20', '#8a5a34', 2);
-export const koffer = () => `<rect x="-14" y="-20" width="28" height="20" rx="4" fill="#d9573a"/>` + linie('M-5 -20v-5h10v5', RAND, 3) + linie('M-14 -11h28', '#ffd23f', 3) + funkeln(8, -14, 0.1);
+export const koffer = () => `<rect x="-14" y="-20" width="28" height="20" rx="4" fill="#d9573a"/>` + linie('M-5 -20v-5h10v5', RAND, 3) + linie('M-14 -11h28', '#ffd23f', 3);
 export const helmHammer = () => strich('M0 0L16 -16', '#c98a50', 4) + `<rect x="10" y="-26" width="16" height="9" rx="3" fill="${V('metall')}" transform="rotate(45 18 -21)"/>`;
 export const fernrohr = () => `<rect x="-4" y="-4" width="30" height="9" rx="3" fill="${V('gold')}" transform="rotate(-20)"/>` + `<rect x="18" y="-14" width="14" height="12" rx="3" fill="#8a5a34" transform="rotate(-20 25 -8)"/>`;
 export const fahne = (f = '#ec4630') => linie('M0 0V-40', '#7a5a40', 3) + pfad('M0 -40L22 -33L0 -26Z', f);
@@ -350,10 +350,10 @@ export const muschel = () => pfad('M-12 0Q-14 -16 0 -18Q14 -16 12 0Z', '#ffc6ad'
 export const staffelei = (bildInhalt = '') => linie('M-16 0L-4 -60M16 0L4 -60M0 -60V0', '#9c6a3a', 3.5) + `<rect x="-20" y="-56" width="40" height="32" rx="2" fill="#fffaf0"/>` + bildInhalt;
 export const noten = (x, y) => schrift(x, y, '♪', 22, '#ffd23f', -10) + schrift(x + 16, y - 12, '♫', 20, '#ff8fae', 10);
 export const stand = (markise1 = '#ec4630', markise2 = '#fffaf0') => {
-  let s = linie('M-50 0V-74M50 0V-74', '#7a5a40', 5);
+  let s = linie('M-50 0V-96M50 0V-96', '#7a5a40', 5);
   s += `<rect x="-56" y="-34" width="112" height="34" rx="4" fill="${V('holz')}"/>` + linie('M-56 -24H56', '#8a5a34', 2);
   let streifen = '';
-  for (let i = 0; i < 7; i++) streifen += pfad(`M${-56 + i * 16} -90H${-40 + i * 16}V-74Q${-48 + i * 16} -64 ${-56 + i * 16} -74Z`, i % 2 ? markise2 : markise1);
+  for (let i = 0; i < 7; i++) streifen += pfad(`M${-56 + i * 16} -112H${-40 + i * 16}V-96Q${-48 + i * 16} -86 ${-56 + i * 16} -96Z`, i % 2 ? markise2 : markise1);
   return s + streifen;
 };
 export const inselchen = () =>

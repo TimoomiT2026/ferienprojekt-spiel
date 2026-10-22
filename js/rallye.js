@@ -497,9 +497,9 @@ export class Rallye {
     this.schildLeinwand.height = 256;
     this.schildTex = new THREE.CanvasTexture(this.schildLeinwand);
     this.schildTex.colorSpace = THREE.SRGBColorSpace;
-    const tafel = new THREE.Mesh(new THREE.PlaneGeometry(3.2, 1.6), new THREE.MeshStandardMaterial({ map: this.schildTex, roughness: 0.8, side: THREE.DoubleSide }));
-    // Das Schild hängt vorne am Sonnendach und schaut zum Wasser (zum Steg)
-    tafel.position.set(sx + Math.sin(dreh) * 1.75, boden + 2.45, sz + Math.cos(dreh) * 1.75);
+    const tafel = new THREE.Mesh(new THREE.PlaneGeometry(3.6, 1.8), new THREE.MeshStandardMaterial({ map: this.schildTex, roughness: 0.8, side: THREE.DoubleSide }));
+    // Das Schild steht vorne an der Theke und schaut zum Wasser (zum Steg)
+    tafel.position.set(sx + Math.sin(dreh) * 1.95, boden + 1.5, sz + Math.cos(dreh) * 1.95);
     tafel.rotation.y = dreh;
     this.gruppe.add(tafel);
     this.schildMalen(1);
@@ -530,10 +530,10 @@ export class Rallye {
     g.fillStyle = '#4a2e14';
     g.textAlign = 'left';
     g.textBaseline = 'middle';
-    g.font = 'bold 44px "Baloo 2", "Arial Rounded MT Bold", Arial, sans-serif';
-    g.fillText('Zauberpilz-', 150, 80);
-    g.fillText('Rallye', 150, 128);
-    g.font = 'bold 34px "Baloo 2", "Arial Rounded MT Bold", Arial, sans-serif';
+    g.font = 'bold 58px "Baloo 2", "Arial Rounded MT Bold", Arial, sans-serif';
+    g.fillText('Zauberpilz-', 145, 78);
+    g.fillText('Rallye', 145, 134);
+    g.font = 'bold 36px "Baloo 2", "Arial Rounded MT Bold", Arial, sans-serif';
     g.fillStyle = heute ? '#2c7a14' : '#8a3a12';
     g.textAlign = 'center';
     g.fillText(heute ? `Heute! Mitmachen: ${E().teilnahme} Münzen` : `Nächste Rallye: Tag ${naechsterMarkttag(tag)}`, 256, 196);
@@ -720,11 +720,13 @@ export class Rallye {
         this.zeigeCountdown('LOS!', true);
         this.piep(true);
       }
+      this.countdownBewegen(dt);
       this.aktualisiereBootLage(dt);
       this.setzeFigur();
       return;
     }
     this.rennZeit += dt;
+    this.countdownBewegen(dt);
 
     // ---------- Du ----------
     const du = this.spielerBoot;
@@ -1170,7 +1172,7 @@ export class Rallye {
     this.hud.classList.toggle('sichtbar', an);
     if (!an) {
       this.fenster.classList.remove('offen');
-      this.countdownFeld.classList.remove('sichtbar');
+      this.countdownWeg();
       this.hinweisFeld.classList.remove('sichtbar');
     }
   }
@@ -1179,11 +1181,28 @@ export class Rallye {
     const f = this.countdownFeld;
     f.textContent = text;
     f.classList.toggle('los', los);
-    f.classList.remove('sichtbar');
-    void f.offsetWidth; // Animation neu starten
     f.classList.add('sichtbar');
-    clearTimeout(this.countdownWeg);
-    if (los) this.countdownWeg = setTimeout(() => f.classList.remove('sichtbar'), 900);
+    this.zahlZeit = 0; // seit wann ist die Zahl zu sehen? (für das "Aufploppen")
+  }
+
+  // Die Zahl ploppt groß auf und wird dann ruhig (bei LOS! verschwindet sie danach)
+  countdownBewegen(dt) {
+    const f = this.countdownFeld;
+    if (!f.classList.contains('sichtbar')) return;
+    this.zahlZeit += dt;
+    const t = this.zahlZeit;
+    const gross = t < 0.25 ? 1.8 - (t / 0.25) * 0.8 : 1 - Math.min(0.1, (t - 0.25) * 0.15);
+    let sicht = Math.min(1, t / 0.2);
+    if (f.classList.contains('los')) sicht *= 1 - klemme((t - 0.7) / 0.3, 0, 1);
+    f.style.opacity = sicht.toFixed(2);
+    f.style.transform = `translate(-50%, -50%) scale(${gross.toFixed(3)})`;
+    if (f.classList.contains('los') && t > 1) this.countdownWeg();
+  }
+
+  countdownWeg() {
+    this.countdownFeld.classList.remove('sichtbar');
+    this.countdownFeld.style.opacity = '';
+    this.countdownFeld.style.transform = '';
   }
 
   zeigeHinweis(text, art = '', sekunden = 1.2) {
@@ -1222,6 +1241,8 @@ export class Rallye {
     this.hudZeit.textContent = `⏱️ ${zeitText(du.fertig ?? this.rennZeit)}`;
     const anteil = klemme(du.fortschritt / (S.laenge * (E().runden ?? 1)), 0, 1);
     this.hudBalken.style.width = `${(anteil * 100).toFixed(1)}%`;
+    // Ergebnis-Fenster offen? Wer neu ins Ziel kommt, erscheint in der Liste
+    if (this.fenster.classList.contains('offen') && this.listeLaenge !== this.reihenfolge.length) this.zeigeListe();
     if (this.hinweisZeit > 0) {
       this.hinweisZeit -= dt;
       if (this.hinweisZeit <= 0) this.hinweisFeld.classList.remove('sichtbar');
@@ -1239,10 +1260,16 @@ export class Rallye {
       gross.innerHTML = `<div class="rallye-pokal">${this.spielerPlatz === 2 ? '🥈' : this.spielerPlatz === 3 ? '🥉' : '🚣'}</div><b>Platz ${this.spielerPlatz}!</b><br><span class="rallye-klein">Nächstes Mal! Tipp: Vor engen Kurven bremsen und die Zauberpilze mitnehmen.</span>`;
     }
     gross.innerHTML += `<div class="rallye-klein">Deine Zeit: <b>${zeitText(du.fertig)}</b>${neueBestzeit ? ' · ⭐ Neue Bestzeit!' : ` · Bestzeit: ${zeitText(this.bestzeit)}`}</div>`;
-    const liste = this.fenster.querySelector('.rallye-liste');
-    liste.innerHTML = this.reihenfolge.map((b) =>
-      `<li class="${b === du ? 'du' : ''}"><i style="background:${b.farbe}"></i>${b === du ? 'Du' : b.name}<span>${zeitText(b.fertig)}</span></li>`).join('');
+    this.zeigeListe();
     this.fenster.classList.add('offen');
+  }
+
+  // Die Liste: wer ist schon im Ziel, mit welcher Zeit?
+  zeigeListe() {
+    const du = this.spielerBoot;
+    this.listeLaenge = this.reihenfolge.length;
+    this.fenster.querySelector('.rallye-liste').innerHTML = this.reihenfolge.map((b) =>
+      `<li class="${b === du ? 'du' : ''}"><i style="background:${b.farbe}"></i>${b === du ? 'Du' : b.name}<span>${zeitText(b.fertig)}</span></li>`).join('');
   }
 
   // =============================================================

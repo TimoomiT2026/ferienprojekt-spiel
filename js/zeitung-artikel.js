@@ -259,7 +259,7 @@ export const VORLAGEN = {
           ? 'An der Base steht jetzt ein Pferdestall. Hase Hoppel hat mit Helm und Hammer geholfen – meint er. Die Pferde freuen sich!'
           : `Die Base ist jetzt ein${['Zelt', 'großes Zelt', 'Haus mit Fischteich'].includes(name) ? '' : 'e'} ${name}! Hase Hoppel hat mit Helm und Hammer geholfen. Na ja, er hat zugeschaut. ${d.name} kommt bald zu Besuch.`,
         bild: foto2('wiese', d,
-          setze(200, 166, 1.4, haeuschen()) + setze(90, 172, 1.7, hase({ helm: true }) + setze(18, -14, 1, helmHammer())) +
+          setze(200, 166, 1.4, haeuschen()) + setze(90, 172, 1.7, hase({ helm: true }) + setze(22, 2, 1, helmHammer())) +
           schrift(276, 64, 'TOCK!', 20, '#ffd23f', 10) + B.funkeln(250, 100, 6), 'Ein Hase mit Bauhelm vor einem Haus'),
       };
     },
@@ -270,13 +270,13 @@ export const VORLAGEN = {
       titel: 'Händler macht Mittagsschlaf',
       text: `Auf dem Wochenmarkt war viel los: ${mal(d.n, 'ein Einkauf', 'Einkäufe')}${d.dingName ? `, zuletzt ${d.dingName}` : ''}! Danach war ein Händler so müde, dass er im Stehen eingeschlafen ist.`,
       bild: foto2('markt', d,
-        setze(160, 150, 1.0, haendler({ augen: 'zu', haende: [[-24, -30], [24, -30]] })) + setze(160, 186, 1.2, stand()) +
+        setze(160, 162, 1.0, haendler({ augen: 'zu', haende: [[-24, -30], [24, -30]] })) + setze(160, 186, 1.2, stand()) +
         setze(126, 146, 1, brot()) + setze(196, 146, 1, kreis(0, 0, 6, '#e8352a') + kreis(12, 2, 6, '#e8352a')) + zzz(196, 66), 'Ein Händler schläft hinter seinem Stand'),
     }),
     () => ({
       titel: 'Möwe klaut Brot!',
       text: 'Großer Andrang am Marktstand! Nur Möwe Gisela wollte nicht bezahlen und ist mit einem Brot davongeflogen. Der Händler ruft: „Halt, das kostet was!“',
-      bild: foto(hintergrund('markt') + setze(110, 150, 1.0, haendler({ haende: [[-22, -40], [26, -92]], mund: 'o', augen: 'gross' })) + setze(110, 186, 1.2, stand('#2f8fe0')) +
+      bild: foto(hintergrund('markt') + setze(110, 162, 1.0, haendler({ haende: [[-22, -40], [26, -92]], mund: 'o', augen: 'gross' })) + setze(110, 186, 1.2, stand('#2f8fe0')) +
         setze(236, 66, 1.5, moewe({ fliegt: true })) + setze(278, 78, 0.9, brot(), false, 20) + tempo(200, 58, 26) + schrift(60, 52, 'HALT!', 22, '#ffd23f', -8), 'Eine Möwe fliegt mit einem Brot davon'),
     }),
   ],
@@ -286,7 +286,7 @@ export const VORLAGEN = {
       titel: 'Schaf trinkt Kaffee',
       text: `Ein Kaffee vom Markt, und man muss eine Nacht nicht schlafen! Schaf Wolke hat heimlich einen Schluck genommen und ist seitdem HELLWACH. ${d.name} hat es beim Schäfchenzählen erwischt.`,
       bild: foto2('wiese', d,
-        setze(150, 172, 1.7, schaf({ augen: 'gross' })) + setze(222, 150, 1.4, tasse()) +
+        setze(150, 172, 1.7, schaf({ augen: 'gross' })) + setze(262, 176, 1.4, tasse()) +
         linie('M84 120l-6 4 6 4-6 4M84 150l-6 4 6 4-6 4M214 96l6 4-6 4 6 4', '#fff', 3) + schrift(150, 54, 'HELLWACH!', 26, '#ffd23f', -4), 'Ein Schaf mit riesigen Augen neben einer Kaffeetasse'),
     }),
   ],
@@ -329,12 +329,12 @@ export const FUELLER = {
     titel: 'Drachen hebt Schaf hoch!',
     text: 'Bei Etiennes Drachen war der Wind so stark, dass Schaf Wolke kurz mitgeflogen ist. Es fand das super und will morgen wieder.',
     bild: foto2('wiese', d, setze(80, 188, 1.05, kind(d.m, { haende: [[-20, -40], [26, -90]], mund: 'grinsen' })) + linie('M106 96Q170 70 228 50', '#fff', 2) +
-      setze(236, 44, 1.1, drachen()) + setze(236, 142, 0.85, schaf({ augen: 'gross', mund: 'o' })) + linie('M236 110v-20', RAND_LINIE, 2), 'Ein Drachen zieht ein Schaf in die Luft'),
+      setze(236, 44, 1.1, drachen()) + setze(224, 136, 0.85, schaf({ augen: 'gross', mund: 'o' })) + tempo(196, 112, 20) + schrift(290, 140, 'HUI!', 18, '#ffd23f', 8), 'Ein Drachen zieht ein Schaf in die Luft'),
   }),
   joshi: (d) => ({
     titel: 'Pfannkuchen-Turm mit 12 Stück!',
     text: 'Joshi hat 12 Kokos-Pfannkuchen übereinander gestapelt. Der Turm hat nur 3 Sekunden gehalten – dann haben ihn alle zusammen aufgegessen.',
-    bild: foto2('strand', d, setze(150, 188, 1.1, kind(d.m, { haende: [[-24, -40], [24, -40]], mund: 'grinsen' })) + setze(150, 142, 1, pfannkuchen(12)) + schrift(240, 70, 'LECKER!', 22, '#ffd23f', 8), 'Joshi trägt einen hohen Pfannkuchen-Turm'),
+    bild: foto2('strand', d, setze(120, 188, 1.1, kind(d.m, { haende: [[-24, -40], [38, -44]], mund: 'grinsen' })) + setze(186, 142, 1, pfannkuchen(12)) + schrift(240, 70, 'LECKER!', 22, '#ffd23f', 8), 'Joshi trägt einen hohen Pfannkuchen-Turm'),
   }),
   max: (d) => ({
     titel: 'Max auf der krummsten Palme',

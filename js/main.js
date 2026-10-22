@@ -42,6 +42,7 @@ import { Ballon } from './ballon.js';
 import { Bewohner } from './bewohner.js';
 import { Palmendorf } from './palmendorf.js';
 import { Markt } from './markt.js';
+import { Rallye } from './rallye.js';
 import { holzInDerNaehe, schlagen, gefaellteHolzStellen, ladeGefaellte } from './natur.js';
 
 const spielfeld = document.getElementById('spielfeld');
@@ -174,6 +175,7 @@ karte.beiInselEntdeckt = (name) => {
 // Das Palmendorf erscheint auf der Karte, sobald man die Palmeninsel entdeckt hat
 function zeigePalmendorf() {
   karte.punkt('palmendorf', { name: 'Palmendorf', bild: '🌴', x: palmendorf.mitte.x, z: palmendorf.mitte.z, sichtbar: true });
+  karte.punkt('rallye', { name: 'Rallye', bild: '🍄', x: rallye.standPos.x, z: rallye.standPos.z, sichtbar: true });
 }
 
 // ---------- Wochenmarkt im Palmendorf 🛒 (alle 3 Spieltage) ----------
@@ -202,6 +204,10 @@ const baseHalter = { base, get stall() { return this.base?.stall ?? null; } };
 const pferde = new Pferde(szene, hindernisse, { rucksack, meldung, musik, spieler, base: baseHalter, tageszeit, boote });
 ballon.spiel.boote = boote; // damit beim Rudern/Reiten "Steig erst ab" kommt
 ballon.spiel.pferde = pferde;
+
+// ---------- Zauberpilz-Rallye 🍄🚣 (am Markttag im Palmendorf) ----------
+const rallye = new Rallye(szene, hindernisse, { rucksack, meldung, musik, spieler, kamera, tageszeit, elternElement: spielfeld, boote, pferde, ereignisse: null });
+objekte.interaktionen.push(...rallye.interaktionen);
 objekte.interaktionen.push(...pferde.interaktionen);
 
 // ---------- Seilkanone (Klippen hochklettern) ----------
@@ -338,7 +344,7 @@ function bewegeKamera(dt, drehung, neigung) {
   const p = spieler.figur.position;
   // Beim Fliegen geht die Kamera weich etwas weiter weg
   flugZoom += ((spieler.fliegt ? 1 : 0) - flugZoom) * Math.min(1, dt * 2);
-  const abstand = EINSTELLUNGEN.kameraAbstand * (1 + 0.45 * flugZoom + 1.8 * ballon.kameraZoom) * tauchen.kameraAbstandFaktor;
+  const abstand = EINSTELLUNGEN.kameraAbstand * (1 + 0.45 * flugZoom + 1.8 * ballon.kameraZoom) * tauchen.kameraAbstandFaktor * rallye.kameraAbstandFaktor;
   const ziel = new THREE.Vector3(
     p.x + Math.sin(kameraWinkel) * Math.cos(kameraNeigung) * abstand,
     p.y + 1.5 + Math.sin(kameraNeigung) * abstand,
@@ -412,7 +418,7 @@ function spielSchleife() {
     const pausiert = fensterOffen() || schlaeft;
     if (!pausiert) {
       tageszeit.aktualisiere(dt);
-      if (eingabe.aktion && !seilkanone.beschaeftigt && !ballon.faehrt) {
+      if (eingabe.aktion && !seilkanone.beschaeftigt && !ballon.faehrt && !rallye.laeuft) {
         if (tauchen.taucht) tauchen.aktion();
         else if (spieler.fliegt) spieler.landen(); // in der Luft: Aktion = landen
         else if (objekte.aktuelle) objekte.aktion();
@@ -421,6 +427,7 @@ function spielSchleife() {
         else if (rucksack.inDerHand === 'seilkanone' && !boote.faehrt && !pferde.reitet) seilkanone.schiessen(spieler.figur.position, spieler.figur.rotation.y);
       }
       if (ballon.faehrt) { /* der Ballon bewegt die Figur selbst */ }
+      else if (rallye.laeuft) rallye.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (tauchen.taucht) tauchen.steuern(dt, eingabe.richtung, eingabe.springenGehalten, kameraWinkel);
       else if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (pferde.reitet) pferde.steuern(dt, eingabe.richtung, kameraWinkel);
@@ -431,6 +438,7 @@ function spielSchleife() {
       seilkanone.aktualisiere(dt);
       ballon.aktualisiere(dt);
     }
+    if (rallye.laeuft && !pausiert) kameraWinkel = rallye.kameraFolgen(dt, kameraWinkel);
     bewegeKamera(dt, eingabe.kameraDrehung, eingabe.kameraNeigung);
   } else {
     // Startbildschirm: Die Kamera dreht sich langsam um die Figur
@@ -455,8 +463,9 @@ function spielSchleife() {
   tauchen.aktualisiere(dt); // nach dem Himmel (Unterwasser-Nebel)
   wasser.aktualisiere(dt);
   boote.aktualisiere(dt);
+  rallye.aktualisiere(dt);
   // Beim Rudern hat man beide Hände an den Rudern – Werkzeuge weg
-  const hand = boote.faehrt || pferde.reitet || tauchen.taucht || ballon.faehrt ? null : rucksack.inDerHand;
+  const hand = boote.faehrt || rallye.laeuft || pferde.reitet || tauchen.taucht || ballon.faehrt ? null : rucksack.inDerHand;
   spieler.schaufel.visible = hand === 'schaufel';
   spieler.schwert.visible = hand === 'schwert';
   // (Das Fernrohr hält man nicht sichtbar in der Hand – man schaut nur hindurch)
@@ -474,7 +483,7 @@ function spielSchleife() {
   // Geräusche der Umgebung: Meer, Rascheln im Busch, Platschen im Wasser
   umgebungsUhr -= dt;
   if (umgebungsUhr <= 0) { umgebungsUhr = 0.25; wasserNah = wasserInDerNaehe(pos.x, pos.z); } // nur 4× pro Sekunde
-  const zuFuss = laeuft && !tauchen.taucht && !spieler.fliegt && !boote.faehrt && !pferde.reitet && !angeln.beschaeftigt;
+  const zuFuss = laeuft && !tauchen.taucht && !spieler.fliegt && !boote.faehrt && !rallye.laeuft && !pferde.reitet && !angeln.beschaeftigt;
   musik.umgebung({
     wasserNaehe: wasserNah,
     imGebuesch: zuFuss ? buschInDerNaehe(pos.x, pos.z) : 0,
@@ -491,7 +500,7 @@ function spielSchleife() {
   karte.aktualisiere(dt, pos, kameraWinkel, spieler.figur.rotation.y);
   // Aus der Luft kann man nichts anfassen
   let naechste = objekte.aktualisiere(dt, pos);
-  if (ballon.faehrt) naechste = null;
+  if (ballon.faehrt || rallye.laeuft) naechste = null;
   if (tageszeit.tag !== ballonTag) {
     ballonTag = tageszeit.tag;
     if (laeuft && ballon.morgensHeim()) setTimeout(() => meldung('🎈 Dein Ballon ist über Nacht heim zur Base geflogen.', 5), 6000);
@@ -567,6 +576,7 @@ function sammleSpielstand() {
     bewohner: bewohner.alsDaten(),
     palmendorf: palmendorf.alsDaten(),
     markt: markt.alsDaten(),
+    rallye: rallye.alsDaten(),
     finale: finale.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
@@ -593,6 +603,7 @@ function wendeSpielstandAn(s) {
     bewohner.ladeDaten(s.bewohner);
     palmendorf.ladeDaten(s.palmendorf || {});
     markt.ladeDaten(s.markt || {});
+    rallye.ladeDaten(s.rallye || {});
     if (karte.entdeckteInseln.includes('Palmeninsel')) zeigePalmendorf();
     zeigeAngelstellen();
     ballonTag = tageszeit.tag;
@@ -619,7 +630,7 @@ function wendeSpielstandAn(s) {
 let neuAnfangen = false; // wurde "Neues Spiel" gedrückt?
 function speichern() {
   if (neuAnfangen) return; // gerade wird alles gelöscht – nicht wieder speichern!
-  if (laeuft && !boote.faehrt && !pferde.reitet && !seilkanone.beschaeftigt && !ballon.faehrt && !tauchen.taucht) speichereSpielstand(sammleSpielstand());
+  if (laeuft && !boote.faehrt && !pferde.reitet && !seilkanone.beschaeftigt && !ballon.faehrt && !tauchen.taucht && !rallye.laeuft) speichereSpielstand(sammleSpielstand());
 }
 setInterval(speichern, 10000);
 // Entdeckte Boote auf der Karte dort zeigen, wo sie gerade liegen
@@ -697,7 +708,7 @@ spielSchleife();
 // Für automatische Tests: Spielzustand von außen ablesbar machen
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {

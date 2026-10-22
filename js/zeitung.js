@@ -129,7 +129,7 @@ export class Zeitung {
     // ---------- Briefkasten an die Base stellen ----------
     const e = E();
     const { base } = spiel;
-    const p = base?.setzeLokal ? base.setzeLokal(new THREE.Vector3(), e.briefkastenX ?? 3.6, e.briefkastenZ ?? 2.4) : new THREE.Vector3(8.6, 0, -1.5);
+    const p = base?.setzeLokal ? base.setzeLokal(new THREE.Vector3(), e.briefkastenX ?? 3.6, e.briefkastenZ ?? 1.3) : new THREE.Vector3(8.6, 0, -1.5);
     // Der Briefkasten schaut in dieselbe Richtung wie die Tür der Base
     let blick = -0.6;
     if (base?.setzeLokal) {

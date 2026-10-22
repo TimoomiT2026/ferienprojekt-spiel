@@ -444,7 +444,7 @@ export const EINSTELLUNGEN = {
   zeitung: {
     // Wo steht der Briefkasten? (von der Base aus: x = nach rechts, z = nach vorne zur Tür)
     briefkastenX: 3.6,
-    briefkastenZ: 2.4,
+    briefkastenZ: 1.3,
     // So nah muss man ran, damit "📬 Briefkasten" erscheint (Meter)
     radius: 2.0,
     // So viele "Fotos" kommen in jede Zeitung
@@ -520,7 +520,7 @@ export const EINSTELLUNGEN = {
     bremsen: 5, // so schnell wird es langsamer (Wasser bremst)
     drehTempo: 2.2, // so schnell dreht sich das Boot
     griff: 5, // so fest hält das Wasser das Boot in der Kurve. Kleiner = man rutscht früher raus
-    rutschBremse: 0.35, // wie viel Tempo das Rutschen kostet
+    rutschBremse: 0.5, // wie viel Tempo das Rutschen kostet
     rutschGriff: 0.5, // wenn das Boot einmal rutscht, hält das Wasser nur noch halb so gut (wie auf Eis!)
     rutschAb: 2.5, // ab so viel seitlichem Tempo (m/s) rutscht das Boot
     ausserhalbTempo: 0.45, // außerhalb der Bahn gibt es nicht mal mehr die Hälfte vom Tempo
@@ -544,7 +544,7 @@ export const EINSTELLUNGEN = {
     //  pilzChance = wie oft sie einen Zauberpilz erwischen
     //  spur       = wo sie am liebsten fahren (− links, + rechts)
     gegner: [
-      { name: 'Kapitän Kokosnuss', farbe: '#e5243b', fahne: '#ffffff', koennen: 0.97, tempo: 0.99, fehler: 0.12, pilzChance: 0.6, spur: -2.5,
+      { name: 'Kapitän Kokosnuss', farbe: '#e5243b', fahne: '#ffffff', koennen: 0.96, tempo: 0.97, fehler: 0.12, pilzChance: 0.6, spur: -2.5,
         figur: { shirt: '#e5243b', hose: '#efe2c0', haare: '#2a1d14', haut: '#b97a4e', hut: '#e8cf8a' } },
       { name: 'Flitze-Möwe', farbe: '#ffb02e', fahne: '#2f8fe0', koennen: 0.94, tempo: 0.97, fehler: 0.2, pilzChance: 0.45, spur: 2.5,
         figur: { shirt: '#ffffff', hose: '#2f8fe0', haare: '#c8a060', haut: '#f0c8a0', bart: false } },

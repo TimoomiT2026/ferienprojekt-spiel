@@ -67,14 +67,9 @@
   opacity: 0;
   pointer-events: none;
 }
-#rallye-countdown.sichtbar { animation: rallye-zahl 0.9s ease-out forwards; }
+#rallye-countdown.sichtbar { opacity: 1; }
 #rallye-countdown.los { color: #7ee04a; }
-@keyframes rallye-zahl {
-  0% { opacity: 0; transform: translate(-50%, -50%) scale(1.8); }
-  25% { opacity: 1; transform: translate(-50%, -50%) scale(1); }
-  80% { opacity: 1; transform: translate(-50%, -50%) scale(0.95); }
-  100% { opacity: 0; transform: translate(-50%, -50%) scale(0.8); }
-}
+/* (Das Aufploppen der Zahl macht js/rallye.js – passt so genau zur Spielzeit) */
 
 /* Hinweis unten in der Mitte: TURBO! / Aus der Bahn! */
 #rallye-hinweis {
