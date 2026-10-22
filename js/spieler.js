@@ -76,15 +76,18 @@ const GRAB_POSEN = [
   { t: 1.4, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0], beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.95, 0, 0] },
 ];
 
-// SCHWERT-SCHLAG (t von 0 bis 1 = ganze Schwungdauer)
+// SCHWERT-SCHLAG (t von 0 bis 1 = ganze Schwungdauer; der Treffer kommt bei ca. 0,5)
 const SCHWUNG_POSEN = [
-  { t: 0, huefte: [0, 0, 0], bauch: [0, 0, 0], brust: [0, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.1, 0, -0.1], ellbogenL: [-0.3, 0, 0], werkzeug: [2.17, 0, 0] },
-  // AUSHOLEN: Schwert hoch über die Schulter, Oberkörper dreht sich weg
-  { t: 0.32, weich: 'raus', huefte: [0, 0.2, 0], bauch: [-0.05, 0.25, 0], brust: [-0.1, 0.45, 0.05], schulterR: [-2.7, 0, 0.55], ellbogenR: [-1.1, 0, 0], schulterL: [-0.7, 0, -0.45], ellbogenL: [-0.7, 0, 0], werkzeug: [2.0, 0, 0] },
-  // DURCHZIEHEN: schnell schräg nach unten, der ganze Körper dreht mit
-  { t: 0.58, weich: 'rein', huefte: [0, -0.2, 0], bauch: [0.15, -0.3, 0], brust: [0.12, -0.5, -0.05], schulterR: [-0.75, 0, -0.45], ellbogenR: [-0.1, 0, 0], schulterL: [0.25, 0, -0.35], ellbogenL: [-0.5, 0, 0], werkzeug: [2.3, 0, 0] },
-  // ZURÜCK
-  { t: 1, huefte: [0, 0, 0], bauch: [0, 0, 0], brust: [0, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.1, 0, -0.1], ellbogenL: [-0.3, 0, 0], werkzeug: [2.17, 0, 0] },
+  // 0: Schwert normal in der Hand
+  { t: 0, huefte: [0, 0, 0], bauch: [0, 0, 0], brust: [0, 0, 0], hals: [0, 0, 0], kopf: [0, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.1, 0, -0.1], ellbogenL: [-0.3, 0, 0], werkzeug: [2.17, 0, 0] },
+  // 1: AUSHOLEN – Schwert hoch hinter die Schulter, Oberkörper dreht sich weg
+  { t: 0.3, weich: 'raus', huefte: [0, 0.15, 0], bauch: [-0.05, 0.25, 0], brust: [-0.08, 0.35, 0.05], hals: [0, -0.2, 0], kopf: [0, -0.2, 0], schulterR: [-0.81, 0.68, 0.07], ellbogenR: [-1.84, 0, 0], schulterL: [-0.7, 0, -0.5], ellbogenL: [-0.6, 0, 0], werkzeug: [2.28, -0.15, -0.33] },
+  // 2: TREFFER – schnell waagerecht nach vorne (hier trifft es den Baum)
+  { t: 0.5, weich: 'rein', huefte: [0, -0.1, 0], bauch: [0.1, -0.2, 0], brust: [0.08, -0.3, -0.05], hals: [0, 0.15, 0], kopf: [0.1, 0.15, 0], schulterR: [-0.87, 0.4, 0.2], ellbogenR: [-0.02, 0, 0], schulterL: [-0.2, 0, -0.6], ellbogenL: [-0.5, 0, 0], werkzeug: [2.19, 0.37, 0.37] },
+  // 3: DURCHZIEHEN – weiter zur anderen Seite, der ganze Körper dreht mit
+  { t: 0.62, weich: 'raus', huefte: [0, -0.2, 0], bauch: [0.12, -0.3, 0], brust: [0.12, -0.45, -0.05], hals: [0, 0.25, 0], kopf: [0.1, 0.2, 0], schulterR: [-0.73, -0.2, -0.08], ellbogenR: [0.05, 0, 0], schulterL: [0.3, 0, -0.4], ellbogenL: [-0.5, 0, 0], werkzeug: [2.5, 0.15, 0.5] },
+  // 4: ZURÜCK
+  { t: 1, huefte: [0, 0, 0], bauch: [0, 0, 0], brust: [0, 0, 0], hals: [0, 0, 0], kopf: [0, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.1, 0, -0.1], ellbogenL: [-0.3, 0, 0], werkzeug: [2.17, 0, 0] },
 ];
 
 // ---------- Klippen-Wind 🌬️ ----------

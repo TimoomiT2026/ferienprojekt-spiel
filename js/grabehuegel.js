@@ -29,7 +29,7 @@ const SORTEN = {
   },
   Palmeninsel: {
     seed: 23,
-    erdeDunkel: '#7a5a36', erde: '#a8845a', erdeHell: '#c8a877',
+    erdeDunkel: '#664828', erde: '#8f6b3e', erdeHell: '#ae8d5c',
     rand: '#9c9663',
     nass: '#5e4628',
     hoehe: 0.46,

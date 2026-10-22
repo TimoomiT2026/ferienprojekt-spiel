@@ -60,7 +60,7 @@ function holzMaserung() {
       // Wellige Linien entlang des Stiels – wie Jahresringe im Holz
       const welle = x + Math.sin(y * 0.05 + x * 0.2) * 3 + Math.sin(y * 0.013) * 6;
       const streifen = 0.5 + 0.5 * Math.sin(welle * 0.9) * Math.sin(welle * 0.31 + 1.7);
-      const hell = 0.78 + 0.22 * (1 - streifen * streifen);
+      const hell = 0.66 + 0.34 * (1 - streifen * streifen);
       const k = (y * 64 + x) * 4;
       bild.data[k] = 255 * hell;
       bild.data[k + 1] = 250 * hell;
@@ -94,7 +94,7 @@ function faerben(geo, farbe) {
 // (objekte.js dreht ihn dafür um 90° und hebt ihn 0,3 m an).
 export function baueSchaufel(inDerHand = false) {
   const holz = [], metall = [];
-  const stahl = new THREE.Color('#98a4b1'), schneide = new THREE.Color('#eef3f8'), dreck = new THREE.Color('#7a6a58');
+  const stahl = new THREE.Color('#7d8a98'), schneide = new THREE.Color('#f2f6fa'), dreck = new THREE.Color('#6e5a44');
 
   // --- Das Blatt: ein leicht gewölbtes Blech mit runder Spitze ---
   const breite = (v) => 0.118 * (0.93 + 0.07 * v) * (v < 0.38 ? Math.sqrt(1 - (1 - v / 0.38) ** 2) : 1);
