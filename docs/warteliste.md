@@ -51,6 +51,13 @@ Entscheidungen vom Game Designer (Tag 3):
 - [x] Das **Insadorium** finden (so heißt das geheime Material!): ein **roter Stein**, der so grell leuchtet, dass man fast nicht hinschauen kann. Er liegt **unter Wasser**. Wer ihn findet: Ziel erreicht! Konfetti über den ganzen Bildschirm + Dankeschön-Nachricht fürs Spielen, danach frei weiterspielen (Open World).
 
 **Etappe 4 · Wochenmarkt & Inselzeitung** (Idee vom Game Designer, nach Etappe 3)
+Antworten vom Game Designer (Tag 4):
+- Markt **alle 3 Spieltage**, und zwar **im Palmendorf**
+- Zauberpilz-Rallye: **Pilze auf der Strecke = Turbo**
+- Kaffee **35 Münzen**, Nacht-Limo **40 Münzen**
+- Die Limo-Nacht zählt **nicht** als „nicht geschlafen“
+- Zeitung: Bilder von Dingen, die **im Spiel wirklich passiert sind** (Claude denkt sich lustige Bilder dazu aus)
+
 - [ ] **Wochenmarkt** einmal pro Woche
   - [ ] Obst- & Gemüsestand: günstigere Angebote
   - [ ] Kaffeestand ☕: Kaffee = einmal nicht schlafen müssen (ca. 15 Münzen, Luxus)
@@ -61,6 +68,14 @@ Entscheidungen vom Game Designer (Tag 3):
   - [ ] Zu schnell in die Kurve → man treibt aus der Bahn und wird langsamer; nur in der Strecke volles Tempo
   - [ ] KI-Gegner: nicht schlecht, aber nicht unrealistisch gut
 - [ ] **Briefkasten an der Base** 📬: einmal pro Woche morgens die **Inselgruppen-Zeitung** – lustige Bilder von Menschen und Tieren der Insel in skurrilen Situationen, Angebote vom Wochenmarkt, Ergebnis und Sieger der letzten Challenge
+
+## Vor Etappe 4 (Feedback Tag 4)
+- [ ] Grabehügel hochwertiger (nicht mehr wie aus Version 1)
+- [ ] Eigene Spielegrafiken statt Apple-Emojis (Rucksack, Händler, Werkbank, Menüs)
+- [ ] Beim Angeln steht man IM Steg statt darauf (Bug)
+- [ ] Truhe an der Base: gibt es schon ab Stufe 3 (Hütte) – besser zeigen/erklären
+- [ ] Schöner Spaten, echte Grabe-Bewegung, schöneres Schwert, Bäume fällen mit Animation
+- Entschieden: Kokosnuss kann man nicht essen. Das Spiel heißt **Inselspiel**.
 
 ## Vor Etappe 3 (Feedback Tag 3)
 - [x] Tofu-Fische sind bunt statt weiß

@@ -246,6 +246,7 @@ function tutorialPruefen(dt, naechste, pos) {
     if (naechste === werkbank.interaktion) tutorial.neu('werkbank');
     else if (naechste === lagerfeuer.interaktion) tutorial.neu('lagerfeuer');
     else if (naechste === base.baseIA) tutorial.neu('base');
+    else if (naechste === base.truheIA) tutorial.neu('truhe');
     else if (naechste.text === 'Graben') tutorial.neu('grabestelle');
     else if (naechste.text === 'Handeln') tutorial.neu('haendler');
     else if (naechste.text === 'Schläft') tutorial.neu('haendlerSchlaeft');

@@ -55,6 +55,7 @@ export const ERKLAERUNGEN = {
   fernrohr: '🔭 Ein Fernrohr! In die Hand und „Durchschauen“. Von einem Hügel siehst du weiter.',
   schwert: '🗡️ Ein Schwert! In die Hand nehmen, vor einen Baum stellen und „Fällen“ drücken.',
   baum: '🌳 Ein Baum! Mit dem Schwert in der Hand kannst du ihn fällen. Das gibt Holz.',
+  truhe: '📦 Deine Truhe! Hier kannst du Sachen aufbewahren, damit dein Rucksack nicht voll wird. 20 Plätze!',
   insel: '🏝️ Eine neue Insel! Auf der Karte 🗺️ kannst du jetzt „Alle Inseln“ anschauen.',
   bewohner: '💬 Ein Inselbewohner! Sprich alle an – einer von ihnen hat eine Taucherbrille.',
   wertvolleMuenze: '🏅 Eine wertvolle Münze! Die kann man nicht verkaufen. Bring alle 3 zur Person mit der Taucherbrille.',

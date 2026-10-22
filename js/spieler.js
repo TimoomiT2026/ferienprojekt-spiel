@@ -86,6 +86,7 @@ export class Spieler {
     this.laufZeit = 0; // wo im Schritt-Takt sind wir gerade?
     this.grabZeit = 0;
     this.tempoJetzt = 0; // wie schnell er gerade wirklich läuft (geglättet)
+    this.plattformen = []; // Stege usw., auf denen man oben stehen kann
     this.uhr = 0; // für Atmen und Umschauen
     this.luft = 0; // 0 = am Boden, 1 = in der Luft (geglättet)
     this.figur.position.set(0, bodenHoehe(0, 4), 4);
@@ -459,7 +460,16 @@ export class Spieler {
     if (lebendig) this.spur.instanceMatrix.needsUpdate = true;
   }
 
+  // Stege und ähnliche Bretter, auf denen man stehen kann: { x, z, r, oben }
+  plattformBei(x, z) {
+    for (const p of this.plattformen) {
+      if ((x - p.x) ** 2 + (z - p.z) ** 2 < p.r * p.r) return p;
+    }
+    return null;
+  }
+
   kannStehen(x, z) {
+    if (this.plattformBei(x, z)) return !this.hindernisse.trifft(x, z, 0.4); // auf dem Steg darf man immer stehen
     // Nicht ins tiefe Wasser (Meer oder Lagune) – am flachen Rand darf man waten
     return bodenHoehe(x, z) > wasserHoeheBei(x, z) - 0.5 && !this.hindernisse.trifft(x, z, 0.4);
   }
@@ -526,7 +536,10 @@ export class Spieler {
     }
     this.geschwindigkeitY -= EINSTELLUNGEN.schwerkraft * dt;
     pos.y += this.geschwindigkeitY * dt;
-    const boden = Math.max(bodenHoehe(pos.x, pos.z), WASSER_HOEHE - 0.5);
+    let boden = Math.max(bodenHoehe(pos.x, pos.z), WASSER_HOEHE - 0.5);
+    // Auf einem Steg steht man OBEN auf den Brettern (nicht drin)
+    const brett = this.plattformBei(pos.x, pos.z);
+    if (brett && pos.y > brett.oben - 0.6) boden = Math.max(boden, brett.oben);
     if (pos.y <= boden) {
       pos.y = boden;
       this.geschwindigkeitY = 0;

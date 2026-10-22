@@ -352,6 +352,8 @@ export class Angeln {
       const sx = Math.sin(st.richtung), sz = Math.cos(st.richtung);
       q.setFromAxisAngle(new THREE.Vector3(0, 1, 0), st.richtung);
       this.stege.setMatrixAt(i, m.compose(st.steg, q, s.set(1, 1, 1)));
+      // Der Spieler soll OBEN auf dem Steg stehen, nicht mit den Beinen drin
+      this.spiel.spieler?.plattformen?.push({ x: st.steg.x, z: st.steg.z, r: 1.3, oben: st.steg.y + 0.08 });
       // Kurze Pfähle stecken unter dem Steg im Boden
       for (let k = 0; k < 3; k++) {
         const w = st.richtung + (k - 1) * 1.6;
