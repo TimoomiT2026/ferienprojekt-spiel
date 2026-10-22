@@ -57,7 +57,7 @@ function poseZurZeit(schluessel, t) {
 // GRABEN mit dem Spaten (Zeiten für 1,4 Sekunden – wird auf grabDauer umgerechnet)
 const GRAB_POSEN = [
   // 0: Spaten in der Hand, gleich geht es los
-  { t: 0, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0], beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.95, 0, 0] },
+  { t: 0, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0], beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.9, 0, 0] },
   // 1: ANSETZEN – Spaten vor dem Fuß auf den Boden stellen, linke Hand an den Stiel
   { t: 0.22, huefte: [0, 0, 0], bauch: [0.18, 0, 0], brust: [0.12, -0.15, 0], hals: [0, 0, 0], kopf: [0.25, 0, 0], schulterR: [-0.18, -0.17, 0.06], ellbogenR: [-1.36, 0, 0], schulterL: [-0.69, 0, 0.6], ellbogenL: [-0.36, 0, 0], beinL: [0.05, 0, -0.05], knieL: 0.1, beinR: [0, 0, 0.05], knieR: 0.1, werkzeug: [1.4, -1.15, 0.17] },
   // 2: FUSS HOCH auf die Tritt-Kante
@@ -73,7 +73,7 @@ const GRAB_POSEN = [
   // 7: NACHSCHWINGEN
   { t: 1.1, weich: 'raus', huefte: [0, 0.25, 0], bauch: [0.1, 0.35, 0], brust: [0.05, 0.5, -0.08], hals: [0, 0, 0], kopf: [0.1, -0.25, 0], schulterR: [0.18, -0.38, 0.17], ellbogenR: [-1.2, 0, 0], schulterL: [-0.64, 0.22, 0.59], ellbogenL: [-0.05, 0, 0], beinL: [-0.1, 0, -0.05], knieL: 0.25, beinR: [0, 0, 0.08], knieR: 0.1, werkzeug: [-0.28, -0.49, 0.25] },
   // 8: ZURÜCK in die normale Haltung
-  { t: 1.4, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0], beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.95, 0, 0] },
+  { t: 1.4, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0], beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.9, 0, 0] },
 ];
 
 // SCHWERT-SCHLAG (t von 0 bis 1 = ganze Schwungdauer; der Treffer kommt bei ca. 0,5)
@@ -113,10 +113,10 @@ export class Spieler {
     // Die Hand hält den Stiel oben am Griff – das Schaufelblatt zeigt nach unten
     this.schaufel = new THREE.Group();
     const schaufelModell = baueSchaufel(true);
-    schaufelModell.position.y = -0.97;
+    schaufelModell.position.y = -0.93;
     this.schaufel.add(schaufelModell);
     // (die Hand ist etwas nach vorne geknickt, darum hier zurückdrehen)
-    this.schaufel.rotation.x = 0.95;
+    this.schaufel.rotation.x = 0.9;
     this.schaufel.visible = false;
     this.handR.add(this.schaufel);
 
@@ -767,7 +767,7 @@ export class Spieler {
     }
 
     // Werkzeug-Haltung im Handgelenk (normal)
-    this.schaufel.rotation.set(0.95, 0, 0);
+    this.schaufel.rotation.set(0.9, 0, 0);
     this.schwert.rotation.set(2.17, 0, 0);
 
     // ---- Schwert-Schlag: ausholen → durchziehen mit Körperdrehung → zurück ----

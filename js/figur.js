@@ -107,8 +107,8 @@ export function baueSchaufel(inDerHand = false) {
     const farbe = stahl.clone().lerp(schneide, rand * 0.85).lerp(dreck, weich(0.3, 0.0, v) * 0.25 * (1 - rand));
     return [woelbung(u, v) + seite * dicke, -0.3 + v * 0.3, u * w, farbe];
   };
-  metall.push(gitterFlaeche(12, 10, blattPunkt(1)));
-  metall.push(gitterFlaeche(12, 10, blattPunkt(-1), true));
+  metall.push(gitterFlaeche(10, 9, blattPunkt(1)));
+  metall.push(gitterFlaeche(10, 9, blattPunkt(-1), true));
 
   // --- Tritt-Kante oben am Blatt (da drückt man mit dem Fuß drauf) ---
   const tritt = [];
@@ -116,30 +116,30 @@ export function baueSchaufel(inDerHand = false) {
     const u = (i / 10) * 2 - 1;
     tritt.push(new THREE.Vector3(woelbung(u, 1) - 0.01, 0.004 - Math.abs(u) * 0.006, u * breite(1)));
   }
-  metall.push(faerben(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tritt), 12, 0.012, 6), () => '#b4bec9'));
-  for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.012, 6, 4), '#b4bec9', [woelbung(s, 1) - 0.01, -0.002, s * breite(1)]));
+  metall.push(faerben(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(tritt), 10, 0.012, 5), () => '#b4bec9'));
+  for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.012, 5, 3), '#b4bec9', [woelbung(s, 1) - 0.01, -0.002, s * breite(1)]));
 
   // --- Die Tülle: das runde Metallrohr, in dem der Stiel steckt ---
-  const tuelle = dreh([[0.004, -0.14], [0.02, -0.08], [0.03, -0.015], [0.028, 0.13], [0.034, 0.142], [0.034, 0.162], [0.027, 0.17]], 12);
+  const tuelle = dreh([[0.004, -0.14], [0.02, -0.08], [0.03, -0.015], [0.028, 0.13], [0.034, 0.142], [0.034, 0.162], [0.027, 0.17]], 10);
   metall.push(teil(tuelle, '#8d99a6', [-0.004, 0, 0], [0.75, 1, 1]));
   // Nieten (kleine runde Knöpfe) vorne und hinten
   for (const y of [0.035, 0.1]) {
-    for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.008, 6, 4), '#5d6670', [-0.004 + s * 0.022, y, 0]));
+    for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.008, 5, 3), '#5d6670', [-0.004 + s * 0.022, y, 0]));
   }
   // Metallring oben am Stiel (unter dem Griff)
   metall.push(teil(new THREE.CylinderGeometry(0.03, 0.03, 0.045, 12), '#8d99a6', [0, 1.0, 0]));
-  for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.007, 6, 4), '#5d6670', [s * 0.029, 1.0, 0]));
+  for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.007, 5, 3), '#5d6670', [s * 0.029, 1.0, 0]));
 
   // --- Der Holzstiel: unten etwas dunkler, oben vom Anfassen glatt und heller ---
-  const stiel = new THREE.CylinderGeometry(0.025, 0.028, 0.84, 10, 8);
+  const stiel = new THREE.CylinderGeometry(0.025, 0.028, 0.84, 10, 3);
   stiel.translate(0, 0.585, 0);
   holz.push(faerben(stiel, (x, y) => new THREE.Color('#8a5a30').lerp(new THREE.Color('#c48d55'), weich(0.2, 0.95, y))));
 
   // --- Der D-Griff: ein runder Bügel mit dickem Querholz oben ---
-  const buegel = new THREE.TorusGeometry(0.06, 0.013, 6, 18);
+  const buegel = new THREE.TorusGeometry(0.06, 0.013, 5, 14);
   buegel.rotateY(Math.PI / 2); // Bügel steht quer, wie das Blatt
   holz.push(teil(buegel, '#b98450', [0, 1.085, 0], [1, 1.2, 1]));
-  const quer = new THREE.CapsuleGeometry(0.02, 0.1, 4, 10);
+  const quer = new THREE.CapsuleGeometry(0.02, 0.1, 3, 8);
   quer.rotateX(Math.PI / 2);
   holz.push(teil(quer, '#a87444', [0, 1.157, 0]));
 
@@ -180,17 +180,17 @@ export function baueSchwert() {
     let farbe = stahl.clone().lerp(hell, weich(0.6, 0.72, a)).lerp(kehle, rinne * 0.9);
     return [u * halbBreite(v), unten + v * laenge, seite * dicke, farbe];
   };
-  metall.push(gitterFlaeche(12, 18, klingenPunkt(1)));
-  metall.push(gitterFlaeche(12, 18, klingenPunkt(-1), true));
+  metall.push(gitterFlaeche(12, 13, klingenPunkt(1)));
+  metall.push(gitterFlaeche(12, 13, klingenPunkt(-1), true));
 
   // --- Parierstange: mit dicken, runden Kugel-Enden ---
   const gold = '#d6aa45', goldDunkel = '#a97e2c';
-  metall.push(teil(new THREE.CapsuleGeometry(0.024, 0.3, 4, 10), gold, [0, 0.175, 0], [1, 1, 0.85], [0, 0, Math.PI / 2]));
-  for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.04, 12, 8), gold, [s * 0.19, 0.185, 0]));
-  metall.push(teil(new THREE.SphereGeometry(0.05, 12, 8), goldDunkel, [0, 0.18, 0], [1.1, 0.75, 0.7]));
+  metall.push(teil(new THREE.CapsuleGeometry(0.024, 0.3, 3, 8), gold, [0, 0.175, 0], [1, 1, 0.85], [0, 0, Math.PI / 2]));
+  for (const s of [-1, 1]) metall.push(teil(new THREE.SphereGeometry(0.04, 10, 6), gold, [s * 0.19, 0.185, 0]));
+  metall.push(teil(new THREE.SphereGeometry(0.05, 10, 6), goldDunkel, [0, 0.18, 0], [1.1, 0.75, 0.7]));
 
   // --- Griff: mit Leder umwickelt (die Wülste gehen schräg rundherum) ---
-  const griff = new THREE.CylinderGeometry(0.03, 0.033, 0.27, 12, 16, true);
+  const griff = new THREE.CylinderGeometry(0.03, 0.033, 0.27, 10, 12, true);
   const p = griff.attributes.position;
   const wickel = [];
   for (let i = 0; i < p.count; i++) {
@@ -206,13 +206,13 @@ export function baueSchwert() {
   let n = 0;
   leder.push(faerben(griff, () => new THREE.Color('#3e2414').lerp(new THREE.Color('#7a4a28'), wickel[n++])));
   // Goldringe an beiden Enden des Griffs
-  for (const y of [-0.115, 0.152]) metall.push(teil(new THREE.TorusGeometry(0.034, 0.009, 6, 14), gold, [0, y, 0], [1, 1, 1], [Math.PI / 2, 0, 0]));
+  for (const y of [-0.115, 0.152]) metall.push(teil(new THREE.TorusGeometry(0.034, 0.009, 5, 12), gold, [0, y, 0], [1, 1, 1], [Math.PI / 2, 0, 0]));
 
   // --- Knauf: eine runde Kugel mit rotem Edelstein auf beiden Seiten ---
-  metall.push(teil(new THREE.SphereGeometry(0.052, 14, 10), gold, [0, -0.16, 0], [1, 1, 0.85]));
+  metall.push(teil(new THREE.SphereGeometry(0.052, 12, 8), gold, [0, -0.16, 0], [1, 1, 0.85]));
   for (const s of [-1, 1]) {
-    metall.push(teil(new THREE.SphereGeometry(0.024, 10, 8), '#e8243e', [0, -0.16, s * 0.04], [1, 1, 0.55]));
-    metall.push(teil(new THREE.SphereGeometry(0.006, 6, 4), '#ffffff', [0.008, -0.152, s * 0.053])); // Glanzpunkt
+    metall.push(teil(new THREE.SphereGeometry(0.024, 8, 6), '#e8243e', [0, -0.16, s * 0.04], [1, 1, 0.55]));
+    metall.push(teil(new THREE.SphereGeometry(0.006, 5, 3), '#ffffff', [0.008, -0.152, s * 0.053])); // Glanzpunkt
   }
 
   const schwert = new THREE.Group();

@@ -20,7 +20,7 @@ import { baueFigur } from './figur.js';
 import { SCHAUFEL_BILD } from './rucksack.js';
 import { knopf } from './steuerung.js';
 import { zufallMitSeed } from './rauschen.js';
-import { grabeHuegelTeile } from './grabehuegel.js';
+import { grabeHuegelTeile, huegelLage } from './grabehuegel.js';
 
 const GRAD = Math.PI / 180;
 const MUENZE = 'wertvolleMuenze';
@@ -318,7 +318,9 @@ export class Bewohner {
       const form = grabeHuegelTeile(e.insel).huegel;
       const erde = new THREE.Mesh(form.geometrie, form.material);
       erde.scale.set(1.15, 1.0, 1.15);
-      erde.rotation.y = i * 2.3;
+      const lage = huegelLage(x, z, i * 2.3); // so schräg wie der Boden
+      erde.quaternion.copy(lage.drehung);
+      erde.position.y = lage.ort.y - y;
       erde.receiveShadow = true;
       const muenze = new THREE.Mesh(muenzGeo, goldMat); // guckt ein bisschen aus der Erde raus
       muenze.position.set(0.15, 0.55, 0);

@@ -30,7 +30,7 @@ const SORTEN = {
   Palmeninsel: {
     seed: 23,
     erdeDunkel: '#664828', erde: '#8f6b3e', erdeHell: '#ae8d5c',
-    rand: '#9c9663',
+    rand: '#86894b',
     nass: '#5e4628',
     hoehe: 0.46,
     steine: 2, steinGroesse: 0.06, steinFarben: ['#b0a898', '#8f877a'],
@@ -239,7 +239,7 @@ function beiwerk(S, zufall, teile, hoeheFn, { mitWurzeln = true, randStart = 1.0
     const halme = 5 + Math.floor(zufall() * 4);
     for (let k = 0; k < halme; k++) {
       const hoch = 0.16 + zufall() * 0.18;
-      const g = new THREE.ConeGeometry(0.022, hoch, 4, 2, true);
+      const g = new THREE.ConeGeometry(0.022, hoch, 4, 1, true);
       g.translate(0, hoch / 2, 0);
       g.scale(1, 1, 0.35); // flach wie ein Grashalm
       // Halm biegt sich ein bisschen nach außen
@@ -322,7 +322,7 @@ export function grabeHuegelTeile(insel) {
   // --- Der volle Hügel ---
   const dunkel = farbe(S.erdeDunkel), mittel = farbe(S.erde), hell = farbe(S.erdeHell), rand = farbe(S.rand);
   const hoeheH = (x, z) => erdhaufen(S, x, z);
-  const haufen = scheibe(13, 40, 1.42, hoeheH, (x, z, { q, spur, auswurf }) => {
+  const haufen = scheibe(13, 36, 1.42, hoeheH, (x, z, { q, spur, auswurf }) => {
     const flecken = fbm(x * 3.1 + 7, z * 3.1, 3, S.seed + 1);
     // oben trockener und heller, unten dunkler
     let c = zwischen(mittel, hell, (flecken - 0.38) * 2.2 * (1 - 0.6 * q));
