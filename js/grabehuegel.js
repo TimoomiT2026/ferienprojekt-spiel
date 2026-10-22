@@ -12,7 +12,7 @@ import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { rauschen, fbm, zufallMitSeed } from './rauschen.js';
 import { textur } from './texturen.js';
-import { bodenHoehe } from './gelaende.js';
+import { gitterWerte } from './gelaende.js';
 
 // ---------- Die Erd-Sorten (Farben und wie viel Kram drauf liegt) ----------
 const SORTEN = {
@@ -366,16 +366,38 @@ export function grabeHuegelTeile(insel) {
 }
 
 // ---------- Hügel so hinlegen, wie der Boden schräg ist ----------
+// Wir fragen das echte Boden-Netz an vielen Punkten rund um die Stelle, legen eine
+// schräge "Platte" hindurch und heben den Hügel so weit an, dass der Boden nicht
+// durch die Mulde guckt. (Erst aufrufen, wenn das Gelände gebaut ist.)
 const OBEN = new THREE.Vector3(0, 1, 0);
-export function huegelLage(x, z, drehung, kipp = 0.9) {
-  const d = 0.8;
-  const n = new THREE.Vector3(
-    bodenHoehe(x - d, z) - bodenHoehe(x + d, z), 2 * d,
-    bodenHoehe(x, z - d) - bodenHoehe(x, z + d)
-  ).normalize();
-  n.lerp(OBEN, 1 - kipp).normalize();
-  const schraeg = new THREE.Quaternion().setFromUnitVectors(OBEN, n);
-  return schraeg.multiply(new THREE.Quaternion().setFromAxisAngle(OBEN, drehung));
+export function huegelLage(x, z, drehung) {
+  const punkte = [];
+  for (const r of [0, 0.35, 0.7, 1.05, 1.4]) {
+    const ecken = r === 0 ? 1 : 10;
+    for (let k = 0; k < ecken; k++) {
+      const a = (k / ecken) * Math.PI * 2;
+      const dx = Math.cos(a) * r, dz = Math.sin(a) * r;
+      punkte.push({ dx, dz, r, h: gitterWerte(x + dx, z + dz).hoehe });
+    }
+  }
+  // Platte: h = mitte + steigungX * dx + steigungZ * dz
+  let summe = 0, sx = 0, sxx = 0, sz = 0, szz = 0;
+  for (const p of punkte) {
+    summe += p.h;
+    sx += p.h * p.dx; sxx += p.dx * p.dx;
+    sz += p.h * p.dz; szz += p.dz * p.dz;
+  }
+  const mitte = summe / punkte.length, steigungX = sx / sxx, steigungZ = sz / szz;
+  // Wo ragt der Boden in der Mitte über die Platte?
+  let anheben = 0;
+  for (const p of punkte) {
+    if (p.r > 0.75) continue;
+    anheben = Math.max(anheben, p.h - (mitte + steigungX * p.dx + steigungZ * p.dz));
+  }
+  const n = new THREE.Vector3(-steigungX, 1, -steigungZ).normalize();
+  const lage = new THREE.Quaternion().setFromUnitVectors(OBEN, n);
+  lage.multiply(new THREE.Quaternion().setFromAxisAngle(OBEN, drehung));
+  return { ort: new THREE.Vector3(x, mitte + Math.min(anheben, 0.35), z), drehung: lage };
 }
 
 // ---------- Erdbrocken, die beim Graben fliegen ----------

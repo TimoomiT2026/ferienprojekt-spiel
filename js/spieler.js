@@ -57,29 +57,23 @@ function poseZurZeit(schluessel, t) {
 // GRABEN mit dem Spaten (Zeiten für 1,4 Sekunden – wird auf grabDauer umgerechnet)
 const GRAB_POSEN = [
   // 0: Spaten in der Hand, gleich geht es los
-  { t: 0, bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.5, 0, 0.1], ellbogenR: [-0.6, 0, 0], schulterL: [-0.3, 0, -0.1], ellbogenL: [-0.5, 0, 0],
-    beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, huefte: [0, 0, 0], werkzeug: [0.95, 0, 0] },
-  // 1: ANSETZEN – Spaten senkrecht vor sich auf den Boden stellen
-  { t: 0.22, bauch: [0.18, 0, 0], brust: [0.12, -0.15, 0], kopf: [0.25, 0, 0], schulterR: [-0.75, 0, 0.0], ellbogenR: [-0.75, 0, 0], schulterL: [-0.95, 0, 0.35], ellbogenL: [-0.9, 0, 0],
-    beinL: [0.05, 0, -0.05], knieL: 0.1, beinR: [0, 0, 0.05], knieR: 0.1, werkzeug: [1.45, 0, 0.1] },
+  { t: 0, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0], beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.95, 0, 0] },
+  // 1: ANSETZEN – Spaten vor dem Fuß auf den Boden stellen, linke Hand an den Stiel
+  { t: 0.22, huefte: [0, 0, 0], bauch: [0.18, 0, 0], brust: [0.12, -0.15, 0], hals: [0, 0, 0], kopf: [0.25, 0, 0], schulterR: [-0.18, -0.17, 0.06], ellbogenR: [-1.36, 0, 0], schulterL: [-0.69, 0, 0.6], ellbogenL: [-0.36, 0, 0], beinL: [0.05, 0, -0.05], knieL: 0.1, beinR: [0, 0, 0.05], knieR: 0.1, werkzeug: [1.4, -1.15, 0.17] },
   // 2: FUSS HOCH auf die Tritt-Kante
-  { t: 0.42, bauch: [0.12, 0, 0], brust: [0.08, -0.15, 0], kopf: [0.3, 0, 0], schulterR: [-0.75, 0, 0.0], ellbogenR: [-0.75, 0, 0], schulterL: [-0.95, 0, 0.35], ellbogenL: [-0.9, 0, 0],
-    beinL: [0.05, 0, -0.05], knieL: 0.15, beinR: [-0.95, 0, 0.12], knieR: 1.25, werkzeug: [1.45, 0, 0.1] },
-  // 3: REINTRETEN – Gewicht drauf, der ganze Körper geht runter
-  { t: 0.6, weich: 'rein', bauch: [0.25, 0, 0], brust: [0.12, -0.12, 0], kopf: [0.3, 0, 0], schulterR: [-0.55, 0, 0.0], ellbogenR: [-0.85, 0, 0], schulterL: [-0.8, 0, 0.35], ellbogenL: [-0.95, 0, 0],
-    beinL: [-0.3, 0, -0.05], knieL: 0.75, beinR: [-0.7, 0, 0.12], knieR: 0.8, werkzeug: [1.5, 0, 0.1] },
-  // 4: HEBELN – Fuß runter, Stiel nach hinten ziehen, Körper lehnt sich zurück
-  { t: 0.78, bauch: [-0.05, 0, 0], brust: [-0.08, -0.05, 0], kopf: [0.2, 0, 0], schulterR: [-0.2, 0, 0.15], ellbogenR: [-1.3, 0, 0], schulterL: [-0.6, 0, 0.25], ellbogenL: [-1.2, 0, 0],
-    beinL: [-0.2, 0, -0.05], knieL: 0.45, beinR: [-0.05, 0, 0.05], knieR: 0.35, werkzeug: [0.9, 0, 0.1] },
-  // 5: HOCHHEBEN und zur Seite AUSWERFEN (schnell!) – jetzt fliegt die Erde
-  { t: 0.94, weich: 'rein', huefte: [0, 0.25, 0], bauch: [0.1, 0.3, 0], brust: [0.05, 0.55, -0.1], kopf: [0.1, -0.4, 0], schulterR: [-1.35, 0, 0.45], ellbogenR: [-0.35, 0, 0], schulterL: [-1.2, 0, 0.05], ellbogenL: [-0.5, 0, 0],
-    beinL: [-0.05, 0, -0.05], knieL: 0.15, beinR: [0, 0, 0.08], knieR: 0.1, werkzeug: [1.2, 0, 0.9] },
-  // 6: NACHSCHWINGEN
-  { t: 1.08, weich: 'raus', huefte: [0, 0.3, 0], bauch: [0.05, 0.35, 0], brust: [0.0, 0.6, -0.12], kopf: [0.1, -0.45, 0], schulterR: [-1.2, 0, 0.5], ellbogenR: [-0.4, 0, 0], schulterL: [-1.0, 0, 0.0], ellbogenL: [-0.6, 0, 0],
-    beinL: [-0.05, 0, -0.05], knieL: 0.12, beinR: [0, 0, 0.08], knieR: 0.1, werkzeug: [1.2, 0, 1.0] },
-  // 7: ZURÜCK in die normale Haltung
-  { t: 1.4, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.4, 0, 0.1], ellbogenR: [-0.7, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0],
-    beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.95, 0, 0] },
+  { t: 0.42, huefte: [0, 0, 0], bauch: [0.12, 0, 0], brust: [0.08, -0.15, 0], hals: [0, 0, 0], kopf: [0.3, 0, 0], schulterR: [-0.03, 0.04, 0], ellbogenR: [-1.43, 0, 0], schulterL: [-0.74, 0, 0.71], ellbogenL: [-0.07, 0, 0], beinL: [0.05, 0, -0.05], knieL: 0.15, beinR: [-1.12, 0, 0.15], knieR: 1.35, werkzeug: [1.37, -1.26, 0.14] },
+  // 3: REINTRETEN – Gewicht drauf, der Körper geht runter, der Spaten rutscht in die Erde
+  { t: 0.58, weich: 'rein', huefte: [0, 0, 0], bauch: [0.25, 0, 0], brust: [0.12, -0.12, 0], hals: [0, 0, 0], kopf: [0.3, 0, 0], schulterR: [-0.07, -0.05, 0.01], ellbogenR: [-1.33, 0, 0], schulterL: [-0.75, 0, 0.61], ellbogenL: [0.03, 0, 0], beinL: [-0.3, 0, -0.05], knieL: 0.75, beinR: [-0.8, 0, 0.11], knieR: 0.82, werkzeug: [1.1, -0.98, 0.17] },
+  // 4: HEBELN – Fuß runter, Stiel zu sich ziehen, Körper lehnt sich zurück
+  { t: 0.74, huefte: [0, 0, 0], bauch: [-0.05, 0, 0], brust: [-0.08, -0.05, 0], hals: [0, 0, 0], kopf: [0.2, 0, 0], schulterR: [0.62, -0.07, -0.02], ellbogenR: [-1.16, 0, 0], schulterL: [0, 0, 0.58], ellbogenL: [-0.07, 0, 0], beinL: [-0.2, 0, -0.05], knieL: 0.45, beinR: [-0.05, 0, 0.05], knieR: 0.35, werkzeug: [0.52, -1.24, 0.23] },
+  // 5: HOCHHEBEN – in die Knie, Spaten mit der Erde waagerecht hoch
+  { t: 0.86, huefte: [0, 0, 0], bauch: [0.3, 0.15, 0], brust: [0.1, 0.2, 0], hals: [0, 0, 0], kopf: [0.15, -0.1, 0], schulterR: [-0.17, -0.16, -0.19], ellbogenR: [-0.8, 0, 0], schulterL: [-0.59, -0.06, 0.39], ellbogenL: [0.01, 0, 0], beinL: [-0.45, 0, -0.05], knieL: 0.85, beinR: [-0.4, 0, 0.05], knieR: 0.8, werkzeug: [-0.4, -1.51, 0.43] },
+  // 6: AUSWERFEN – schnell zur Seite drehen und das Blatt kippen: die Erde fliegt!
+  { t: 0.98, weich: 'rein', huefte: [0, 0.2, 0], bauch: [0.1, 0.3, 0], brust: [0.05, 0.4, -0.08], hals: [0, 0, 0], kopf: [0.1, -0.2, 0], schulterR: [0.18, -0.38, 0.17], ellbogenR: [-1.2, 0, 0], schulterL: [-0.64, 0.22, 0.59], ellbogenL: [-0.05, 0, 0], beinL: [-0.1, 0, -0.05], knieL: 0.25, beinR: [0, 0, 0.08], knieR: 0.1, werkzeug: [-0.28, -0.49, 0.25] },
+  // 7: NACHSCHWINGEN
+  { t: 1.1, weich: 'raus', huefte: [0, 0.25, 0], bauch: [0.1, 0.35, 0], brust: [0.05, 0.5, -0.08], hals: [0, 0, 0], kopf: [0.1, -0.25, 0], schulterR: [0.18, -0.38, 0.17], ellbogenR: [-1.2, 0, 0], schulterL: [-0.64, 0.22, 0.59], ellbogenL: [-0.05, 0, 0], beinL: [-0.1, 0, -0.05], knieL: 0.25, beinR: [0, 0, 0.08], knieR: 0.1, werkzeug: [-0.28, -0.49, 0.25] },
+  // 8: ZURÜCK in die normale Haltung
+  { t: 1.4, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0], beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.95, 0, 0] },
 ];
 
 // SCHWERT-SCHLAG (t von 0 bis 1 = ganze Schwungdauer)

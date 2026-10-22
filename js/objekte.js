@@ -111,7 +111,7 @@ export class Objekte {
     // Jeder Hügel liegt so schräg wie der Boden und ist ein bisschen anders gedreht und groß
     this.huegelLagen = this.grabestellen.map((s, i) => {
       const z = zufallMitSeed(1000 + i * 7);
-      return { drehung: huegelLage(s.pos.x, s.pos.z, z() * Math.PI * 2), groesse: 0.92 + z() * 0.22, breit: 0.9 + z() * 0.2 };
+      return { ...huegelLage(s.pos.x, s.pos.z, z() * Math.PI * 2), groesse: 0.92 + z() * 0.22, breit: 0.9 + z() * 0.2 };
     });
     // Funkeln: kleine Sterne über vollen Hügeln, damit man sie findet
     this.glitzer = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), funkelMaterial(), this.grabestellen.length * 4);
@@ -191,12 +191,12 @@ export class Objekte {
         // Nachwachsen (nur fürs Aussehen): 0 = gerade ausgegraben, fast 1 = bald wieder voll
         const wachsen = s.da ? 1 : Math.min(0.95, Math.max(0, (heute - s.leerSeit) / tage));
         const h = s.da ? 1 : wachsen > 0 ? 0.35 + 0.4 * wachsen : 0;
-        m.compose(s.pos, L.drehung, gr.set(L.groesse * L.breit * h, L.groesse * h * (s.da ? 1 : 0.7), (L.groesse / L.breit) * h));
+        m.compose(L.ort, L.drehung, gr.set(L.groesse * L.breit * h, L.groesse * h * (s.da ? 1 : 0.7), (L.groesse / L.breit) * h));
         sorte.huegel.setMatrixAt(j, m);
         // Die Mulde (nur wenn leer gegraben)
         const mg = s.da ? 0 : L.groesse * (1 - 0.2 * wachsen);
         if (!s.da) leere++;
-        m.compose(s.pos, L.drehung, gr.set(mg, mg, mg));
+        m.compose(L.ort, L.drehung, gr.set(mg, mg, mg));
         sorte.mulde.setMatrixAt(j, m);
       });
       sorte.huegel.instanceMatrix.needsUpdate = sorte.mulde.instanceMatrix.needsUpdate = true;
