@@ -721,3 +721,14 @@ b, strong { font-weight: 700; }
 /* Die Bild-Platzhalter in den runden Knöpfen genau in die Mitte setzen */
 .rund-knopf > span { display: flex; line-height: 0; }
 .rund-knopf .ui-bild { filter: drop-shadow(0 2px 0 rgba(60, 35, 10, 0.25)); }
+
+/* Gemalte Ding-Bilder in den Fächern schön groß */
+.platz .bild { font-size: 58px; }
+.ware-preis { display: flex; width: fit-content; white-space: nowrap; }
+@media (max-height: 600px) {
+  .platz .bild { font-size: 46px; }
+}
+
+/* Karte: Kopfzeile ist schmal – Titel etwas kleiner, damit das X immer passt */
+#karte-fenster .fenster-kopf { gap: 8px; }
+#karte-fenster .fenster-kopf h2 { min-width: 0; font-size: 21px; padding: 4px 14px 0; overflow: hidden; text-overflow: ellipsis; }

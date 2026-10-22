@@ -10,7 +10,7 @@
   border: 3px solid var(--fach-rand); opacity: 0.55;
   font-size: 14px; line-height: 1.15; color: #5a3a10; font-weight: 700;
 }
-.base-schritt .gross { display: block; font-size: 32px; margin-bottom: 2px; }
+.base-schritt .gross { display: block; font-size: 40px; margin-bottom: 2px; }
 .base-schritt.fertig { opacity: 0.9; background: #eaf6dc; border-color: #79b84f; }
 .base-schritt.jetzt { opacity: 1; background: radial-gradient(circle at 50% 30%, #fffbe6, #ffe39a); border-color: #f29a12; box-shadow: 0 4px 0 #d98a10; }
 .base-jetzt { font-size: 19px; font-weight: 600; color: var(--tinte); text-align: center; margin: 4px 0 6px; line-height: 1.35; }
@@ -26,12 +26,12 @@
 .truhe-raster { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
 .truhe-raster.truhe-rucksack { grid-template-columns: repeat(8, 1fr); }
 .truhe-raster .platz { border-radius: 14px; border-width: 2px; padding: 0; }
-.truhe-raster .platz .bild { font-size: 30px; }
+.truhe-raster .platz .bild { font-size: 40px; }
 .truhe-raster .platz .anzahl { right: -4px; bottom: -5px; min-width: 24px; padding: 0 5px; border-width: 2px; font-size: 15px; }
 .truhe-raster .platz .haltbar { bottom: 3px; height: 4px; }
 .truhe-raster .platz.zu-gross { opacity: 0.45; }
 .truhe-inhalt .platz { background: radial-gradient(circle at 50% 40%, #f8e3bd, #e4c48c); border-color: #9a6a38; }
 @media (max-height: 600px) {
-  .base-schritt .gross { font-size: 24px; }
-  .truhe-raster .platz .bild { font-size: 24px; }
+  .base-schritt .gross { font-size: 30px; }
+  .truhe-raster .platz .bild { font-size: 36px; }
 }

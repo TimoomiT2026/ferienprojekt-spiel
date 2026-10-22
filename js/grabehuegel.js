@@ -19,7 +19,7 @@ const SORTEN = {
   Startinsel: {
     seed: 11,
     erdeDunkel: '#3a2314', erde: '#6b4527', erdeHell: '#9a6b3e',
-    rand: '#58662a', // der Rand geht ins Gras über
+    rand: '#6f7d36', // der Rand geht ins Gras über
     nass: '#22150c', // frisch gegrabene, feuchte Erde
     hoehe: 0.5,
     steine: 4, steinGroesse: 0.075, steinFarben: ['#8d877d', '#6e675e', '#a39a8a'],
@@ -72,7 +72,8 @@ function erdhaufen(S, x, z) {
   const q = r / umriss;
   let h;
   if (q < 1) h = S.hoehe * Math.pow(1 - q * q, 0.85) + 0.02;
-  else h = 0.02 - 0.3 * Math.pow(Math.min(1, (q - 1) / 0.42), 1.3); // Rand verschwindet im Boden
+  else if (q < 1.25) h = 0.03 - 0.03 * ((q - 1) / 0.25); // lose Erde rund um den Haufen
+  else h = -0.3 * Math.min(1, (q - 1.25) / 0.2); // ganz außen verschwindet der Rand im Boden
   // Beulen und Klumpen
   h += (fbm(x * 2.3 + S.seed, z * 2.3, 3, S.seed) - 0.5) * 0.18 * Math.max(0, 1 - q * 0.75);
   // Schaufelspur: eine Delle an der Seite …
@@ -91,10 +92,16 @@ function mulde(S, x, z) {
   const r = Math.hypot(x, z), a = Math.atan2(z, x);
   const umriss = 1 + 0.08 * Math.sin(2 * a + S.p1) + 0.05 * Math.sin(3 * a + S.p2);
   const q = r / umriss;
+  // Der Rand ist nicht überall gleich hoch: auf einer Seite liegt mehr Erde
+  const wand = 1 + 0.55 * Math.sin(a + S.p2) + 0.2 * Math.sin(3 * a + S.p1);
   let h;
-  if (q < 0.5) h = 0.05;
-  else if (q < 1.05) h = 0.05 + 0.2 * Math.pow(Math.sin(Math.PI * (q - 0.5) / 0.55), 1.4); // der aufgeworfene Rand
-  else h = 0.05 - 0.32 * Math.pow(Math.min(1, (q - 1.05) / 0.38), 1.2);
+  if (q < 0.45) h = 0.08 + 0.03 * (q / 0.45); // Boden der Grube (in der Mitte am tiefsten)
+  else if (q < 1.05) h = 0.11 + 0.15 * wand * Math.pow(Math.sin(Math.PI * (q - 0.45) / 0.6), 1.3); // der aufgeworfene Rand
+  else if (q < 1.25) h = 0.11 - 0.09 * ((q - 1.05) / 0.2); // lose Erde
+  else h = 0.02 - 0.32 * Math.min(1, (q - 1.25) / 0.2);
+  // Der Erdhaufen, den man beim Graben auf eine Seite geworfen hat
+  const dw = winkelAbstand(a, S.spurWinkel);
+  h += 0.16 * Math.exp(-((q - 1.0) ** 2) / 0.035) * Math.exp(-(dw * dw) / 0.3);
   h += (fbm(x * 3 + S.seed, z * 3, 3, S.seed + 4) - 0.5) * 0.08 * Math.min(1, q * 1.5);
   return { h, q };
 }
@@ -321,7 +328,8 @@ export function grabeHuegelTeile(insel) {
     if (rauschen(x * 7 + 3, z * 7, S.seed + 2) > 0.64) c = zwischen(c, dunkel, 0.55); // dunkle Brocken
     c = zwischen(c, dunkel, spur * 0.8 + auswurf * 0.3); // frische Schaufelspur ist dunkel und feucht
     if (q > 0.78 && q < 1.05) c.multiplyScalar(1 - 0.25 * Math.sin(Math.PI * (q - 0.78) / 0.27)); // Schatten am Fuß
-    return zwischen(c, rand, (q - 0.98) / 0.3);
+    // Am Rand geht die Erde fleckig in den Boden der Insel über
+    return zwischen(c, rand, (q - 0.97) / 0.28 + (flecken - 0.5) * 0.9);
   });
   const teileH = [fertig(haufen, 1)];
   beiwerk(S, zufall, teileH, hoeheH);
@@ -333,10 +341,10 @@ export function grabeHuegelTeile(insel) {
   const loch = scheibe(11, 36, 1.45, hoeheM, (x, z, { q }) => {
     const flecken = fbm(x * 4 + 3, z * 4, 2, S.seed + 6);
     let c;
-    if (q < 0.55) c = zwischen(nass, dunkel, flecken * 0.6); // feuchter Boden der Grube
-    else if (q < 0.8) c = zwischen(nass, mittel, (q - 0.55) / 0.25); // Innenwand
+    if (q < 0.45) c = zwischen(nass, dunkel, flecken * 0.6); // feuchter Boden der Grube
+    else if (q < 0.75) c = zwischen(nass, mittel, (q - 0.45) / 0.3); // Innenwand
     else c = zwischen(mittel, hell, (flecken - 0.4) * 2);
-    return zwischen(c, rand, (q - 1.05) / 0.3);
+    return zwischen(c, rand, (q - 1.02) / 0.25 + (flecken - 0.5) * 0.9);
   });
   const teileM = [fertig(loch, 1)];
   // ein paar Brocken auf dem Rand
@@ -359,7 +367,7 @@ export function grabeHuegelTeile(insel) {
 
 // ---------- Hügel so hinlegen, wie der Boden schräg ist ----------
 const OBEN = new THREE.Vector3(0, 1, 0);
-export function huegelLage(x, z, drehung, kipp = 0.7) {
+export function huegelLage(x, z, drehung, kipp = 0.9) {
   const d = 0.8;
   const n = new THREE.Vector3(
     bodenHoehe(x - d, z) - bodenHoehe(x + d, z), 2 * d,
