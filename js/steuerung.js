@@ -15,12 +15,34 @@ function imFenster(e) {
 
 export function knopf(element, wasPassiert) {
   let letzterTouch = 0;
+  let start = null; // wo der Finger aufgesetzt hat (nur bei Knöpfen in Fenstern)
   element.addEventListener('touchstart', (e) => {
+    e.stopPropagation();
+    // In Fenstern (Rucksack, Werkbank …) erst beim LOSLASSEN drücken –
+    // sonst könnte man dort nie scrollen, weil überall Knöpfe sind.
+    if (element.closest('.spiel-fenster, [id$="-fenster"]')) {
+      const t = e.changedTouches[0];
+      start = { x: t.clientX, y: t.clientY };
+      return;
+    }
     e.preventDefault();
+    letzterTouch = performance.now();
+    wasPassiert();
+  }, { passive: false });
+  element.addEventListener('touchmove', (e) => {
+    if (!start) return;
+    const t = e.changedTouches[0];
+    if (Math.hypot(t.clientX - start.x, t.clientY - start.y) > 10) start = null; // gewischt = kein Tippen
+  });
+  element.addEventListener('touchend', (e) => {
+    if (!start) return;
+    start = null;
+    e.preventDefault(); // kein extra "Klick" hinterher
     e.stopPropagation();
     letzterTouch = performance.now();
     wasPassiert();
   }, { passive: false });
+  element.addEventListener('touchcancel', () => (start = null));
   element.addEventListener('click', (e) => {
     e.stopPropagation();
     // Manche Geräte schicken nach dem Tippen noch einen "Klick" hinterher – nicht doppelt zählen
