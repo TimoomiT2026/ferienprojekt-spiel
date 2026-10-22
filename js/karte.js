@@ -8,6 +8,7 @@
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { bodenHoehe, istWald, abstandZumPfad, abstandZumDorf, gitterWerte, WASSER_HOEHE, WELT, INSELN, aufWelcherInsel } from './gelaende.js';
 import { knopf } from './steuerung.js';
+import { uiBild } from './ui-bilder.js';
 
 // Die Karte hat zwei Ansichten:
 //  • "Diese Insel": nur die Insel, auf der man ist (schön groß, wie früher)
@@ -420,7 +421,7 @@ export class Karte {
     this.knopfElement.id = 'karte-knopf';
     this.knopfElement.className = 'rund-knopf';
     this.knopfElement.setAttribute('aria-label', 'Karte öffnen');
-    this.knopfElement.textContent = '🗺️';
+    this.knopfElement.innerHTML = uiBild('karte'); // selbst gemalte Karte (ui-bilder.js)
     const obenLinks = elternElement.querySelector('#oben-links');
     if (obenLinks) obenLinks.appendChild(this.knopfElement);
     else {

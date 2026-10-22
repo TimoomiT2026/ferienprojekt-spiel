@@ -7,6 +7,7 @@
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { DINGE } from './rucksack.js';
 import { knopf } from './steuerung.js';
+import { muenzeKlein } from './bilder.js';
 
 // Es kann mehrere Händler geben (Dorf, Palmendorf …). Jeder hat seinen
 // eigenen Namen, seine eigene Kauf-Liste und zählt selbst, wie viel er
@@ -77,7 +78,7 @@ export class Haendler {
 
   zeichnen() {
     const { rucksack } = this.spiel;
-    this.fenster.querySelector('.geld').textContent = `🪙 ${rucksack.muenzen}`;
+    this.fenster.querySelector('.geld').innerHTML = `${muenzeKlein()} ${rucksack.muenzen}`;
     this.fenster.querySelectorAll('.reiter-knopf').forEach((k) => k.classList.toggle('aktiv', k.dataset.seite === this.seite));
     const liste = this.fenster.querySelector('.waren');
     liste.innerHTML = '';
@@ -89,7 +90,7 @@ export class Haendler {
       for (const [text, aktiv, wasPassiert] of knoepfe) {
         const k = document.createElement('button');
         k.className = 'fenster-knopf gelb';
-        k.textContent = text;
+        k.innerHTML = text; // innerHTML, damit die Münze als Bild erscheint
         // Nicht "disabled": Dann hört man beim Antippen den "Geht nicht"-Ton
         k.classList.toggle('gesperrt', !aktiv);
         if (!aktiv) k.style.background = '#cbbfae';
@@ -107,7 +108,7 @@ export class Haendler {
         if (ding.upgradePlaetze && rucksack.plaetze.length >= ding.upgradePlaetze) continue;
         // Sonder-Käufe (z. B. der Ballon): nur zeigen, wenn es sie gibt und man sie noch nicht hat
         if (ding.sonderKauf && (!this.sonderKauf?.[id] || this.sonderKauf[id].gekauft())) continue;
-        zeile(id, `${preis} 🪙`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
+        zeile(id, `${preis} ${muenzeKlein()}`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
       }
     } else {
       const rest = this.kauftProTag - this.heuteGekauft;
@@ -127,9 +128,9 @@ export class Haendler {
         const jetzt = this.preis(p.id);
         const maxStueck = Math.min(anzahl, rest);
         const summe = this.summe(p.id, maxStueck);
-        zeile(p.id, `jetzt ${jetzt} 🪙 · du hast ${anzahl}`, [
+        zeile(p.id, `jetzt ${jetzt} ${muenzeKlein()} · du hast ${anzahl}`, [
           ['1 verkaufen', rest > 0, () => this.verkaufen(p.id, 1)],
-          [`${maxStueck}× (${summe} 🪙)`, maxStueck > 1, () => this.verkaufen(p.id, maxStueck)],
+          [`${maxStueck}× (${summe} ${muenzeKlein()})`, maxStueck > 1, () => this.verkaufen(p.id, maxStueck)],
         ]);
       }
       if (gezeigt.size === 0) {

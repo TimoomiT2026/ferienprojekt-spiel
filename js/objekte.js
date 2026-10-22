@@ -10,6 +10,7 @@ import { zufallMitSeed } from './rauschen.js';
 import { bodenHoehe, abstandZumDorf, abstandZumPfad, DORF, INSELN, aufWelcherInsel, wasserHoeheBei, istKlippenWand } from './gelaende.js';
 import { baueSchaufel } from './figur.js';
 import { DINGE, SCHAUFEL_BILD } from './rucksack.js';
+import { grabeHuegelTeile, sorteVon, huegelLage, kruemelForm, funkelMaterial } from './grabehuegel.js';
 
 const zufall = zufallMitSeed(99);
 
@@ -86,16 +87,37 @@ export class Objekte {
     // und alte Spielstände passen noch.
     this.baueInselGrabestellen(hindernisse);
 
-    const huegelGeo = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2);
-    this.huegel = new THREE.InstancedMesh(huegelGeo, new THREE.MeshStandardMaterial({ color: '#8a5a34', roughness: 1 }), this.grabestellen.length);
-    this.huegel.receiveShadow = true;
-    this.glitzer = new THREE.InstancedMesh(
-      new THREE.SphereGeometry(0.07, 8, 6),
-      new THREE.MeshStandardMaterial({ color: '#fff7c2', emissive: '#ffd84a', emissiveIntensity: 3 }),
-      this.grabestellen.length * 4
-    );
+    // Wie die Hügel aussehen, steht in grabehuegel.js. Jede Insel hat ihre eigene Erde,
+    // darum gibt es pro Insel einen "Stapel" (InstancedMesh) Hügel und einen Stapel Mulden.
+    this.huegelSorten = [];
+    const nachInsel = new Map();
+    this.grabestellen.forEach((s, i) => {
+      const insel = s.insel || 'Startinsel';
+      if (!nachInsel.has(insel)) {
+        const teile = grabeHuegelTeile(insel);
+        const sorte = { insel, nummern: [], teile };
+        nachInsel.set(insel, sorte);
+        this.huegelSorten.push(sorte);
+      }
+      nachInsel.get(insel).nummern.push(i);
+    });
+    for (const sorte of this.huegelSorten) {
+      const n = sorte.nummern.length;
+      sorte.huegel = new THREE.InstancedMesh(sorte.teile.huegel.geometrie, sorte.teile.huegel.material, n);
+      sorte.mulde = new THREE.InstancedMesh(sorte.teile.mulde.geometrie, sorte.teile.mulde.material, n);
+      sorte.huegel.receiveShadow = sorte.mulde.receiveShadow = true;
+      szene.add(sorte.huegel, sorte.mulde);
+    }
+    // Jeder Hügel liegt so schräg wie der Boden und ist ein bisschen anders gedreht und groß
+    this.huegelLagen = this.grabestellen.map((s, i) => {
+      const z = zufallMitSeed(1000 + i * 7);
+      return { drehung: huegelLage(s.pos.x, s.pos.z, z() * Math.PI * 2), groesse: 0.92 + z() * 0.22, breit: 0.9 + z() * 0.2 };
+    });
+    // Funkeln: kleine Sterne über vollen Hügeln, damit man sie findet
+    this.glitzer = new THREE.InstancedMesh(new THREE.PlaneGeometry(1, 1), funkelMaterial(), this.grabestellen.length * 4);
+    this.glitzer.frustumCulled = false;
     this.zeigeGrabestellen();
-    szene.add(this.huegel, this.glitzer);
+    szene.add(this.glitzer);
 
     this.grabestellen.forEach((stelle) => {
       this.interaktionen.push({
@@ -159,29 +181,64 @@ export class Objekte {
   }
 
   zeigeGrabestellen() {
-    const m = new THREE.Matrix4();
-    this.grabestellen.forEach((s, i) => {
-      const g = s.da ? 1 : 0;
-      m.compose(s.pos, new THREE.Quaternion(), new THREE.Vector3(1.1 * g, 0.4 * g, 1.1 * g));
-      this.huegel.setMatrixAt(i, m);
-    });
-    this.huegel.instanceMatrix.needsUpdate = true;
+    const m = new THREE.Matrix4(), gr = new THREE.Vector3();
+    const heute = this.spiel.tageszeit?.tag ?? 0;
+    const tage = Math.max(1, EINSTELLUNGEN.nachwachsTage);
+    for (const sorte of this.huegelSorten) {
+      let leere = 0;
+      sorte.nummern.forEach((i, j) => {
+        const s = this.grabestellen[i], L = this.huegelLagen[i];
+        // Nachwachsen (nur fürs Aussehen): 0 = gerade ausgegraben, fast 1 = bald wieder voll
+        const wachsen = s.da ? 1 : Math.min(0.95, Math.max(0, (heute - s.leerSeit) / tage));
+        const h = s.da ? 1 : wachsen > 0 ? 0.35 + 0.4 * wachsen : 0;
+        m.compose(s.pos, L.drehung, gr.set(L.groesse * L.breit * h, L.groesse * h * (s.da ? 1 : 0.7), (L.groesse / L.breit) * h));
+        sorte.huegel.setMatrixAt(j, m);
+        // Die Mulde (nur wenn leer gegraben)
+        const mg = s.da ? 0 : L.groesse * (1 - 0.2 * wachsen);
+        if (!s.da) leere++;
+        m.compose(s.pos, L.drehung, gr.set(mg, mg, mg));
+        sorte.mulde.setMatrixAt(j, m);
+      });
+      sorte.huegel.instanceMatrix.needsUpdate = sorte.mulde.instanceMatrix.needsUpdate = true;
+      sorte.huegel.computeBoundingSphere();
+      sorte.mulde.computeBoundingSphere();
+      sorte.mulde.visible = leere > 0; // keine Mulde da? Dann gar nicht malen
+    }
   }
 
-  // Kleine Erdkrümel, die beim Graben herumfliegen
+  // Erdbrocken, die beim Graben herumfliegen, kullern und liegen bleiben
   baueKruemel(szene) {
-    this.kruemel = new THREE.InstancedMesh(new THREE.SphereGeometry(0.08, 6, 5), new THREE.MeshStandardMaterial({ color: '#6b4630' }), 24);
+    const form = kruemelForm();
+    this.kruemel = new THREE.InstancedMesh(form.geometrie, form.material, 24);
+    this.kruemel.frustumCulled = false;
+    this.kruemel.visible = false; // nur sichtbar, solange Brocken fliegen
     this.kruemelDaten = [];
-    for (let i = 0; i < 24; i++) this.kruemelDaten.push({ pos: new THREE.Vector3(), v: new THREE.Vector3(), leben: 0 });
+    for (let i = 0; i < 24; i++) {
+      this.kruemelDaten.push({
+        pos: new THREE.Vector3(), v: new THREE.Vector3(), leben: 0, liegt: false,
+        achse: new THREE.Vector3(Math.random() - 0.5, Math.random() - 0.5, Math.random() - 0.5).normalize(),
+        dreh: 0, groesse: 1,
+      });
+      this.kruemel.setColorAt(i, new THREE.Color('#6b4527'));
+    }
     szene.add(this.kruemel);
   }
 
-  kruemelWerfen(ort) {
-    for (const k of this.kruemelDaten) {
-      k.pos.copy(ort).add(new THREE.Vector3(0, 0.3, 0));
-      k.v.set((Math.random() - 0.5) * 4, 3 + Math.random() * 3, (Math.random() - 0.5) * 4);
-      k.leben = 0.6 + Math.random() * 0.5;
-    }
+  // stelle = welche Grabestelle (für die Farbe der Erde auf der Insel)
+  kruemelWerfen(ort, stelle) {
+    const farben = sorteVon(stelle?.insel).kruemel;
+    const c = new THREE.Color();
+    this.kruemelDaten.forEach((k, i) => {
+      const w = Math.random() * Math.PI * 2, r = Math.random() * 0.4;
+      k.pos.set(ort.x + Math.cos(w) * r, ort.y + 0.35, ort.z + Math.sin(w) * r);
+      k.v.set((Math.random() - 0.5) * 4, 2.5 + Math.random() * 3, (Math.random() - 0.5) * 4);
+      k.leben = 1.0 + Math.random() * 0.6;
+      k.liegt = false;
+      k.groesse = 0.5 + Math.random() * 1.1;
+      this.kruemel.setColorAt(i, c.set(farben[Math.floor(Math.random() * farben.length)]));
+    });
+    this.kruemel.instanceColor.needsUpdate = true;
+    this.kruemel.visible = true;
   }
 
   // ---------- Was die Aktionen machen ----------
@@ -213,13 +270,13 @@ export class Objekte {
     this.beschaeftigt = true;
     spieler.graben();
     musik.graben();
-    this.kruemelWerfen(stelle.pos);
+    this.kruemelWerfen(stelle.pos, stelle);
     setTimeout(() => {
       rucksack.hinein(fund);
       stelle.da = false;
       stelle.leerSeit = this.spiel.tageszeit.tag;
       this.zeigeGrabestellen();
-      this.kruemelWerfen(stelle.pos);
+      this.kruemelWerfen(stelle.pos, stelle);
       musik.pling();
       const ding = DINGE[fund];
       meldung(`Gefunden: ${ding.werkzeug ? '' : ding.bild} ${ding.name}!`, 3);
@@ -267,14 +324,10 @@ export class Objekte {
   // Ein neuer Morgen: Grabestellen, die lange genug leer waren, sind wieder voll
   neuerTag() {
     const heute = this.spiel.tageszeit.tag;
-    let geaendert = false;
     for (const s of this.grabestellen) {
-      if (!s.da && heute - s.leerSeit >= EINSTELLUNGEN.nachwachsTage) {
-        s.da = true;
-        geaendert = true;
-      }
+      if (!s.da && heute - s.leerSeit >= EINSTELLUNGEN.nachwachsTage) s.da = true;
     }
-    if (geaendert) this.zeigeGrabestellen();
+    this.zeigeGrabestellen(); // auch halb nachgewachsene Hügel wachsen ein Stück
   }
 
   aktion() {
@@ -295,31 +348,52 @@ export class Objekte {
       this.glitzerRing.scale.setScalar(1 + Math.sin(this.zeit * 4) * 0.1);
     }
 
-    // Glitzern über den Grabestellen
+    // Funkeln über den Grabestellen: Sterne blitzen kurz auf und steigen langsam hoch
     const m = new THREE.Matrix4();
     const p = new THREE.Vector3(), q = new THREE.Quaternion(), s = new THREE.Vector3();
     this.grabestellen.forEach((stelle, i) => {
       for (let k = 0; k < 4; k++) {
-        const funkeln = stelle.da ? Math.max(0, Math.sin(this.zeit * 3 + i * 1.7 + k * 2.1)) : 0;
-        const w = k * 1.57 + this.zeit * 0.5;
-        p.set(stelle.pos.x + Math.cos(w) * 0.6, stelle.pos.y + 0.5 + k * 0.12, stelle.pos.z + Math.sin(w) * 0.6);
-        m.compose(p, q, s.setScalar(funkeln));
+        const welle = Math.sin(this.zeit * 2.4 + i * 1.7 + k * 2.1);
+        const funkeln = stelle.da ? Math.pow(Math.max(0, welle), 3) : 0;
+        const w = k * 1.57 + i + this.zeit * 0.4;
+        const r = 0.3 + ((k * 0.37 + i * 0.11) % 1) * 0.5;
+        const steigen = (this.zeit * 0.25 + k * 0.25 + i * 0.13) % 1;
+        p.set(stelle.pos.x + Math.cos(w) * r, stelle.pos.y + 0.45 + steigen * 0.6 + (k % 2) * 0.15, stelle.pos.z + Math.sin(w) * r);
+        m.compose(p, q, s.setScalar(funkeln * (k % 2 ? 0.45 : 0.6)));
         this.glitzer.setMatrixAt(i * 4 + k, m);
       }
     });
     this.glitzer.instanceMatrix.needsUpdate = true;
 
-    // Krümel fliegen
-    this.kruemelDaten.forEach((k, i) => {
-      if (k.leben > 0) {
-        k.leben -= dt;
-        k.v.y -= 15 * dt;
-        k.pos.addScaledVector(k.v, dt);
-      }
-      m.compose(k.pos, q, s.setScalar(k.leben > 0 ? 1 : 0));
-      this.kruemel.setMatrixAt(i, m);
-    });
-    this.kruemel.instanceMatrix.needsUpdate = true;
+    // Erdbrocken fliegen, fallen auf den Boden, kullern kurz und verschwinden
+    if (this.kruemel.visible) {
+      let fliegen = false;
+      this.kruemelDaten.forEach((k, i) => {
+        if (k.leben > 0) {
+          fliegen = true;
+          k.leben -= dt;
+          if (!k.liegt) {
+            k.v.y -= 15 * dt;
+            k.pos.addScaledVector(k.v, dt);
+            k.dreh += dt * 9;
+            const boden = bodenHoehe(k.pos.x, k.pos.z) + 0.05 * k.groesse;
+            if (k.pos.y < boden) {
+              k.pos.y = boden;
+              if (k.v.y < -2) { // hüpft noch einmal ein bisschen
+                k.v.set(k.v.x * 0.4, -k.v.y * 0.25, k.v.z * 0.4);
+              } else k.liegt = true;
+            }
+          }
+        }
+        q.setFromAxisAngle(k.achse, k.dreh);
+        // am Ende schrumpfen sie weg (sie "versickern" im Boden)
+        m.compose(k.pos, q, s.setScalar(k.leben > 0 ? k.groesse * Math.min(1, k.leben / 0.3) : 0));
+        this.kruemel.setMatrixAt(i, m);
+      });
+      this.kruemel.instanceMatrix.needsUpdate = true;
+      this.kruemel.visible = fliegen;
+      q.identity();
+    }
 
     // Was ist in der Nähe? Das Nächste gewinnt.
     let beste = null, besterAbstand = Infinity;

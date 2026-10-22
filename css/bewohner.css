@@ -52,12 +52,10 @@
   padding: 6px 14px; border-radius: 20px; background: #f3e6cf;
 }
 .bw-ok {
-  flex: none; min-width: 96px; height: 58px; padding: 0 18px;
-  border: none; border-radius: 29px;
-  background: #4caf50; color: #fff; font-size: 21px; font-weight: bold;
-  box-shadow: 0 4px 0 #2f7d32;
+  flex: none; min-width: 96px; height: 58px; padding: 3px 18px 0;
+  font-size: 21px;
+  /* Farbe und Glanz kommen von den Spiel-Knöpfen in style.css */
 }
-.bw-ok:active { transform: translateY(3px); box-shadow: 0 1px 0 #2f7d32; }
 
 /* Kleine Bildschirme: etwas kompakter */
 @media (max-height: 600px) {

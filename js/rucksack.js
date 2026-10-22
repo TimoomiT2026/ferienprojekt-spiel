@@ -5,73 +5,56 @@
 // =============================================================
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { knopf } from './steuerung.js';
+import { BILDER } from './bilder.js';
 
-// Die Schaufel malen wir selbst (das Schaufel-Emoji kennen nicht alle Geräte)
-export const SCHAUFEL_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hidden="true">
-  <rect x="29" y="6" width="6" height="34" rx="3" fill="#a0703c"/>
-  <rect x="22" y="3" width="20" height="7" rx="3.5" fill="#333"/>
-  <path d="M20 38 h24 v8 a12 12 0 0 1 -24 0 z" fill="#b9c2cc" stroke="#7d8894" stroke-width="2"/>
-</svg>`;
-
-// Die Seilkanone gibt es auch nicht als Emoji: runde rote Kanone mit Haken vorne
-export const SEILKANONE_BILD = `<svg class="svg-bild" viewBox="0 0 64 64" aria-hidden="true">
-  <path d="M10 44 C 2 30, 22 16, 38 24 L 44 28 C 48 36, 40 46, 30 46 Z" fill="#d94a3a" stroke="#8e2a20" stroke-width="2"/>
-  <ellipse cx="42" cy="27" rx="5" ry="7" transform="rotate(30 42 27)" fill="#f2b53a"/>
-  <path d="M46 22 L 54 14 M54 14 c 6 -2 8 6 3 8 M54 14 c -2 -6 -9 -4 -7 1" stroke="#7d8894" stroke-width="3.5" fill="none" stroke-linecap="round"/>
-  <circle cx="20" cy="48" r="7" fill="#9a6a3c" stroke="#5e3d1f" stroke-width="2"/>
-</svg>`;
-
-// Die wertvolle Münze: groß, golden, mit Stern und Glanz (für die Taucherbrille)
-export const WERTVOLLE_MUENZE_BILD = `<svg class="svg-bild muenze-bild" viewBox="0 0 64 64" aria-hidden="true">
-  <circle cx="32" cy="32" r="27" fill="#f5b91f" stroke="#b87a00" stroke-width="3"/>
-  <circle cx="32" cy="32" r="20" fill="#ffd54a" stroke="#d99a00" stroke-width="2"/>
-  <path d="M32 18 l4 9 10 1 -7.5 6.5 2.3 10 -8.8 -5.2 -8.8 5.2 2.3 -10 -7.5 -6.5 10 -1 z" fill="#fff1a8" stroke="#d99a00" stroke-width="1.5"/>
-  <ellipse cx="22" cy="19" rx="7" ry="3.5" transform="rotate(-35 22 19)" fill="#fff" opacity="0.75"/>
-</svg>`;
+// Diese drei Bilder benutzen auch andere Teile des Spiels (z. B. der Graben-Knopf)
+export const SCHAUFEL_BILD = BILDER.schaufel;
+export const SEILKANONE_BILD = BILDER.seilkanone;
+export const WERTVOLLE_MUENZE_BILD = BILDER.wertvolleMuenze;
 
 // Alle Dinge, die es im Spiel gibt
 //   werkzeug: kann man in die Hand nehmen
 //   essen:    kann man essen (zählt als Mahlzeit)
 export const DINGE = {
-  schaufel: { name: 'Schaufel', bild: SCHAUFEL_BILD, werkzeug: true, text: 'Damit kannst du an Grabestellen graben.' },
-  schwert: { name: 'Schwert', bild: '🗡️', werkzeug: true, text: 'Damit kannst du Bäume und Büsche fällen. Nutzt sich ab!' },
-  angel: { name: 'Angel', bild: '🎣', werkzeug: true, text: 'Stell dich an eine Angelstelle. Du brauchst Würmer als Köder.' },
-  feuerzeug: { name: 'Feuerzeug', bild: '🔥', text: 'Damit zündest du das Lagerfeuer an. Hält 3 Mal.' },
-  stein: { name: 'Stein', bild: '🪨', text: 'Ein ganz normaler Stein. Kann man im Dorf verkaufen.' },
-  kohle: { name: 'Kohle', bild: '⚫', text: 'Schwarz und staubig. Brennt gut!' },
-  eisenerz: { name: 'Eisenerz', bild: '🔩', text: 'Daraus kann man Eisen machen.' },
-  gold: { name: 'Goldnugget', bild: '🟡', text: 'Glänzt! Das ist bestimmt viel wert.' },
-  edelstein: { name: 'Edelstein', bild: '💎', text: 'Super selten! Du hast Glück gehabt.' },
-  holz: { name: 'Holz', bild: '🪵', text: 'Fürs Lagerfeuer oder zum Bauen.' },
-  brot: { name: 'Brot', bild: '🍞', essen: true, text: 'Eine Mahlzeit für einen Tag.' },
-  koeder: { name: 'Würmer', bild: '🪱', text: 'Köder zum Angeln. Findet man beim Graben oder beim Händler.' },
-  schnur: { name: 'Schnur', bild: '🧵', text: 'Aus dünnem Holz gebunden. Damit baust du eine Angel.' },
-  tofufisch: { name: 'Tofu-Fisch', bild: '🐟', text: 'Roh schmeckt er nicht. Grill ihn am Lagerfeuer!' },
-  gegrillterFisch: { name: 'Gegrillter Tofu-Fisch', bild: '<span class="gegrillt">🐟</span>', essen: true, text: 'Lecker! Eine Mahlzeit für einen Tag.' },
-  schuh: { name: 'Alter Schuh', bild: '👞', text: 'Igitt, nass. Den willst du nicht anziehen.' },
-  dose: { name: 'Alte Dose', bild: '🥫', text: 'Müll aus dem Meer. Wirf ihn lieber weg.' },
-  alge: { name: 'Alge', bild: '🌿', text: 'Glitschig und grün.' },
+  schaufel: { name: 'Schaufel', bild: BILDER.schaufel, werkzeug: true, text: 'Damit kannst du an Grabestellen graben.' },
+  schwert: { name: 'Schwert', bild: BILDER.schwert, werkzeug: true, text: 'Damit kannst du Bäume und Büsche fällen. Nutzt sich ab!' },
+  angel: { name: 'Angel', bild: BILDER.angel, werkzeug: true, text: 'Stell dich an eine Angelstelle. Du brauchst Würmer als Köder.' },
+  feuerzeug: { name: 'Feuerzeug', bild: BILDER.feuerzeug, text: 'Damit zündest du das Lagerfeuer an. Hält 3 Mal.' },
+  stein: { name: 'Stein', bild: BILDER.stein, text: 'Ein ganz normaler Stein. Kann man im Dorf verkaufen.' },
+  kohle: { name: 'Kohle', bild: BILDER.kohle, text: 'Schwarz und staubig. Brennt gut!' },
+  eisenerz: { name: 'Eisenerz', bild: BILDER.eisenerz, text: 'Daraus kann man Eisen machen.' },
+  gold: { name: 'Goldnugget', bild: BILDER.gold, text: 'Glänzt! Das ist bestimmt viel wert.' },
+  edelstein: { name: 'Edelstein', bild: BILDER.edelstein, text: 'Super selten! Du hast Glück gehabt.' },
+  holz: { name: 'Holz', bild: BILDER.holz, text: 'Fürs Lagerfeuer oder zum Bauen.' },
+  brot: { name: 'Brot', bild: BILDER.brot, essen: true, text: 'Eine Mahlzeit für einen Tag.' },
+  koeder: { name: 'Würmer', bild: BILDER.koeder, text: 'Köder zum Angeln. Findet man beim Graben oder beim Händler.' },
+  schnur: { name: 'Schnur', bild: BILDER.schnur, text: 'Aus dünnem Holz gebunden. Damit baust du eine Angel.' },
+  tofufisch: { name: 'Tofu-Fisch', bild: BILDER.tofufisch, text: 'Roh schmeckt er nicht. Grill ihn am Lagerfeuer!' },
+  gegrillterFisch: { name: 'Gegrillter Tofu-Fisch', bild: BILDER.gegrillterFisch, essen: true, text: 'Lecker! Eine Mahlzeit für einen Tag.' },
+  schuh: { name: 'Alter Schuh', bild: BILDER.schuh, text: 'Igitt, nass. Den willst du nicht anziehen.' },
+  dose: { name: 'Alte Dose', bild: BILDER.dose, text: 'Müll aus dem Meer. Wirf ihn lieber weg.' },
+  alge: { name: 'Alge', bild: BILDER.alge, text: 'Glitschig und grün.' },
   // Funde von der Palmeninsel (Etappe 3) – nur zum Verkaufen
-  muschel: { name: 'Muschel', bild: '🐚', artikel: 'eine', text: 'Eine schöne Muschel vom Strand der Palmeninsel. Kann man verkaufen.' },
-  kokosnuss: { name: 'Kokosnuss', bild: '🥥', artikel: 'eine', text: 'Hart wie ein Stein! Essen kann man sie nicht – aber verkaufen.' },
-  karotte: { name: 'Karotte', bild: '🥕', essen: true, werkzeug: true, text: 'Aus deinem Garten! Eine Mahlzeit – oder Futter für dein Pferd (in die Hand nehmen).' },
-  apfel: { name: 'Apfel', bild: '🍎', werkzeug: true, text: 'Pferde lieben Äpfel! Nimm einen in die Hand und geh zu einem Wildpferd.' },
-  leine: { name: 'Leine', bild: '🪢', werkzeug: true, artikel: 'eine', text: 'Aus dem Leder vom alten Schuh. In die Hand nehmen, dann kannst du dein Pferd führen und am Stall anbinden.' },
-  zauberpilz: { name: 'Zauberpilz', bild: '🍄', zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
-  fernrohr: { name: 'Fernrohr', bild: '🔭', werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
-  seil: { name: 'Seil', bild: '➰', artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Jeder Schuss mit der Seilkanone braucht eins.' },
-  widerhaken: { name: 'Widerhaken', bild: '🪝', artikel: 'einen', text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone.' },
-  seilkanone: { name: 'Seilkanone', bild: SEILKANONE_BILD, werkzeug: true, artikel: 'eine', text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Jeder Schuss braucht 1 Seil.' },
+  muschel: { name: 'Muschel', bild: BILDER.muschel, artikel: 'eine', text: 'Eine schöne Muschel vom Strand der Palmeninsel. Kann man verkaufen.' },
+  kokosnuss: { name: 'Kokosnuss', bild: BILDER.kokosnuss, artikel: 'eine', text: 'Hart wie ein Stein! Essen kann man sie nicht – aber verkaufen.' },
+  karotte: { name: 'Karotte', bild: BILDER.karotte, essen: true, werkzeug: true, text: 'Aus deinem Garten! Eine Mahlzeit – oder Futter für dein Pferd (in die Hand nehmen).' },
+  apfel: { name: 'Apfel', bild: BILDER.apfel, werkzeug: true, text: 'Pferde lieben Äpfel! Nimm einen in die Hand und geh zu einem Wildpferd.' },
+  leine: { name: 'Leine', bild: BILDER.leine, werkzeug: true, artikel: 'eine', text: 'Aus dem Leder vom alten Schuh. In die Hand nehmen, dann kannst du dein Pferd führen und am Stall anbinden.' },
+  zauberpilz: { name: 'Zauberpilz', bild: BILDER.zauberpilz, zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
+  fernrohr: { name: 'Fernrohr', bild: BILDER.fernrohr, werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
+  seil: { name: 'Seil', bild: BILDER.seil, artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Jeder Schuss mit der Seilkanone braucht eins.' },
+  widerhaken: { name: 'Widerhaken', bild: BILDER.widerhaken, artikel: 'einen', text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone.' },
+  seilkanone: { name: 'Seilkanone', bild: BILDER.seilkanone, werkzeug: true, artikel: 'eine', text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Jeder Schuss braucht 1 Seil.' },
   // wichtig: kann man nicht wegwerfen. Nicht verkaufbar (steht nicht in den verkaufsPreisen).
-  wertvolleMuenze: { name: 'Wertvolle Münze', bild: WERTVOLLE_MUENZE_BILD, artikel: 'eine', wichtig: true, text: 'Eine uralte, goldene Münze! Bring 3 davon zum Inselbewohner mit der Taucherbrille auf der Palmeninsel.' },
-  taucherbrille: { name: 'Taucherbrille', bild: '🤿', artikel: 'eine', text: 'Damit kannst du tauchen! Geh an tiefes Wasser. Die Luft reicht aber nicht lange.' },
-  insadorium: { name: 'Insadorium', bild: '<span class="insadorium-bild">🔴</span>', text: 'DAS INSADORIUM! Der geheime rote Stein. Er leuchtet so grell, dass man fast nicht hinschauen kann.' },
-  reisezelt: { name: 'Reisezelt', bild: '⛺', plaetze: 3, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
+  wertvolleMuenze: { name: 'Wertvolle Münze', bild: BILDER.wertvolleMuenze, artikel: 'eine', wichtig: true, text: 'Eine uralte, goldene Münze! Bring 3 davon zum Inselbewohner mit der Taucherbrille auf der Palmeninsel.' },
+  taucherbrille: { name: 'Taucherbrille', bild: BILDER.taucherbrille, artikel: 'eine', text: 'Damit kannst du tauchen! Geh an tiefes Wasser. Die Luft reicht aber nicht lange.' },
+  insadorium: { name: 'Insadorium', bild: BILDER.insadorium, text: 'DAS INSADORIUM! Der geheime rote Stein. Er leuchtet so grell, dass man fast nicht hinschauen kann.' },
+  reisezelt: { name: 'Reisezelt', bild: BILDER.reisezelt, plaetze: 3, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
   // Diese beiden kommen nicht IN den Rucksack – sie ERSETZEN ihn
-  rucksackGross: { name: 'Großer Rucksack', bild: '🎒', upgradePlaetze: 18, text: '18 Plätze statt 12.' },
-  rucksackRiesig: { name: 'Riesen-Rucksack', bild: '🎒', upgradePlaetze: 24, text: '24 Plätze!' },
+  rucksackGross: { name: 'Großer Rucksack', bild: BILDER.rucksackGross, upgradePlaetze: 18, text: '18 Plätze statt 12.' },
+  rucksackRiesig: { name: 'Riesen-Rucksack', bild: BILDER.rucksackRiesig, upgradePlaetze: 24, text: '24 Plätze!' },
   // Der Ballon kommt auch nicht in den Rucksack – er steht dann an der Base (siehe ballon.js)
-  ballon: { name: 'Heißluftballon', bild: '🎈', sonderKauf: true, text: 'Damit fliegst du ganz schnell ins Dorf!' },
+  ballon: { name: 'Heißluftballon', bild: BILDER.ballon, sonderKauf: true, text: 'Damit fliegst du ganz schnell ins Dorf!' },
 };
 
 const haltbarkeit = (id) => (EINSTELLUNGEN.haltbarkeit || {})[id] || 0;

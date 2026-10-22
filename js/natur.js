@@ -424,9 +424,213 @@ export function wasserInDerNaehe(x, z, weite = 14) {
 export function schlagen(h) {
   h.schlaege++;
   const noetig = h.art === 'baum' ? EINSTELLUNGEN.schlaegeProBaum : 1;
-  if (h.schlaege < noetig) return 0;
-  verschwinden(h);
+  if (h.schlaege < noetig) {
+    starteBewegung(h, 'wackeln'); // Baum wackelt, Splitter und Blätter fliegen
+    return 0;
+  }
+  // Fürs Spiel ist er sofort weg (Holz, Speichern, man kann durchlaufen) –
+  // aber man SIEHT ihn noch umkippen bzw. zittern.
+  h.weg = true;
+  if (h.hindernis) naturHindernisse.entfernen(h.hindernis);
+  starteBewegung(h, h.art === 'baum' ? 'fallen' : 'zittern');
   return h.art === 'baum' ? EINSTELLUNGEN.holzProBaum : EINSTELLUNGEN.holzProBusch;
+}
+
+// ---------- Bäume wackeln und fallen um, Büsche zittern ----------
+// Jeder Baum ist eine Kopie in einem InstancedMesh. Um ihn zu bewegen,
+// geben wir nur SEINER Kopie eine neue Matrix (Ort + Drehung + Größe).
+const bewegungen = new Map(); // Baum → { art, zeit, achse }
+const spielerOrt = new THREE.Vector3();
+const _m = new THREE.Matrix4(), _dreh = new THREE.Matrix4(), _hin = new THREE.Matrix4(), _zurueck = new THREE.Matrix4();
+const _q = new THREE.Quaternion(), _v = new THREE.Vector3(), _s = new THREE.Vector3(), _fuss = new THREE.Vector3();
+const FALL = () => EINSTELLUNGEN.baumFallen || {};
+
+function starteBewegung(h, art) {
+  // Weg vom Spieler kippen (dann fällt der Baum nicht auf uns drauf)
+  const dx = h.x - spielerOrt.x, dz = h.z - spielerOrt.z;
+  const d = Math.hypot(dx, dz) || 1;
+  const richtung = new THREE.Vector3(dx / d, 0, dz / d);
+  const achse = new THREE.Vector3(richtung.z, 0, -richtung.x); // Kipp-Achse quer zur Richtung
+  if (!h.hoehe) h.hoehe = new THREE.Vector3().setFromMatrixColumn(h.matrix, 1).length(); // wie groß ist der Baum?
+  bewegungen.set(h, { art, zeit: 0, achse, richtung, aufgeschlagen: false });
+  const fuss = _fuss.setFromMatrixPosition(h.matrix);
+  if (art === 'wackeln') {
+    // Treffer am Stamm: Holzsplitter fliegen zu uns, oben rieseln Blätter
+    const treffer = fuss.clone().add(new THREE.Vector3(-richtung.x * 0.35, 1.0, -richtung.z * 0.35));
+    teilchenWerfen(treffer, FALL().splitter ?? 6, 'splitter', richtung);
+    teilchenWerfen(fuss.clone().add(new THREE.Vector3(0, 4 * h.hoehe, 0)), FALL().blaetter ?? 8, 'blatt', richtung, 2 * h.hoehe);
+  } else if (art === 'fallen') {
+    teilchenWerfen(fuss.clone().add(new THREE.Vector3(-richtung.x * 0.35, 1.0, -richtung.z * 0.35)), FALL().splitter ?? 6, 'splitter', richtung);
+  }
+}
+
+// Neue Matrix für einen Baum: um den Fuß drehen, absenken, kleiner machen
+function setzeBaum(h, winkel, achse, runter = 0, groesse = 1) {
+  const fuss = _fuss.setFromMatrixPosition(h.matrix);
+  _hin.makeTranslation(fuss.x, fuss.y - runter, fuss.z);
+  _q.setFromAxisAngle(achse, winkel);
+  _dreh.compose(_v.set(0, 0, 0), _q, _s.setScalar(groesse));
+  _zurueck.makeTranslation(-fuss.x, -fuss.y, -fuss.z);
+  _m.multiplyMatrices(_hin, _dreh).multiply(_zurueck).multiply(h.matrix);
+  for (const { mesh, index } of h.ziele) {
+    mesh.setMatrixAt(index, groesse > 0.001 ? _m : nullMatrix);
+    mesh.instanceMatrix.needsUpdate = true;
+  }
+}
+
+function aktualisiereBewegungen(dt) {
+  const F = FALL();
+  for (const [h, b] of bewegungen) {
+    b.zeit += dt;
+    const t = b.zeit;
+    if (b.art === 'wackeln') {
+      // Gedämpftes Schwingen: erst weit weg, dann immer weniger hin und her
+      const dauer = F.wackelDauer ?? 1.1;
+      const winkel = (F.wackelWinkel ?? 0.07) * Math.exp(-t * 3.5) * Math.sin(t * 15);
+      setzeBaum(h, t >= dauer ? 0 : winkel, b.achse);
+      if (t >= dauer) bewegungen.delete(h);
+    } else if (b.art === 'fallen') {
+      const fall = F.fallDauer ?? 1.6, liegen = F.liegenDauer ?? 0.7, weg = F.weg ?? 0.5;
+      const ganz = Math.PI / 2 - 0.1; // fast flach (der Boden ist nicht ganz eben)
+      let winkel, runter = 0, groesse = 1;
+      if (t < fall) {
+        // Erst ganz langsam, dann immer schneller – wie echte Schwerkraft
+        const x = t / fall;
+        winkel = ganz * (0.04 * x + 0.96 * x * x * x);
+      } else {
+        if (!b.aufgeschlagen) {
+          // RUMMS! Blätter und Splitter spritzen dort, wo die Krone aufschlägt
+          b.aufgeschlagen = true;
+          const krone = _fuss.setFromMatrixPosition(h.matrix).addScaledVector(b.richtung, 3.5 * h.hoehe);
+          krone.y = bodenHoehe(krone.x, krone.z) + 0.8;
+          teilchenWerfen(krone.clone(), (F.blaetter ?? 8) * 2, 'blatt', b.richtung, 2.2 * h.hoehe, true);
+          teilchenWerfen(krone.clone(), F.splitter ?? 6, 'splitter', b.richtung);
+        }
+        const nach = t - fall;
+        winkel = ganz - 0.07 * Math.exp(-nach * 6) * Math.abs(Math.sin(nach * 14)); // kleiner Hüpfer
+        if (nach > liegen) {
+          // Versinkt und schrumpft – jetzt ist es Holz in deinem Rucksack
+          const x = Math.min(1, (nach - liegen) / weg);
+          runter = x * 0.6;
+          groesse = 1 - x * x;
+        }
+      }
+      setzeBaum(h, winkel, b.achse, runter, groesse);
+      if (groesse <= 0.001) bewegungen.delete(h);
+    } else if (b.art === 'zittern') {
+      // Busch: kurz heftig zittern, dann mit einem Blätter-Puff verschwinden
+      const zittern = 0.3, weg = 0.25;
+      let groesse = 1;
+      const wackel = t < zittern ? Math.sin(t * 60) * 0.12 * (1 - t / zittern * 0.5) : 0;
+      if (t >= zittern) {
+        if (!b.aufgeschlagen) {
+          b.aufgeschlagen = true;
+          teilchenWerfen(_fuss.setFromMatrixPosition(h.matrix).clone().add(new THREE.Vector3(0, 0.6, 0)), 14, 'blatt', b.richtung, 0.8, true);
+        }
+        const x = Math.min(1, (t - zittern) / weg);
+        groesse = 1 - x * x;
+      }
+      setzeBaum(h, wackel, b.achse, 0, groesse * (1 + Math.abs(wackel) * 0.6));
+      if (groesse <= 0.001) bewegungen.delete(h);
+    }
+  }
+}
+
+// ---------- Holzsplitter und Blätter (ganz kleine Teilchen, 1 Malbefehl) ----------
+const TEILCHEN = 60;
+let teilchenMesh = null;
+const teilchen = [];
+let naechstesTeilchen = 0;
+
+function baueTeilchen(szene) {
+  teilchenMesh = new THREE.InstancedMesh(
+    new THREE.OctahedronGeometry(0.1, 0),
+    new THREE.MeshStandardMaterial({ roughness: 0.85, side: THREE.DoubleSide }),
+    TEILCHEN
+  );
+  teilchenMesh.frustumCulled = false;
+  teilchenMesh.castShadow = false;
+  teilchenMesh.visible = false;
+  const weiss = new THREE.Color('#ffffff');
+  for (let i = 0; i < TEILCHEN; i++) {
+    teilchen.push({ pos: new THREE.Vector3(), v: new THREE.Vector3(), leben: 0, dauer: 1, art: 'blatt', dreh: new THREE.Euler(), drehV: new THREE.Vector3(), liegt: false });
+    teilchenMesh.setMatrixAt(i, nullMatrix);
+    teilchenMesh.setColorAt(i, weiss);
+  }
+  szene.add(teilchenMesh);
+}
+
+// art = 'splitter' (Holz, fliegt schnell) oder 'blatt' (segelt langsam runter)
+// streuung = wie weit verteilt, puff = Blätter fliegen erst hoch und auseinander
+function teilchenWerfen(ort, anzahl, art, richtung, streuung = 0.3, puff = false) {
+  if (!teilchenMesh) return;
+  const farbe = new THREE.Color();
+  for (let n = 0; n < anzahl; n++) {
+    const i = naechstesTeilchen;
+    naechstesTeilchen = (naechstesTeilchen + 1) % TEILCHEN;
+    const t = teilchen[i];
+    t.art = art;
+    t.liegt = false;
+    t.pos.copy(ort).add(_v.set((Math.random() - 0.5) * 2 * streuung, (Math.random() - 0.5) * streuung, (Math.random() - 0.5) * 2 * streuung));
+    t.dreh.set(Math.random() * 6, Math.random() * 6, Math.random() * 6);
+    if (art === 'splitter') {
+      // Zum Spieler hin und nach oben
+      t.v.set(-richtung.x * (1.5 + Math.random() * 2) + (Math.random() - 0.5) * 2.5, 2 + Math.random() * 2.5, -richtung.z * (1.5 + Math.random() * 2) + (Math.random() - 0.5) * 2.5);
+      t.drehV.set(Math.random() * 14 - 7, Math.random() * 14 - 7, Math.random() * 14 - 7);
+      t.dauer = t.leben = 1.0 + Math.random() * 0.6;
+      farbe.setHSL(0.08 + Math.random() * 0.03, 0.45, 0.55 + Math.random() * 0.2);
+    } else {
+      t.v.set((Math.random() - 0.5) * (puff ? 4 : 0.8), puff ? 1.5 + Math.random() * 2.5 : -0.3, (Math.random() - 0.5) * (puff ? 4 : 0.8));
+      t.drehV.set(Math.random() * 4 - 2, Math.random() * 4 - 2, Math.random() * 4 - 2);
+      t.dauer = t.leben = 2.2 + Math.random() * 1.2;
+      farbe.setHSL(0.22 + Math.random() * 0.1, 0.55, 0.32 + Math.random() * 0.15);
+    }
+    teilchenMesh.setColorAt(i, farbe);
+  }
+  teilchenMesh.instanceColor.needsUpdate = true;
+  teilchenMesh.visible = true;
+}
+
+function aktualisiereTeilchen(dt) {
+  if (!teilchenMesh || !teilchenMesh.visible) return;
+  let lebendig = false;
+  const s = _s;
+  teilchen.forEach((t, i) => {
+    if (t.leben <= 0) {
+      teilchenMesh.setMatrixAt(i, nullMatrix);
+      return;
+    }
+    lebendig = true;
+    t.leben -= dt;
+    if (!t.liegt) {
+      if (t.art === 'splitter') {
+        t.v.y -= 12 * dt;
+      } else {
+        // Blätter: bremsen stark (Luft!) und schaukeln beim Fallen hin und her
+        t.v.multiplyScalar(Math.max(0, 1 - dt * 2.5));
+        t.v.y += (-0.9 - t.v.y) * Math.min(1, dt * 2);
+        t.pos.x += Math.sin(t.leben * 4 + i) * 0.6 * dt;
+      }
+      t.pos.addScaledVector(t.v, dt);
+      t.dreh.x += t.drehV.x * dt;
+      t.dreh.y += t.drehV.y * dt;
+      t.dreh.z += t.drehV.z * dt;
+      const boden = Math.max(bodenHoehe(t.pos.x, t.pos.z), WASSER_HOEHE) + 0.03;
+      if (t.pos.y < boden) {
+        t.pos.y = boden;
+        t.liegt = true; // liegt jetzt im Gras
+        t.dreh.x = Math.PI / 2;
+      }
+    }
+    const klein = Math.min(1, t.leben / 0.4); // am Ende schrumpfen
+    if (t.art === 'splitter') s.set(0.35, 0.35, 1.6).multiplyScalar(klein);
+    else s.set(1.3, 1, 0.12).multiplyScalar(klein);
+    _q.setFromEuler(t.dreh);
+    _m.compose(t.pos, _q, s);
+    teilchenMesh.setMatrixAt(i, _m);
+  });
+  teilchenMesh.instanceMatrix.needsUpdate = true;
+  if (!lebendig) teilchenMesh.visible = false;
 }
 
 function verschwinden(h) {
@@ -445,6 +649,12 @@ export function gefaellteHolzStellen() {
 
 export function ladeGefaellte(liste) {
   for (const i of liste || []) if (holzStellen[i] && !holzStellen[i].weg) verschwinden(holzStellen[i]);
+  // Ein Baum, der gerade noch umkippt, ist nach dem Laden einfach weg
+  for (const h of [...bewegungen.keys()]) {
+    bewegungen.delete(h);
+    if (h.weg) verschwinden(h);
+    else setzeBaum(h, 0, hochAchse);
+  }
 }
 
 let naturHindernisse = null;
@@ -1067,6 +1277,7 @@ export function baueNatur(szene, hindernisse) {
   for (const insel of INSELN.slice(1)) baueInselNatur(gruppe, hindernisse, insel);
   holzGitterBauen();
   szene.add(gruppe);
+  baueTeilchen(szene);
 }
 
 // Wie weit man Pflanzen sieht (1 = normal). Ruckelt das iPad, wird es kleiner.
@@ -1088,6 +1299,9 @@ export function setzeFernblick(meter) {
 // Jedes Bild: Wind weiterlaufen lassen, nur nahe Stücke zeigen
 export function aktualisiereNatur(dt, spielerPos) {
   windZeit.value += dt;
+  spielerOrt.copy(spielerPos); // für die Richtung, in die ein Baum umfällt
+  if (bewegungen.size) aktualisiereBewegungen(dt);
+  aktualisiereTeilchen(dt);
   aktualisiereInseln(spielerPos); // ferne Inseln nicht malen
   alleStuecke.forEach((s, i) => {
     let weite = s.sichtweite * detail;

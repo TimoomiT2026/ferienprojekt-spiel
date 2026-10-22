@@ -2,35 +2,35 @@
    BASE – das Base-Menü und die Truhe
    (Grundform wie die Werkbank: .spiel-fenster, .rezept, .zutat)
    ============================================================= */
-#base-fenster { width: min(680px, 94vw); border-color: #6b8a3a; }
-#base-fenster .fenster-kopf h2 { color: #3d5a1a; }
+#base-fenster { width: min(680px, 94vw); --band: #6b9a2e; --band-dunkel: #36580f; }
 .base-leiste { display: flex; gap: 6px; margin-bottom: 10px; }
 .base-schritt {
-  flex: 1; text-align: center; padding: 6px 2px; border-radius: 16px;
-  background: #f3e6cf; border: 3px solid transparent; opacity: 0.5;
-  font-size: 13px; line-height: 1.2; color: #5a3a10; font-weight: bold;
+  flex: 1; text-align: center; padding: 6px 2px 4px; border-radius: 16px;
+  background: radial-gradient(circle at 50% 30%, #fffaf0, var(--fach));
+  border: 3px solid var(--fach-rand); opacity: 0.55;
+  font-size: 14px; line-height: 1.15; color: #5a3a10; font-weight: 700;
 }
 .base-schritt .gross { display: block; font-size: 32px; margin-bottom: 2px; }
-.base-schritt.fertig { opacity: 0.85; background: #e3f0d6; }
-.base-schritt.jetzt { opacity: 1; background: #fff1cf; border-color: #ffb02e; }
-.base-jetzt { font-size: 18px; color: #3a2a18; text-align: center; margin: 4px 0 6px; line-height: 1.35; }
-.base-ueberschrift { font-size: 17px; color: #7a5a30; margin: 12px 0 6px; }
-.base-klein { font-size: 15px; color: #6a5a48; margin-top: 2px; font-weight: normal; }
-.base-fehlt { font-size: 15px; color: #a03a2a; margin-top: 6px; font-weight: bold; }
-.base-fertig { padding: 14px; border-radius: 18px; background: #fff1cf; font-size: 19px; text-align: center; color: #5a3a10; }
+.base-schritt.fertig { opacity: 0.9; background: #eaf6dc; border-color: #79b84f; }
+.base-schritt.jetzt { opacity: 1; background: radial-gradient(circle at 50% 30%, #fffbe6, #ffe39a); border-color: #f29a12; box-shadow: 0 4px 0 #d98a10; }
+.base-jetzt { font-size: 19px; font-weight: 600; color: var(--tinte); text-align: center; margin: 4px 0 6px; line-height: 1.35; }
+.base-ueberschrift { font-size: 20px; font-weight: 800; color: #7a4a1c; margin: 14px 0 8px; }
+.base-klein { font-size: 16px; line-height: 1.25; color: #6a5a48; margin-top: 2px; font-weight: normal; }
+.base-fehlt { font-size: 16px; color: #a03a2a; margin-top: 6px; font-weight: bold; }
+.base-fertig { padding: 14px; border-radius: 18px; border: 3px solid #f29a12; background: #fff1cf; font-size: 19px; text-align: center; color: #5a3a10; }
 #base-fenster .rezept.gesperrt { opacity: 0.6; }
 #base-fenster .rezept { margin-bottom: 8px; }
 
 /* ---------- Die Truhe ---------- */
-#truhe-fenster { width: min(780px, 95vw); border-color: #9a6a38; }
+#truhe-fenster { width: min(780px, 95vw); --band: #b0702f; --band-dunkel: #5e3415; }
 .truhe-raster { display: grid; grid-template-columns: repeat(10, 1fr); gap: 6px; }
 .truhe-raster.truhe-rucksack { grid-template-columns: repeat(8, 1fr); }
 .truhe-raster .platz { border-radius: 14px; border-width: 2px; padding: 0; }
 .truhe-raster .platz .bild { font-size: 30px; }
-.truhe-raster .platz .anzahl { right: 4px; bottom: 1px; font-size: 15px; }
+.truhe-raster .platz .anzahl { right: -4px; bottom: -5px; min-width: 24px; padding: 0 5px; border-width: 2px; font-size: 15px; }
 .truhe-raster .platz .haltbar { bottom: 3px; height: 4px; }
 .truhe-raster .platz.zu-gross { opacity: 0.45; }
-.truhe-inhalt .platz { background: #f6e2c2; border-color: #d8b88a; }
+.truhe-inhalt .platz { background: radial-gradient(circle at 50% 40%, #f8e3bd, #e4c48c); border-color: #9a6a38; }
 @media (max-height: 600px) {
   .base-schritt .gross { font-size: 24px; }
   .truhe-raster .platz .bild { font-size: 24px; }

@@ -7,6 +7,7 @@ import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { bodenHoehe } from './gelaende.js';
 import { DINGE } from './rucksack.js';
+import { BILDER } from './bilder.js';
 import { knopf } from './steuerung.js';
 import { textur } from './texturen.js';
 
@@ -63,7 +64,7 @@ export class Werkbank {
     this.fenster.id = 'werkbank-fenster';
     this.fenster.className = 'spiel-fenster';
     this.fenster.innerHTML = `
-      <div class="fenster-kopf"><h2>🔨 Werkbank</h2><button class="zu" aria-label="Schließen">✕</button></div>
+      <div class="fenster-kopf"><h2>${BILDER.hammer} Werkbank</h2><button class="zu" aria-label="Schließen">✕</button></div>
       <div class="rezepte"></div>
       <p class="werkbank-info">Was willst du bauen?</p>`;
     spiel.elternElement.appendChild(this.fenster);

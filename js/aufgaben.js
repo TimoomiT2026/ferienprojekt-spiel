@@ -5,6 +5,8 @@
 //  Für jede geschaffte Aufgabe gibt es Münzen als Belohnung.
 // =============================================================
 import { knopf } from './steuerung.js';
+import { uiBild } from './ui-bilder.js';
+import { muenzeKlein } from './bilder.js';
 
 // tipp = was man tun muss, geschafft = wann es erledigt ist
 const AUFGABEN = [
@@ -99,13 +101,14 @@ export class Aufgaben {
 
   zeichnen() {
     const jetzt = AUFGABEN[this.nummer];
-    this.anzeige.textContent = jetzt ? `📋 ${jetzt.titel}` : '🏆 Alle Aufgaben geschafft!';
+    // Das Buch-Bild kommt aus ui-bilder.js, der Text steht daneben
+    this.anzeige.innerHTML = `${uiBild('buch')}<span>${jetzt ? jetzt.titel : '🏆 Alle Aufgaben geschafft!'}</span>`;
     const liste = this.fenster.querySelector('.aufgaben-liste');
     liste.innerHTML = AUFGABEN.map((a, i) => {
       const zustand = i < this.nummer ? 'fertig' : i === this.nummer ? 'jetzt' : 'spaeter';
-      const zeichen = zustand === 'fertig' ? '✅' : zustand === 'jetzt' ? '👉' : '🔒';
+      const zeichen = uiBild(zustand === 'fertig' ? 'haken' : zustand === 'jetzt' ? 'pfeil' : 'schloss');
       const tipp = zustand === 'jetzt' ? `<div class="aufgabe-tipp">${a.tipp}</div>` : '';
-      const belohnung = a.belohnung ? `<span class="aufgabe-lohn">+${a.belohnung} 🪙</span>` : '';
+      const belohnung = a.belohnung ? `<span class="aufgabe-lohn">+${a.belohnung} ${muenzeKlein()}</span>` : '';
       const titel = zustand === 'spaeter' ? '???' : a.titel;
       return `<li class="aufgabe ${zustand}"><span class="aufgabe-zeichen">${zeichen}</span><div><b>${titel}</b>${tipp}</div>${belohnung}</li>`;
     }).join('');

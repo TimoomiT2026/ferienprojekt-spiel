@@ -29,6 +29,70 @@ const glatt = (a, b, x) => {
 };
 const mische = THREE.MathUtils.lerp;
 
+// ---------- Bewegungen aus Schlüssel-Posen ----------
+// Wie beim Daumenkino: Zu bestimmten Zeiten (t in Sekunden) steht fest,
+// wie die Knochen gedreht sind. Dazwischen blendet der Computer weich über.
+// [x, y, z] = Drehung eines Knochens. "werkzeug" = Drehung im Handgelenk.
+// weich: 'rein' = wird schneller (Schwung!), 'raus' = bremst ab, sonst beides.
+const GLIEDER = ['huefte', 'bauch', 'brust', 'hals', 'kopf', 'schulterL', 'ellbogenL', 'schulterR', 'ellbogenR', 'beinL', 'knieL', 'beinR', 'knieR'];
+function weicheKurve(x, art) {
+  if (art === 'rein') return x * x * x;
+  if (art === 'raus') return 1 - (1 - x) ** 3;
+  return x * x * (3 - 2 * x);
+}
+function poseZurZeit(schluessel, t) {
+  let i = 0;
+  while (i < schluessel.length - 2 && t > schluessel[i + 1].t) i++;
+  const a = schluessel[i], b = schluessel[i + 1];
+  const x = weicheKurve(THREE.MathUtils.clamp((t - a.t) / (b.t - a.t), 0, 1), b.weich);
+  const pose = {};
+  for (const name in b) {
+    if (name === 't' || name === 'weich') continue;
+    const va = a[name] ?? b[name], vb = b[name];
+    pose[name] = Array.isArray(vb) ? vb.map((w, n) => mische(va[n] ?? 0, w, x)) : mische(va, vb, x);
+  }
+  return pose;
+}
+
+// GRABEN mit dem Spaten (Zeiten für 1,4 Sekunden – wird auf grabDauer umgerechnet)
+const GRAB_POSEN = [
+  // 0: Spaten in der Hand, gleich geht es los
+  { t: 0, bauch: [0.05, 0, 0], brust: [0.05, 0, 0], hals: [0, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.5, 0, 0.1], ellbogenR: [-0.6, 0, 0], schulterL: [-0.3, 0, -0.1], ellbogenL: [-0.5, 0, 0],
+    beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, huefte: [0, 0, 0], werkzeug: [0.95, 0, 0] },
+  // 1: ANSETZEN – Spaten senkrecht vor sich auf den Boden stellen
+  { t: 0.22, bauch: [0.18, 0, 0], brust: [0.12, -0.15, 0], kopf: [0.25, 0, 0], schulterR: [-0.75, 0, 0.0], ellbogenR: [-0.75, 0, 0], schulterL: [-0.95, 0, 0.35], ellbogenL: [-0.9, 0, 0],
+    beinL: [0.05, 0, -0.05], knieL: 0.1, beinR: [0, 0, 0.05], knieR: 0.1, werkzeug: [1.45, 0, 0.1] },
+  // 2: FUSS HOCH auf die Tritt-Kante
+  { t: 0.42, bauch: [0.12, 0, 0], brust: [0.08, -0.15, 0], kopf: [0.3, 0, 0], schulterR: [-0.75, 0, 0.0], ellbogenR: [-0.75, 0, 0], schulterL: [-0.95, 0, 0.35], ellbogenL: [-0.9, 0, 0],
+    beinL: [0.05, 0, -0.05], knieL: 0.15, beinR: [-0.95, 0, 0.12], knieR: 1.25, werkzeug: [1.45, 0, 0.1] },
+  // 3: REINTRETEN – Gewicht drauf, der ganze Körper geht runter
+  { t: 0.6, weich: 'rein', bauch: [0.25, 0, 0], brust: [0.12, -0.12, 0], kopf: [0.3, 0, 0], schulterR: [-0.55, 0, 0.0], ellbogenR: [-0.85, 0, 0], schulterL: [-0.8, 0, 0.35], ellbogenL: [-0.95, 0, 0],
+    beinL: [-0.3, 0, -0.05], knieL: 0.75, beinR: [-0.7, 0, 0.12], knieR: 0.8, werkzeug: [1.5, 0, 0.1] },
+  // 4: HEBELN – Fuß runter, Stiel nach hinten ziehen, Körper lehnt sich zurück
+  { t: 0.78, bauch: [-0.05, 0, 0], brust: [-0.08, -0.05, 0], kopf: [0.2, 0, 0], schulterR: [-0.2, 0, 0.15], ellbogenR: [-1.3, 0, 0], schulterL: [-0.6, 0, 0.25], ellbogenL: [-1.2, 0, 0],
+    beinL: [-0.2, 0, -0.05], knieL: 0.45, beinR: [-0.05, 0, 0.05], knieR: 0.35, werkzeug: [0.9, 0, 0.1] },
+  // 5: HOCHHEBEN und zur Seite AUSWERFEN (schnell!) – jetzt fliegt die Erde
+  { t: 0.94, weich: 'rein', huefte: [0, 0.25, 0], bauch: [0.1, 0.3, 0], brust: [0.05, 0.55, -0.1], kopf: [0.1, -0.4, 0], schulterR: [-1.35, 0, 0.45], ellbogenR: [-0.35, 0, 0], schulterL: [-1.2, 0, 0.05], ellbogenL: [-0.5, 0, 0],
+    beinL: [-0.05, 0, -0.05], knieL: 0.15, beinR: [0, 0, 0.08], knieR: 0.1, werkzeug: [1.2, 0, 0.9] },
+  // 6: NACHSCHWINGEN
+  { t: 1.08, weich: 'raus', huefte: [0, 0.3, 0], bauch: [0.05, 0.35, 0], brust: [0.0, 0.6, -0.12], kopf: [0.1, -0.45, 0], schulterR: [-1.2, 0, 0.5], ellbogenR: [-0.4, 0, 0], schulterL: [-1.0, 0, 0.0], ellbogenL: [-0.6, 0, 0],
+    beinL: [-0.05, 0, -0.05], knieL: 0.12, beinR: [0, 0, 0.08], knieR: 0.1, werkzeug: [1.2, 0, 1.0] },
+  // 7: ZURÜCK in die normale Haltung
+  { t: 1.4, huefte: [0, 0, 0], bauch: [0.05, 0, 0], brust: [0.05, 0, 0], kopf: [0.1, 0, 0], schulterR: [-0.4, 0, 0.1], ellbogenR: [-0.7, 0, 0], schulterL: [-0.2, 0, -0.1], ellbogenL: [-0.4, 0, 0],
+    beinL: [0, 0, -0.03], knieL: 0.05, beinR: [0, 0, 0.03], knieR: 0.05, werkzeug: [0.95, 0, 0] },
+];
+
+// SCHWERT-SCHLAG (t von 0 bis 1 = ganze Schwungdauer)
+const SCHWUNG_POSEN = [
+  { t: 0, huefte: [0, 0, 0], bauch: [0, 0, 0], brust: [0, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.1, 0, -0.1], ellbogenL: [-0.3, 0, 0], werkzeug: [2.17, 0, 0] },
+  // AUSHOLEN: Schwert hoch über die Schulter, Oberkörper dreht sich weg
+  { t: 0.32, weich: 'raus', huefte: [0, 0.2, 0], bauch: [-0.05, 0.25, 0], brust: [-0.1, 0.45, 0.05], schulterR: [-2.7, 0, 0.55], ellbogenR: [-1.1, 0, 0], schulterL: [-0.7, 0, -0.45], ellbogenL: [-0.7, 0, 0], werkzeug: [2.0, 0, 0] },
+  // DURCHZIEHEN: schnell schräg nach unten, der ganze Körper dreht mit
+  { t: 0.58, weich: 'rein', huefte: [0, -0.2, 0], bauch: [0.15, -0.3, 0], brust: [0.12, -0.5, -0.05], schulterR: [-0.75, 0, -0.45], ellbogenR: [-0.1, 0, 0], schulterL: [0.25, 0, -0.35], ellbogenL: [-0.5, 0, 0], werkzeug: [2.3, 0, 0] },
+  // ZURÜCK
+  { t: 1, huefte: [0, 0, 0], bauch: [0, 0, 0], brust: [0, 0, 0], schulterR: [-0.35, 0, 0.1], ellbogenR: [-0.75, 0, 0], schulterL: [-0.1, 0, -0.1], ellbogenL: [-0.3, 0, 0], werkzeug: [2.17, 0, 0] },
+];
+
 // ---------- Klippen-Wind 🌬️ ----------
 // Über der Klippeninsel weht ein starker Wind: Mit dem Zauberpilz kommt man
 // nicht aufs Plateau (nur mit der Seilkanone). Die Zahlen stehen in einstellungen.js.
@@ -51,8 +115,8 @@ export class Spieler {
     // Die Schaufel in der rechten Hand (nur sichtbar, wenn man sie hält)
     // Die Hand hält den Stiel oben am Griff – das Schaufelblatt zeigt nach unten
     this.schaufel = new THREE.Group();
-    const schaufelModell = baueSchaufel();
-    schaufelModell.position.y = -0.95;
+    const schaufelModell = baueSchaufel(true);
+    schaufelModell.position.y = -0.97;
     this.schaufel.add(schaufelModell);
     // (die Hand ist etwas nach vorne geknickt, darum hier zurückdrehen)
     this.schaufel.rotation.x = 0.95;
@@ -475,12 +539,35 @@ export class Spieler {
   }
 
   schwingen() {
-    if (this.schwungZeit <= 0) this.schwungZeit = 0.45;
+    if (this.schwungZeit <= 0) this.schwungZeit = EINSTELLUNGEN.schwungDauer ?? 0.45;
   }
 
-  // Graben-Animation starten
+  // Graben-Animation starten (Spaten ansetzen, reintreten, hebeln, auswerfen)
   graben() {
-    this.grabZeit = 0.9;
+    this.grabZeit = EINSTELLUNGEN.grabDauer ?? 1.4;
+  }
+
+  // Eine Pose auf die Knochen legen. staerke 0 = gar nicht, 1 = ganz.
+  // nurOben = die Beine laufen normal weiter (z. B. Schwert-Schlag im Laufen)
+  legePose(pose, staerke, werkzeug, nurOben = false) {
+    const k = this.k;
+    for (const name of GLIEDER) {
+      const w = pose[name];
+      if (w === undefined) continue;
+      if (nurOben && (name.startsWith('bein') || name.startsWith('knie'))) continue;
+      const r = k[name].rotation;
+      if (Array.isArray(w)) r.set(mische(r.x, w[0], staerke), mische(r.y, w[1], staerke), mische(r.z, w[2], staerke));
+      else r.x = mische(r.x, w, staerke);
+    }
+    if (werkzeug && pose.werkzeug) {
+      const r = werkzeug.rotation, w = pose.werkzeug;
+      r.set(mische(r.x, w[0], staerke), mische(r.y, w[1], staerke), mische(r.z, w[2], staerke));
+    }
+    if (nurOben) return;
+    // Füße bleiben flach auf dem Boden, die Hüfte so hoch, dass das Standbein den Boden berührt
+    for (const s of ['L', 'R']) k['fuss' + s].rotation.x = mische(k['fuss' + s].rotation.x, -(k['bein' + s].rotation.x + k['knie' + s].rotation.x), staerke);
+    const reichweite = (s) => BEIN_LAENGE * (Math.cos(k['bein' + s].rotation.x) + Math.cos(k['bein' + s].rotation.x + k['knie' + s].rotation.x));
+    k.huefte.position.y = mische(k.huefte.position.y, 0.13 + Math.max(reichweite('L'), reichweite('R')), staerke);
   }
 
   // Wird jedes Bild aufgerufen (ca. 60 Mal pro Sekunde!)
@@ -682,31 +769,26 @@ export class Spieler {
       k.ellbogenR.rotation.x = -(ellbogenBasis + Math.max(0, Math.sin(p)) * 0.35 * bewegt) * (1 - armLuft) - 0.6 * armLuft;
     }
 
-    // ---- Schwert-Schwung: Arm schnell von oben nach vorne ----
+    // Werkzeug-Haltung im Handgelenk (normal)
+    this.schaufel.rotation.set(0.95, 0, 0);
+    this.schwert.rotation.set(2.17, 0, 0);
+
+    // ---- Schwert-Schlag: ausholen → durchziehen mit Körperdrehung → zurück ----
     if (this.schwungZeit > 0) {
+      const dauer = EINSTELLUNGEN.schwungDauer ?? 0.45;
       this.schwungZeit -= dt;
-      const t = 1 - this.schwungZeit / 0.45;
-      this.armR.rotation.x = -2.8 + t * 2.6;
-      this.armR.rotation.z = Math.sin(t * Math.PI) * 0.4;
-      k.ellbogenR.rotation.x = -0.25;
-      k.brust.rotation.y += -0.35 + t * 0.6; // mit dem ganzen Körper ausholen
+      const t = THREE.MathUtils.clamp(1 - this.schwungZeit / dauer, 0, 1);
+      const staerke = glatt(0, 0.06, t) * (1 - glatt(0.8, 1, t));
+      this.legePose(poseZurZeit(SCHWUNG_POSEN, t), staerke, this.schwert, true);
     }
 
-    // ---- Graben: Schaufel hoch und runter, Körper beugt sich mit ----
+    // ---- Graben: eine echte Spaten-Bewegung in mehreren Schritten ----
     if (this.grabZeit > 0) {
+      const dauer = EINSTELLUNGEN.grabDauer ?? 1.4;
       this.grabZeit -= dt;
-      const w = Math.sin(this.grabZeit * 14);
-      this.armR.rotation.set(-1.0 + w * 0.6, 0, 0.15);
-      this.armL.rotation.set(-0.9 + w * 0.4, 0, -0.15);
-      k.ellbogenR.rotation.x = -0.25;
-      k.ellbogenL.rotation.x = -0.6;
-      k.bauch.rotation.x = 0.25 - w * 0.12;
-      k.brust.rotation.x = 0.15;
-      k.hals.rotation.x = -0.15;
-      k.knieL.rotation.x = k.knieR.rotation.x = 0.35;
-      k.beinL.rotation.x = k.beinR.rotation.x = -0.25;
-      k.fussL.rotation.x = k.fussR.rotation.x = -0.1;
-      k.huefte.position.y = 0.13 + BEIN_LAENGE * (Math.cos(-0.25) + Math.cos(0.1));
+      const t = THREE.MathUtils.clamp(1 - this.grabZeit / dauer, 0, 1) * 1.4; // auf die 1,4 s der Posen umrechnen
+      const staerke = glatt(0, 0.1, t) * (1 - glatt(1.25, 1.4, t));
+      this.legePose(poseZurZeit(GRAB_POSEN, t), staerke, this.schaufel);
     }
   }
 }

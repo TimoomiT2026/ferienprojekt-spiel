@@ -14,6 +14,7 @@ import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { bodenHoehe, abstandZumDorf, DORF, WASSER_HOEHE } from './gelaende.js';
 import { DINGE } from './rucksack.js';
+import { BILDER, muenzeKlein } from './bilder.js';
 import { knopf } from './steuerung.js';
 import { textur } from './texturen.js';
 import { zufallMitSeed } from './rauschen.js';
@@ -29,11 +30,11 @@ const STALL = { x: 9, z: 6, winkel: Math.PI }; // Pferdestall auf der anderen Se
 // radius = wie dick das Haus für die Figur ist, tuer = wie weit die Tür von der Mitte weg ist
 const STUFEN = [
   null,
-  { name: 'Zelt', bild: '⛺', text: 'Ein kleines Zelt. Hier kannst du nachts schlafen.', radius: 1.9, tuer: 2.2 },
-  { name: 'Großes Zelt', bild: '🏕️', text: 'Viel Platz und ein Vordach gegen Regen.', radius: 2.5, tuer: 3.4 },
-  { name: 'Holzhütte', bild: '🛖', text: 'Eine echte Hütte! Mit Truhe 📦 für deine Schätze.', radius: 2.7, tuer: 2.6 },
-  { name: 'Hütte mit Garten', bild: '🏡', text: 'Mit Kamin – und im Garten wachsen Karotten 🥕.', radius: 2.8, tuer: 2.7 },
-  { name: 'Haus mit Fischteich', bild: '🏠', text: 'Ein richtiges Haus! Am Teich kannst du angeln 🎣.', radius: 3.2, tuer: 3.25 },
+  { name: 'Zelt', bild: BILDER.zelt, text: 'Ein kleines Zelt. Hier kannst du nachts schlafen.', radius: 1.9, tuer: 2.2 },
+  { name: 'Großes Zelt', bild: BILDER.zeltGross, text: 'Viel Platz und ein Vordach gegen Regen.', radius: 2.5, tuer: 3.4 },
+  { name: 'Holzhütte', bild: BILDER.huette, text: 'Eine echte Hütte! Mit Truhe 📦 für deine Schätze.', radius: 2.7, tuer: 2.6 },
+  { name: 'Hütte mit Garten', bild: BILDER.huetteGarten, text: 'Mit Kamin – und im Garten wachsen Karotten 🥕.', radius: 2.8, tuer: 2.7 },
+  { name: 'Haus mit Fischteich', bild: BILDER.haus, text: 'Ein richtiges Haus! Am Teich kannst du angeln 🎣.', radius: 3.2, tuer: 3.25 },
 ];
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -1146,20 +1147,20 @@ export class Base {
     const erw = this.menue.querySelector('.base-erweiterungen');
     erw.innerHTML = '';
     if (this.stallGebaut) {
-      erw.insertAdjacentHTML('beforeend', '<div class="rezept"><div class="rezept-bild">🐴</div><div class="rezept-mitte"><b>Pferdestall</b><div class="base-klein">✅ Steht schon! Hier kann ein gezähmtes Pferd wohnen.</div></div></div>');
+      erw.insertAdjacentHTML('beforeend', `<div class="rezept"><div class="rezept-bild">${BILDER.pferd}</div><div class="rezept-mitte"><b>Pferdestall</b><div class="base-klein">✅ Steht schon! Hier kann ein gezähmtes Pferd wohnen.</div></div></div>`);
     } else if (!this.stallFrei()) {
       const gruende = [];
       if (st < EINSTELLUNGEN.stallAbStufe) gruende.push(`ab Base-Stufe ${EINSTELLUNGEN.stallAbStufe} (du hast ${st})`);
       if (tageszeit.tag < EINSTELLUNGEN.stallAbTag) gruende.push(`ab Tag ${EINSTELLUNGEN.stallAbTag} (heute ist Tag ${tageszeit.tag})`);
-      erw.insertAdjacentHTML('beforeend', `<div class="rezept gesperrt"><div class="rezept-bild">🐴</div><div class="rezept-mitte"><b>Pferdestall</b><div class="base-klein">🔒 Gibt es erst ${gruende.join(' und ')}.</div></div></div>`);
+      erw.insertAdjacentHTML('beforeend', `<div class="rezept gesperrt"><div class="rezept-bild">${BILDER.pferd}</div><div class="rezept-mitte"><b>Pferdestall</b><div class="base-klein">🔒 Gibt es erst ${gruende.join(' und ')}.</div></div></div>`);
     } else {
-      erw.appendChild(this.bauZeile('🐴', 'Pferdestall', 'Ein Zuhause für ein gezähmtes Pferd.', EINSTELLUNGEN.stallKosten, 'Bauen', () => this.stallBauen()));
+      erw.appendChild(this.bauZeile(BILDER.pferd, 'Pferdestall', 'Ein Zuhause für ein gezähmtes Pferd.', EINSTELLUNGEN.stallKosten, 'Bauen', () => this.stallBauen()));
     }
     if (this.reisezeltAbholbar()) {
       const zeile = document.createElement('div');
       zeile.className = 'rezept';
       const passt = rucksack.passt('reisezelt');
-      zeile.innerHTML = `<div class="rezept-bild">⛺</div><div class="rezept-mitte"><b>Reisezelt</b><div class="base-klein">Dein altes Zelt zum Mitnehmen. Braucht 3 Plätze im Rucksack.</div></div><button class="bauen" ${passt ? '' : 'disabled'}>Abholen</button>`;
+      zeile.innerHTML = `<div class="rezept-bild">${BILDER.reisezelt}</div><div class="rezept-mitte"><b>Reisezelt</b><div class="base-klein">Dein altes Zelt zum Mitnehmen. Braucht 3 Plätze im Rucksack.</div></div><button class="bauen" ${passt ? '' : 'disabled'}>Abholen</button>`;
       knopf(zeile.querySelector('.bauen'), () => this.reisezeltAbholen());
       erw.appendChild(zeile);
     }
@@ -1197,7 +1198,7 @@ export class Base {
   zeichneTruhe() {
     const { rucksack } = this.spiel;
     const belegt = this.truhe.filter(Boolean).length;
-    this.truheFenster.querySelector('.truhe-titel').textContent = `📦 In der Truhe (${belegt} von ${this.truhe.length} Plätzen belegt)`;
+    this.truheFenster.querySelector('.truhe-titel').innerHTML = `${BILDER.truhe} In der Truhe (${belegt} von ${this.truhe.length} Plätzen belegt)`;
     const feld = (platz, beiTippen) => {
       const k = document.createElement('button');
       k.className = 'platz';
@@ -1422,7 +1423,7 @@ function hatHaltbarkeit(id) {
 }
 
 function zutatBild(id) {
-  return id === 'muenzen' ? '🪙' : DINGE[id].bild;
+  return id === 'muenzen' ? muenzeKlein() : DINGE[id].bild;
 }
 
 function zutatName(id) {

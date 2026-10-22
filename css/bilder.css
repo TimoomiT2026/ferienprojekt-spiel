@@ -1,0 +1,17 @@
+/* =============================================================
+   Unsere eigenen Spiel-Bilder (js/bilder.js)
+   Die Bilder sind so groß wie die Schrift drumherum (1em) –
+   so passen sie überall, wo vorher ein Emoji stand.
+   ============================================================= */
+.spiel-bild { display: inline-block; width: 1.1em; height: 1.1em; vertical-align: -0.22em; overflow: visible; }
+
+/* In Listen und Rezepten etwas größer */
+.platz .bild .spiel-bild { width: 1.08em; height: 1.08em; vertical-align: middle; }
+.ware-bild .spiel-bild, .rezept-bild .spiel-bild { width: 1.15em; height: 1.15em; vertical-align: middle; }
+.zutat .spiel-bild { width: 1.6em; height: 1.6em; vertical-align: middle; margin: -6px 0; }
+#aktion-bild .spiel-bild, #hand-anzeige .spiel-bild { width: 1.05em; height: 1.05em; vertical-align: middle; }
+#meldung .spiel-bild { width: 1.5em; height: 1.5em; vertical-align: middle; margin: -4px 0; }
+
+/* Kleine Münze für Preise */
+.muenze-klein { display: inline-block; line-height: 0; vertical-align: -0.25em; }
+.muenze-klein .spiel-bild { width: 1.2em; height: 1.2em; vertical-align: 0; }

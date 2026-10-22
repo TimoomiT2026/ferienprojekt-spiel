@@ -20,6 +20,7 @@ import { baueFigur } from './figur.js';
 import { SCHAUFEL_BILD } from './rucksack.js';
 import { knopf } from './steuerung.js';
 import { zufallMitSeed } from './rauschen.js';
+import { grabeHuegelTeile } from './grabehuegel.js';
 
 const GRAD = Math.PI / 180;
 const MUENZE = 'wertvolleMuenze';
@@ -277,8 +278,6 @@ export class Bewohner {
     const { hindernisse } = this.spiel;
     const zufall = zufallMitSeed(777);
     this.huegel = [];
-    const huegelGeo = new THREE.SphereGeometry(1, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2);
-    const erdMat = new THREE.MeshStandardMaterial({ color: '#8f5d33', roughness: 1 });
     const goldMat = new THREE.MeshStandardMaterial({ color: '#ffcc33', emissive: '#ffae00', emissiveIntensity: 0.9, metalness: 0.7, roughness: 0.3 });
     const glitzerMat = new THREE.MeshStandardMaterial({ color: '#fff7c2', emissive: '#ffd84a', emissiveIntensity: 4 });
     // Ein goldener Schimmer, der nach oben leuchtet – damit man den Hügel von weitem sieht
@@ -315,8 +314,11 @@ export class Bewohner {
       const y = bodenHoehe(x, z);
 
       const gruppe = new THREE.Group();
-      const erde = new THREE.Mesh(huegelGeo, erdMat);
-      erde.scale.set(1.2, 0.45, 1.2);
+      // Der Erdhaufen sieht aus wie die anderen Grabehügel auf der Insel (grabehuegel.js)
+      const form = grabeHuegelTeile(e.insel).huegel;
+      const erde = new THREE.Mesh(form.geometrie, form.material);
+      erde.scale.set(1.15, 1.0, 1.15);
+      erde.rotation.y = i * 2.3;
       erde.receiveShadow = true;
       const muenze = new THREE.Mesh(muenzGeo, goldMat); // guckt ein bisschen aus der Erde raus
       muenze.position.set(0.15, 0.55, 0);

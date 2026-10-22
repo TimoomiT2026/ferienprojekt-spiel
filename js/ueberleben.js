@@ -7,6 +7,7 @@
 //    so müde, dass man 50 Münzen verliert (verschlafen, verloren …).
 // =============================================================
 import { EINSTELLUNGEN } from './einstellungen.js';
+import { uiBild } from './ui-bilder.js';
 
 export class Ueberleben {
   constructor(spiel) {
@@ -90,10 +91,10 @@ export class Ueberleben {
     const wert = Math.ceil(this.satt);
     this.anzeige.classList.toggle('hunger', this.hungrig);
     this.anzeige.classList.toggle('knurrt', !this.hungrig && wert <= EINSTELLUNGEN.hungerWarnung);
-    const bild = this.hungrig ? '😫' : wert <= EINSTELLUNGEN.hungerWarnung ? '🍽️' : '🍞';
+    // Brot-Bild aus ui-bilder.js; bei wenig Essen färbt sich der Balken orange (Klasse "knurrt")
     this.anzeige.innerHTML = this.hungrig
-      ? '😫 Hunger!'
-      : `${bild} <span class="satt-balken"><span style="width:${wert}%"></span></span>`;
+      ? `${uiBild('brot')} Hunger!`
+      : `${uiBild('brot')} <span class="satt-balken"><span style="width:${wert}%"></span></span>`;
   }
 
   alsDaten() {

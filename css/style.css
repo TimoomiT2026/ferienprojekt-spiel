@@ -1,11 +1,41 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 
+/* =============================================================
+   SPIEL-LOOK 🎨 – alle Farben und Bilder für Fenster und Knöpfe
+   Holzrahmen + Papier innen + dicke, glänzende Comic-Knöpfe.
+   (Die kleinen Bilder sind SVG-"Mal-Befehle", direkt hier drin.)
+   ============================================================= */
+:root {
+  /* Die Spiele-Schrift: rund und gut lesbar. Ohne Internet nimmt
+     der Browser einfach die nächste Schrift aus der Liste. */
+  --schrift: "Baloo 2", "Arial Rounded MT Bold", "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
+
+  /* Holz für die Rahmen */
+  --holz: #a2622f;
+  --holz-dunkel: #5e3415;
+  --holz-rand: #3b2412;
+  --holz-maserung: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='48'><rect width='160' height='48' fill='%23a2622f'/><path d='M0 7 Q40 3 80 8 T160 7' stroke='%2384481f' stroke-width='2.5' fill='none'/><path d='M0 19 Q50 24 90 18 T160 19' stroke='%23bb7840' stroke-width='3' fill='none'/><path d='M0 31 Q30 27 70 32 T160 31' stroke='%2384481f' stroke-width='2' fill='none'/><path d='M0 42 Q60 45 110 40 T160 42' stroke='%23bb7840' stroke-width='2.5' fill='none'/><ellipse cx='122' cy='26' rx='9' ry='3.5' fill='none' stroke='%2374401b' stroke-width='2'/><ellipse cx='30' cy='13' rx='5' ry='2' fill='none' stroke='%2374401b' stroke-width='1.5'/></svg>");
+
+  /* Papier innen */
+  --papier: #fbf0d4;
+  --papier-dunkel: #f0dcae;
+  --tinte: #4a2e14;
+
+  /* Fächer ("Slots") für Sachen */
+  --fach: #f6e5bf;
+  --fach-rand: #b88a52;
+
+  /* Kleine Bilder */
+  --bild-x: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><path d='M9 9 L23 23 M23 9 L9 23' stroke='%236e1a10' stroke-width='9' stroke-linecap='round'/><path d='M9 9 L23 23 M23 9 L9 23' stroke='%23fff' stroke-width='5' stroke-linecap='round'/></svg>");
+  --bild-haken: url("data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><circle cx='16' cy='16' r='14' fill='%235cc23a' stroke='%232f6a1a' stroke-width='3'/><path d='M9 16.5 L14 21.5 L23 11' fill='none' stroke='%23fff' stroke-width='4.5' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+}
+
 html, body {
   width: 100%;
   height: 100%;
   overflow: hidden;
   background: #9fdcff;
-  font-family: "Trebuchet MS", "Avenir Next", system-ui, sans-serif;
+  font-family: var(--schrift);
   -webkit-user-select: none;
   user-select: none;
   -webkit-touch-callout: none;
@@ -15,6 +45,10 @@ html, body {
 #spielfeld { position: fixed; inset: 0; touch-action: none; }
 canvas { display: block; }
 button { font-family: inherit; cursor: pointer; }
+b, strong { font-weight: 700; }
+
+/* Unsere HUD-Bilder (js/ui-bilder.js) sind so groß wie die Schrift */
+.ui-bild { display: inline-block; width: 1em; height: 1em; vertical-align: -0.15em; overflow: visible; }
 
 /* ---------- Startbildschirm ---------- */
 #start {
@@ -34,34 +68,52 @@ button { font-family: inherit; cursor: pointer; }
 }
 #start.weg { opacity: 0; pointer-events: none; }
 #start h1 {
-  font-size: clamp(48px, 10vw, 110px);
+  font-size: clamp(56px, 11vw, 120px);
+  font-weight: 800;
+  line-height: 1;
   letter-spacing: 2px;
-  text-shadow: 0 6px 0 #1d5d8c, 0 10px 24px rgba(0, 0, 0, 0.35);
+  color: #ffd84a;
+  /* Dicker Comic-Rand um die Buchstaben */
+  -webkit-text-stroke: 3px var(--holz-rand);
+  paint-order: stroke fill;
+  text-shadow: 0 7px 0 var(--holz-rand), 0 12px 24px rgba(0, 0, 0, 0.35);
 }
-#start .untertitel { font-size: 18px; opacity: 0.9; }
+#start .untertitel { font-size: 20px; font-weight: 600; text-shadow: 0 2px 3px rgba(0, 0, 0, 0.5); }
 #start .tippen {
+  --k: #ffa62b; --k-hell: #ffd36b; --k-dunkel: #b4600a;
   margin-top: 30px;
-  font-size: 26px;
-  padding: 14px 34px;
+  font-size: 28px;
+  font-weight: 800;
+  padding: 10px 38px 6px;
   border-radius: 40px;
-  background: #ffb02e;
-  box-shadow: 0 6px 0 #c77c00;
+  border: 4px solid var(--holz-rand);
+  background: linear-gradient(180deg, var(--k-hell) 0%, var(--k) 55%);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.5), 0 6px 0 var(--holz-rand);
+  text-shadow: 0 2px 0 var(--k-dunkel);
   animation: pulsieren 1.4s ease-in-out infinite;
 }
 @keyframes pulsieren { 50% { transform: scale(1.07); } }
 
-/* ---------- Anzeigen im Spiel ---------- */
+/* =============================================================
+   HUD – die Anzeigen und Knöpfe im Spiel
+   Alle im gleichen Stil: Papier-Schild mit dunklem Holzrand.
+   ============================================================= */
 #hud { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.6s; }
 #hud.sichtbar { opacity: 1; }
 #hud button { pointer-events: auto; touch-action: none; }
 
+/* Runder Knopf: helle Scheibe, dicker Rand, Glanz oben, "Dicke" unten */
 .rund-knopf {
-  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 4px solid var(--holz-rand);
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.88);
-  box-shadow: 0 5px 0 rgba(0, 0, 0, 0.18);
+  background: radial-gradient(circle at 50% 30%, #fffdf4 0%, #fbeccb 60%, #eccf96 100%);
+  box-shadow: inset 0 -5px 0 rgba(150, 100, 40, 0.25), 0 5px 0 var(--holz-rand);
+  transition: transform 0.08s;
 }
-.rund-knopf:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.18); }
+.rund-knopf:active { transform: translateY(4px); box-shadow: inset 0 -5px 0 rgba(150, 100, 40, 0.25), 0 1px 0 var(--holz-rand); }
 
 #oben-links {
   position: absolute;
@@ -72,28 +124,43 @@ button { font-family: inherit; cursor: pointer; }
   align-items: flex-start;
   gap: 12px;
 }
-#muenz-anzeige {
-  padding: 8px 18px;
-  border-radius: 30px;
-  background: rgba(255, 255, 255, 0.9);
-  color: #7a4b00;
-  font-size: 26px;
-  font-weight: bold;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
-}
-#rucksack-knopf { width: 78px; height: 78px; font-size: 40px; }
 
+/* Schild für Münzen, Satt-Balken und Aufgabe */
+#muenz-anzeige, #hunger-anzeige, #aufgabe-anzeige {
+  border: 3px solid var(--holz-rand);
+  background: linear-gradient(180deg, #fffaf0, #f6e4bc);
+  box-shadow: 0 4px 0 var(--holz-rand);
+  color: var(--tinte);
+}
+#muenz-anzeige {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 2px 18px 0 6px;
+  border-radius: 30px;
+  font-size: 28px;
+  font-weight: 800;
+  line-height: 1.5;
+  color: #7a4b00;
+}
+#muenz-anzeige .ui-bild { width: 38px; height: 38px; vertical-align: middle; }
+#rucksack-knopf { width: 78px; height: 78px; font-size: 52px; }
+
+/* Uhr: dunkles Holzschild oben in der Mitte */
 #uhr {
   position: absolute;
-  top: max(18px, env(safe-area-inset-top));
+  top: max(16px, env(safe-area-inset-top));
   left: 50%;
   transform: translateX(-50%);
-  padding: 8px 20px;
+  padding: 4px 22px 1px;
   border-radius: 30px;
-  background: rgba(0, 0, 0, 0.35);
+  border: 3px solid var(--holz-rand);
+  background: var(--holz-maserung) center / 160px 48px, var(--holz);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 4px 0 var(--holz-rand);
   color: #fff;
-  font-size: 20px;
-  font-weight: bold;
+  font-size: 21px;
+  font-weight: 800;
+  text-shadow: 0 2px 0 var(--holz-rand);
   white-space: nowrap;
 }
 
@@ -101,58 +168,73 @@ button { font-family: inherit; cursor: pointer; }
   position: absolute;
   top: max(16px, env(safe-area-inset-top));
   right: 16px;
-  width: 60px;
-  height: 60px;
-  font-size: 28px;
+  width: 64px;
+  height: 64px;
+  font-size: 38px;
 }
-#musik-knopf.aus { opacity: 0.45; text-decoration: line-through; }
+/* Musik aus: Note wird blass und bekommt einen roten Strich */
+#musik-knopf.aus .ui-bild { opacity: 0.4; }
+#musik-knopf.aus::after {
+  content: '';
+  position: absolute;
+  left: 8px; right: 8px; top: 50%;
+  height: 7px;
+  margin-top: -3px;
+  border-radius: 4px;
+  background: #e2402a;
+  border: 2px solid var(--holz-rand);
+  transform: rotate(-40deg);
+}
 
+/* Meldungen: Papierzettel mit Holzrand */
 #meldung {
   position: absolute;
   top: 84px;
   left: 50%;
   transform: translate(-50%, -10px);
   max-width: min(640px, 80vw);
-  padding: 14px 24px;
-  border-radius: 20px;
-  background: rgba(255, 255, 255, 0.95);
-  color: #24324a;
+  padding: 12px 24px 9px;
+  border-radius: 22px;
+  border: 4px solid var(--holz-rand);
+  background: linear-gradient(180deg, #fffaf0, #f8e9c6);
+  box-shadow: 0 5px 0 var(--holz-rand), 0 10px 18px rgba(0, 0, 0, 0.2);
+  color: var(--tinte);
   font-size: 21px;
+  font-weight: 600;
   line-height: 1.35;
   text-align: center;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
   opacity: 0;
   transition: opacity 0.3s, transform 0.3s;
 }
 #meldung.sichtbar { opacity: 1; transform: translate(-50%, 0); }
 
+/* Sprungknopf: großer runder Knopf mit blauem Pfeil */
 #sprung-knopf {
   position: absolute;
   right: 36px;
   bottom: max(36px, env(safe-area-inset-bottom));
   width: 96px;
   height: 96px;
-  color: #1d5d8c;
-  font-size: 44px;
-  font-weight: bold;
+  font-size: 56px;
 }
 
+/* Aktionsknopf: der große, orange glänzende Knopf */
 #aktion-knopf {
   position: absolute;
   right: 150px;
   bottom: max(70px, env(safe-area-inset-bottom));
   width: 120px;
   height: 120px;
-  border: 4px solid #fff;
+  border: 5px solid var(--holz-rand);
   border-radius: 50%;
-  background: #ffb02e;
+  background: radial-gradient(circle at 50% 28%, #ffe08a 0%, #ffb02e 48%, #f08a12 100%);
   color: #fff;
-  box-shadow: 0 6px 0 #c77c00, 0 0 0 0 rgba(255, 176, 46, 0.6);
+  box-shadow: inset 0 -7px 0 rgba(160, 70, 0, 0.35), 0 6px 0 var(--holz-rand), 0 0 0 0 rgba(255, 176, 46, 0.6);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
+  gap: 0;
   opacity: 0;
   transform: scale(0.6);
   pointer-events: none !important;
@@ -160,26 +242,62 @@ button { font-family: inherit; cursor: pointer; }
   animation: winken 1.6s infinite;
 }
 #aktion-knopf.sichtbar { opacity: 1; transform: scale(1); pointer-events: auto !important; }
-#aktion-knopf:active { transform: scale(0.94); }
-#aktion-bild { font-size: 44px; line-height: 1; }
-#aktion-text { font-size: 17px; font-weight: bold; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3); }
-@keyframes winken { 50% { box-shadow: 0 6px 0 #c77c00, 0 0 0 14px rgba(255, 176, 46, 0); } }
+#aktion-knopf:active { transform: scale(0.94) translateY(3px); }
+#aktion-bild { font-size: 46px; line-height: 1; filter: drop-shadow(0 2px 0 rgba(80, 40, 0, 0.35)); }
+#aktion-text {
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.2;
+  text-shadow: 0 2px 0 #a04e00, 0 0 3px #a04e00;
+}
+@keyframes winken {
+  50% { box-shadow: inset 0 -7px 0 rgba(160, 70, 0, 0.35), 0 6px 0 var(--holz-rand), 0 0 0 14px rgba(255, 176, 46, 0); }
+}
 
+/* Was man gerade in der Hand hat */
 #hand-anzeige {
   position: absolute;
   right: 170px;
   bottom: max(200px, env(safe-area-inset-bottom));
-  width: 56px;
-  height: 56px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.85);
+  border: 3px solid var(--holz-rand);
+  background: radial-gradient(circle at 50% 35%, #fffdf4, #f0d9a8);
+  box-shadow: 0 4px 0 var(--holz-rand);
   font-size: 32px;
-  line-height: 56px;
+  line-height: 54px;
   text-align: center;
   opacity: 0;
   transition: opacity 0.3s;
 }
 #hand-anzeige.sichtbar { opacity: 1; }
+
+/* =============================================================
+   DIE SPIEL-FENSTER (Rucksack, Werkbank, Händler, Base, Truhe,
+   Aufgabenbuch, Ballon, Karte): Holzrahmen + Papier innen.
+   Trick: Der Rahmen ist ein dicker "durchsichtiger" Rand, hinter dem
+   das Holzbild liegt. Innen (padding-box) liegt das Papier.
+   ============================================================= */
+#rucksack-fenster, .spiel-fenster, #karte-fenster {
+  --band: #e0553a;        /* Farbe vom Titel-Band */
+  --band-dunkel: #9c2c1c;
+  border: 12px solid transparent;
+  border-radius: 30px;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(255, 255, 255, 0.7), transparent 45%) padding-box,
+    radial-gradient(ellipse at 100% 100%, rgba(200, 150, 70, 0.22), transparent 50%) padding-box,
+    linear-gradient(180deg, var(--papier), #f7e6bd) padding-box,
+    var(--holz-maserung) 0 0 / 160px 48px border-box,
+    var(--holz);
+  box-shadow:
+    inset 0 0 0 3px var(--holz-rand),
+    inset 0 6px 0 3px rgba(120, 80, 30, 0.12),
+    0 0 0 3px var(--holz-rand),
+    0 9px 0 3px var(--holz-dunkel),
+    0 18px 34px rgba(0, 0, 0, 0.35);
+  color: var(--tinte);
+}
 
 /* ---------- Rucksack-Fenster ---------- */
 #rucksack-fenster {
@@ -187,11 +305,7 @@ button { font-family: inherit; cursor: pointer; }
   left: 50%;
   top: 50%;
   width: min(560px, 92vw);
-  padding: 22px;
-  border-radius: 28px;
-  background: #fff8ec;
-  border: 5px solid #c0392b;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  padding: 18px 20px 20px;
   transform: translate(-50%, -50%) scale(0.8);
   opacity: 0;
   pointer-events: none;
@@ -199,37 +313,87 @@ button { font-family: inherit; cursor: pointer; }
   z-index: 15;
 }
 #rucksack-fenster.offen { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
-.fenster-kopf { display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px; }
-.fenster-kopf h2 { color: #7a2a1f; font-size: 28px; }
-#rucksack-zu {
-  width: 52px;
-  height: 52px;
-  border: none;
-  border-radius: 50%;
-  background: #c0392b;
+
+/* ---------- Kopfzeile: Titel-Band + runder Schließen-Knopf ---------- */
+.fenster-kopf { display: flex; align-items: center; gap: 12px; margin-bottom: 16px; }
+.fenster-kopf h2 {
+  position: relative;
+  margin: 0 auto 0 14px;
+  padding: 5px 22px 1px;
+  border: 3px solid var(--holz-rand);
+  border-radius: 14px;
+  background: linear-gradient(180deg, color-mix(in srgb, var(--band) 70%, #fff) 0%, var(--band) 50%);
+  background-color: var(--band);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), 0 4px 0 var(--holz-rand);
   color: #fff;
-  font-size: 24px;
+  font-size: 27px;
+  font-weight: 800;
+  line-height: 1.3;
+  text-shadow: 0 2px 0 var(--band-dunkel), 0 0 3px var(--band-dunkel);
+  white-space: nowrap;
 }
+/* Die zwei Band-Enden links und rechts (wie eine Schleife) */
+.fenster-kopf h2::before, .fenster-kopf h2::after {
+  content: '';
+  position: absolute;
+  top: 9px;
+  bottom: -9px;
+  width: 22px;
+  z-index: -1;
+  background: var(--band-dunkel);
+  border: 3px solid var(--holz-rand);
+}
+.fenster-kopf h2::before { left: -16px; border-radius: 6px 0 0 6px; clip-path: polygon(-10% -10%, 110% -10%, 110% 110%, -10% 110%, 45% 50%); }
+.fenster-kopf h2::after { right: -16px; border-radius: 0 6px 6px 0; clip-path: polygon(-10% -10%, 110% -10%, 55% 50%, 110% 110%, -10% 110%); }
+.fenster-kopf h2 .ui-bild, .fenster-kopf h2 .spiel-bild { width: 1.15em; height: 1.15em; vertical-align: -0.22em; filter: drop-shadow(0 2px 0 rgba(0, 0, 0, 0.25)); }
+
+/* Runder roter Schließen-Knopf mit weißem X */
+.fenster-kopf .zu, #rucksack-zu, #karte-zu {
+  flex: none;
+  width: 56px;
+  height: 56px;
+  border: 4px solid var(--holz-rand);
+  border-radius: 50%;
+  background: var(--bild-x) center / 30px 30px no-repeat, radial-gradient(circle at 50% 30%, #ff8a6a 0%, #e2402a 55%, #b3261a 100%);
+  box-shadow: inset 0 -4px 0 rgba(90, 10, 0, 0.3), 0 4px 0 var(--holz-rand);
+  color: transparent;
+  font-size: 0;
+}
+.fenster-kopf .zu:active, #rucksack-zu:active, #karte-zu:active { transform: translateY(3px); box-shadow: inset 0 -4px 0 rgba(90, 10, 0, 0.3), 0 1px 0 var(--holz-rand); }
+
+/* ---------- Fächer ("Slots") im Rucksack und in der Truhe ---------- */
 #rucksack-raster { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
 .platz {
   position: relative;
   aspect-ratio: 1;
-  border: 3px solid #e2cfae;
+  border: 3px solid var(--fach-rand);
   border-radius: 18px;
-  background: #f3e6cf;
+  background: radial-gradient(circle at 50% 40%, #fffaf0 0%, var(--fach) 70%, #ebd29f 100%);
+  box-shadow: inset 0 4px 0 rgba(120, 80, 30, 0.12), 0 3px 0 #d8b880;
+  color: var(--tinte);
 }
-.platz.gewaehlt { border-color: #ffb02e; background: #fff1cf; box-shadow: 0 0 0 4px rgba(255, 176, 46, 0.4); }
-.platz .bild { font-size: 46px; }
+.platz:active { transform: scale(0.96); }
+.platz.gewaehlt { border-color: #f29a12; background: radial-gradient(circle at 50% 40%, #fffbe6, #ffe39a); box-shadow: 0 0 0 4px rgba(255, 176, 46, 0.55), 0 3px 0 #d8b880; }
+.platz .bild { font-size: 46px; line-height: 1; filter: drop-shadow(0 2px 0 rgba(90, 55, 20, 0.2)); }
+/* Mengen-Abzeichen unten rechts */
 .platz .anzahl {
   position: absolute;
-  right: 8px;
-  bottom: 4px;
-  font-size: 20px;
-  font-weight: bold;
-  color: #5a3a10;
+  right: -5px;
+  bottom: -6px;
+  min-width: 30px;
+  padding: 1px 7px 0;
+  border: 3px solid #fff6dc;
+  border-radius: 14px;
+  background: var(--holz-dunkel);
+  color: #fff;
+  font-size: 18px;
+  font-weight: 800;
+  line-height: 1.25;
+  text-align: center;
+  box-shadow: 0 2px 0 rgba(0, 0, 0, 0.25);
 }
 .platz .hand { position: absolute; left: 6px; top: 4px; font-size: 20px; }
-#rucksack-info { margin-top: 16px; min-height: 2.6em; color: #4a3a28; font-size: 19px; line-height: 1.35; text-align: center; }
+#rucksack-info { margin-top: 16px; min-height: 2.6em; color: var(--tinte); font-size: 20px; font-weight: 600; line-height: 1.35; text-align: center; }
 
 /* ---------- Schlafen ---------- */
 #schlafen {
@@ -241,6 +405,7 @@ button { font-family: inherit; cursor: pointer; }
   background: #050816;
   color: #cfd8ff;
   font-size: 64px;
+  font-weight: 800;
   opacity: 0;
   pointer-events: none;
   transition: opacity 1.2s;
@@ -257,7 +422,7 @@ button { font-family: inherit; cursor: pointer; }
   margin: -65px 0 0 -65px;
   border-radius: 50%;
   background: rgba(255, 255, 255, 0.25);
-  border: 3px solid rgba(255, 255, 255, 0.7);
+  border: 4px solid rgba(255, 255, 255, 0.75);
   pointer-events: none;
   opacity: 0;
   transition: opacity 0.15s;
@@ -267,27 +432,25 @@ button { font-family: inherit; cursor: pointer; }
   position: absolute;
   left: 50%;
   top: 50%;
-  width: 58px;
-  height: 58px;
+  width: 60px;
+  height: 60px;
   border-radius: 50%;
-  background: rgba(255, 255, 255, 0.9);
+  border: 4px solid var(--holz-rand);
+  background: radial-gradient(circle at 50% 30%, #fffdf4, #f0d9a8);
+  box-shadow: 0 4px 0 var(--holz-rand);
   transform: translate(-50%, -50%);
 }
 
 /* Selbst gemalte Bilder (z. B. die Schaufel) */
 .svg-bild { width: 1em; height: 1em; vertical-align: -0.12em; }
 
-/* ---------- Werkbank ---------- */
+/* ---------- Werkbank und alle anderen Fenster ---------- */
 .spiel-fenster {
   position: absolute;
   left: 50%;
   top: 50%;
   width: min(600px, 92vw);
-  padding: 22px;
-  border-radius: 28px;
-  background: #fff8ec;
-  border: 5px solid #8a5a34;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.35);
+  padding: 18px 20px 20px;
   transform: translate(-50%, -50%) scale(0.8);
   opacity: 0;
   pointer-events: none;
@@ -295,66 +458,188 @@ button { font-family: inherit; cursor: pointer; }
   z-index: 15;
 }
 .spiel-fenster.offen { opacity: 1; transform: translate(-50%, -50%) scale(1); pointer-events: auto; }
-.spiel-fenster .fenster-kopf h2 { color: #5a3a10; }
-.spiel-fenster .zu {
-  width: 52px; height: 52px; border: none; border-radius: 50%;
-  background: #8a5a34; color: #fff; font-size: 24px;
-}
+#werkbank-fenster { --band: #e08a2a; --band-dunkel: #8f4d0c; }
+
+/* Ein Rezept = eine Karte mit Bild-Fach, Name, Zutaten und Knopf */
+.rezepte { display: flex; flex-direction: column; gap: 12px; }
 .rezept {
-  display: flex; align-items: center; gap: 16px;
-  padding: 14px; border-radius: 20px; background: #f3e6cf; border: 3px solid #e2cfae;
+  display: flex; align-items: center; gap: 14px;
+  padding: 12px 14px; border-radius: 20px;
+  background: linear-gradient(180deg, #fffaf0, #fbefd2);
+  border: 3px solid #c99a5c;
+  box-shadow: 0 4px 0 #c99a5c;
 }
-.rezept-bild { font-size: 54px; width: 70px; text-align: center; }
-.rezept-mitte { flex: 1; font-size: 22px; color: #3a2a18; }
-.zutaten { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 8px; }
-.zutat { font-size: 17px; padding: 4px 10px; border-radius: 14px; }
-.zutat.ok { background: #cfeec0; color: #245a12; }
-.zutat.fehlt { background: #f6d0c8; color: #7a2a1f; }
-.rezept .bauen {
-  min-width: 110px; height: 64px; border: none; border-radius: 32px;
-  background: #ffb02e; color: #fff; font-size: 22px; font-weight: bold; box-shadow: 0 5px 0 #c77c00;
+.rezept-bild, .ware-bild {
+  flex: none;
+  display: flex; align-items: center; justify-content: center;
+  width: 76px; height: 76px;
+  border: 3px solid var(--fach-rand);
+  border-radius: 18px;
+  background: radial-gradient(circle at 50% 40%, #fffaf0 0%, var(--fach) 70%, #ebd29f 100%);
+  box-shadow: inset 0 4px 0 rgba(120, 80, 30, 0.12);
+  font-size: 50px; line-height: 1;
 }
-.rezept .bauen:disabled { background: #cbbfae; box-shadow: 0 5px 0 #a89c8a; }
-.werkbank-info { margin-top: 16px; min-height: 2.6em; color: #4a3a28; font-size: 19px; text-align: center; }
+.rezept-mitte { flex: 1; min-width: 0; font-size: 23px; line-height: 1.25; color: var(--tinte); }
+.rezept-mitte > b { font-weight: 800; }
+
+/* Zutaten: kleine Fächer mit Häkchen, wenn genug da ist */
+.zutaten { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 8px; }
+.zutat {
+  position: relative;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 2px 12px 0 3px;
+  min-height: 46px;
+  border-radius: 14px;
+  border: 2px solid #d4b07a;
+  background: #fffaf0;
+  font-size: 18px; font-weight: 700; line-height: 1.2;
+  color: var(--tinte);
+}
+.rezept .zutat .spiel-bild, .rezept .zutat .ui-bild, .rezept .zutat .svg-bild {
+  width: 38px; height: 38px; margin: 0;
+  padding: 3px;
+  border: 2px solid var(--fach-rand);
+  border-radius: 10px;
+  background: radial-gradient(circle at 50% 40%, #fffaf0, var(--fach));
+  vertical-align: middle;
+}
+.rezept .zutat .muenze-klein { line-height: 0; }
+/* Genug da: grünes Häkchen oben links */
+.zutat.ok { border-color: #79b84f; background: #f3fbe6; color: #2c5a14; }
+.zutat.ok::before {
+  content: '';
+  position: absolute; left: -7px; top: -8px;
+  width: 22px; height: 22px;
+  background: var(--bild-haken) center / contain no-repeat;
+}
+/* Fehlt noch: rot gestrichelt */
+.zutat.fehlt { border: 2px dashed #d0614a; background: #fff1ea; color: #9a2a16; }
+
+/* Der Bauen-Knopf (und alle anderen Spiel-Knöpfe, siehe unten) */
+.rezept .bauen { flex: none; min-width: 116px; height: 64px; padding: 0 18px; font-size: 23px; }
+.werkbank-info { margin-top: 16px; min-height: 2.6em; color: var(--tinte); font-size: 20px; font-weight: 600; text-align: center; }
+
+/* =============================================================
+   SPIEL-KNÖPFE: dick, rund, glänzend – und beim Drücken "sinken" sie ein.
+   Die Farbe kommt aus --k (Mitte), --k-hell (oben) und --k-dunkel (Rand).
+   ============================================================= */
+.fenster-knopf, .rezept .bauen, .tutorial-ok, .bw-ok, #karte-navi-aus, .ballon-ziel, .reiter-knopf.aktiv {
+  --k: #ffa62b; --k-hell: #ffd36b; --k-dunkel: #b4600a;
+  border: 3px solid var(--holz-rand);
+  border-radius: 32px;
+  background: linear-gradient(180deg, var(--k-hell) 0%, var(--k-hell) 18%, var(--k) 58%, var(--k) 100%);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.55), inset 0 -5px 0 rgba(0, 0, 0, 0.14), 0 5px 0 var(--holz-rand);
+  color: #fff;
+  font-weight: 800;
+  text-shadow: 0 2px 0 var(--k-dunkel), 0 0 3px var(--k-dunkel);
+  transition: transform 0.06s;
+}
+.fenster-knopf:active, .rezept .bauen:active, .tutorial-ok:active, .bw-ok:active, #karte-navi-aus:active, .ballon-ziel:active {
+  transform: translateY(4px);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.55), inset 0 -3px 0 rgba(0, 0, 0, 0.14), 0 1px 0 var(--holz-rand);
+}
+/* Farben */
+.rezept .bauen, .fenster-knopf.gruen, .tutorial-ok, .bw-ok { --k: #4cb83a; --k-hell: #9be36a; --k-dunkel: #24701a; }
+.fenster-knopf.gelb { --k: #ffa62b; --k-hell: #ffd36b; --k-dunkel: #b4600a; }
+.fenster-knopf.rot, #karte-navi-aus { --k: #e2402a; --k-hell: #ff8a6a; --k-dunkel: #8e1f12; }
+.fenster-knopf.blau { --k: #2f8fe0; --k-hell: #84ccff; --k-dunkel: #13508f; }
+/* Gesperrt (zu wenig Sachen): grau, ohne Glanz.
+   !important, weil der Händler die Farbe auch direkt im Knopf setzt. */
+.rezept .bauen:disabled, .fenster-knopf:disabled, .fenster-knopf.gesperrt {
+  --k: #c2b6a2; --k-hell: #ddd3c2; --k-dunkel: #857a68;
+  background: linear-gradient(180deg, var(--k-hell), var(--k)) !important;
+  color: #f7f2ea;
+  text-shadow: 0 1px 0 var(--k-dunkel);
+}
 
 /* ---------- Rucksack: Auswahl, Haltbarkeit, Knöpfe ---------- */
 .platz.ausgewaehlt { outline: 4px solid #3d7bff; outline-offset: 2px; }
-.platz .haltbar { position: absolute; left: 10%; right: 10%; bottom: 6px; height: 6px; border-radius: 3px; background: rgba(0,0,0,0.15); }
-.platz .haltbar span { display: block; height: 100%; border-radius: 3px; background: #4caf50; }
-#rucksack-knoepfe, .knopf-reihe { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 10px; }
+.platz .haltbar { position: absolute; left: 12%; right: 12%; bottom: 7px; height: 7px; border-radius: 4px; background: rgba(60, 35, 10, 0.25); }
+.platz .haltbar span { display: block; height: 100%; border-radius: 4px; background: #5cc23a; }
+#rucksack-knoepfe, .knopf-reihe { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 10px; }
 .fenster-knopf {
-  min-height: 56px; padding: 0 20px; border: none; border-radius: 28px;
-  font-size: 19px; font-weight: bold; color: #fff; box-shadow: 0 4px 0 rgba(0,0,0,0.2);
+  min-height: 58px; padding: 3px 22px 0;
+  font-size: 20px;
+  border-radius: 29px;
 }
-.fenster-knopf.gelb { background: #ffb02e; }
-.fenster-knopf.gruen { background: #4caf50; }
-.fenster-knopf.gesperrt { background: #cbbfae !important; }
-.fenster-knopf.rot { background: #d9534f; }
-.fenster-knopf.blau { background: #3d7bff; }
-.fenster-knopf:disabled { background: #cbbfae; }
 .gegrillt { filter: sepia(1) saturate(2.5) hue-rotate(-15deg) brightness(0.8); display: inline-block; }
+
+/* ---------- Satt-Balken (Brot + Balken) ---------- */
 #hunger-anzeige {
-  padding: 6px 14px; border-radius: 20px; background: rgba(255,255,255,0.9);
-  font-size: 18px; font-weight: bold; color: #3a5a10; box-shadow: 0 4px 0 rgba(0,0,0,0.15);
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 3px 14px 3px 6px; border-radius: 22px;
+  font-size: 30px; font-weight: 800; color: #3a5a10;
 }
-#hunger-anzeige.hunger { background: #ffdcd6; color: #8a1f12; animation: pulsieren 1.2s infinite; }
+#hunger-anzeige .ui-bild { width: 34px; height: 34px; }
+#hunger-anzeige.hunger { background: linear-gradient(180deg, #ffe6df, #ffc4b6); color: #8a1f12; font-size: 20px; animation: pulsieren 1.2s infinite; }
 #muenz-anzeige.wackeln { animation: wackeln 0.4s; }
 @keyframes wackeln { 25% { transform: rotate(-6deg) scale(1.1); } 75% { transform: rotate(6deg) scale(1.1); } }
+.satt-balken {
+  display: inline-block; width: 82px; height: 16px; border-radius: 9px;
+  border: 2px solid var(--holz-rand);
+  background: #e3d5b4; overflow: hidden;
+  box-shadow: inset 0 2px 0 rgba(0, 0, 0, 0.12);
+}
+.satt-balken span {
+  display: block; height: 100%; border-radius: 6px;
+  background: linear-gradient(180deg, #b6f07a 0%, #6cbf3c 55%, #4f9a28 100%);
+  box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.45);
+  transition: width 0.5s;
+}
+#hunger-anzeige.knurrt { background: linear-gradient(180deg, #fff3dc, #ffdca6); }
+#hunger-anzeige.knurrt .satt-balken span { background: linear-gradient(180deg, #ffc46b, #e8892c); }
 
 /* ---------- Händler ---------- */
-.haendler-fenster { border-color: #3c8d4a; width: min(640px, 94vw); }
-.haendler-fenster .geld { font-size: 24px; font-weight: bold; color: #7a4b00; margin-left: auto; margin-right: 16px; }
-.reiter { display: flex; gap: 10px; margin-bottom: 12px; }
-.reiter-knopf { flex: 1; height: 56px; border: 3px solid #cfe3c4; border-radius: 18px; background: #f1f7ec; font-size: 20px; font-weight: bold; color: #2d5a22; }
-.reiter-knopf.aktiv { background: #3c8d4a; border-color: #3c8d4a; color: #fff; }
-.waren { max-height: min(46vh, 380px); overflow-y: auto; display: flex; flex-direction: column; gap: 10px; touch-action: pan-y; }
-.ware { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 18px; background: #f3e6cf; border: 3px solid #e2cfae; }
-.ware-bild { font-size: 42px; width: 56px; text-align: center; }
-.ware-mitte { flex: 1; font-size: 20px; color: #3a2a18; }
-.ware-preis { font-size: 16px; color: #7a5a30; margin-top: 2px; }
-.ware-knoepfe { display: flex; gap: 8px; }
-.waren .leer { text-align: center; color: #6a5a48; font-size: 19px; padding: 20px; }
-.haendler-info { margin-top: 12px; min-height: 2.4em; text-align: center; font-size: 19px; color: #2d4a22; font-style: italic; }
+.haendler-fenster { --band: #4caa3a; --band-dunkel: #1f6516; width: min(640px, 94vw); }
+.haendler-fenster .geld {
+  display: inline-flex; align-items: center; gap: 6px;
+  margin-left: auto;
+  padding: 2px 16px 0 8px;
+  border: 3px solid var(--holz-rand);
+  border-radius: 24px;
+  background: linear-gradient(180deg, #fffaf0, #f6e4bc);
+  box-shadow: 0 3px 0 var(--holz-rand);
+  font-size: 24px; font-weight: 800; color: #7a4b00; white-space: nowrap;
+}
+/* Reiter Kaufen / Verkaufen: wie zwei Holz-Schilder */
+.reiter { display: flex; gap: 12px; margin-bottom: 14px; }
+.reiter-knopf {
+  flex: 1; height: 58px;
+  border: 3px solid var(--holz-rand);
+  border-radius: 20px;
+  background: linear-gradient(180deg, #f6e7c4, #e6cc96);
+  box-shadow: inset 0 3px 0 rgba(255, 255, 255, 0.5), 0 4px 0 var(--holz-rand);
+  font-size: 22px; font-weight: 800; color: #6a4520;
+}
+.reiter-knopf.aktiv { --k: #4cb83a; --k-hell: #9be36a; --k-dunkel: #24701a; border-radius: 20px; }
+
+/* Waren: Karten mit Bild-Fach, Name, Preis und Knöpfen */
+.waren { max-height: min(46vh, 380px); overflow-y: auto; display: flex; flex-direction: column; gap: 12px; touch-action: pan-y; padding: 2px 4px 6px 2px; }
+.ware {
+  display: flex; align-items: center; gap: 14px;
+  padding: 10px 12px; border-radius: 20px;
+  background: linear-gradient(180deg, #fffaf0, #fbefd2);
+  border: 3px solid #c99a5c;
+  box-shadow: 0 4px 0 #c99a5c;
+  flex: none;
+}
+.ware-bild { width: 68px; height: 68px; font-size: 44px; }
+.ware-mitte { flex: 1; min-width: 0; font-size: 22px; line-height: 1.2; color: var(--tinte); }
+.ware-mitte > b { font-weight: 800; }
+/* Preis als kleines Münz-Schild */
+.ware-preis {
+  display: inline-flex; align-items: center; gap: 4px;
+  margin-top: 4px; padding: 1px 10px 0 4px;
+  border-radius: 12px; background: #ffefc2; border: 2px solid #e2b85a;
+  font-size: 18px; font-weight: 700; color: #7a4b00;
+}
+.ware-knoepfe { display: flex; gap: 8px; flex-wrap: wrap; justify-content: flex-end; }
+.ware-knoepfe .fenster-knopf { padding: 3px 16px 0; font-size: 19px; }
+.waren .leer { text-align: center; color: #6a5a48; font-size: 20px; padding: 20px; }
+.haendler-info {
+  margin-top: 12px; min-height: 2.4em; text-align: center;
+  font-size: 20px; font-weight: 600; color: #2d4a22; font-style: italic;
+}
 
 /* ---------- Vorgeschichte (Tagebuch) ---------- */
 #vorgeschichte {
@@ -362,17 +647,23 @@ button { font-family: inherit; cursor: pointer; }
   background: rgba(10, 20, 35, 0.55);
 }
 .tagebuch {
-  width: min(620px, 90vw); padding: 30px 34px 22px; border-radius: 22px;
-  background: #fbf3df; border: 6px solid #8a5a34; box-shadow: 0 24px 60px rgba(0, 0, 0, 0.45);
-  font-family: Georgia, 'Times New Roman', serif; color: #3a2a18; text-align: center;
+  width: min(620px, 90vw); padding: 26px 30px 20px; border-radius: 26px;
+  border: 12px solid transparent;
+  background:
+    radial-gradient(ellipse at 15% 0%, rgba(255, 255, 255, 0.7), transparent 45%) padding-box,
+    linear-gradient(180deg, var(--papier), #f7e6bd) padding-box,
+    var(--holz-maserung) 0 0 / 160px 48px border-box,
+    var(--holz);
+  box-shadow: inset 0 0 0 3px var(--holz-rand), 0 0 0 3px var(--holz-rand), 0 9px 0 3px var(--holz-dunkel), 0 20px 40px rgba(0, 0, 0, 0.4);
+  color: var(--tinte); text-align: center;
 }
 .tb-bild { font-size: 64px; }
-.tb-text { font-size: 22px; line-height: 1.5; margin: 14px 0 8px; }
+.tb-text { font-size: 22px; font-weight: 600; line-height: 1.45; margin: 14px 0 8px; }
 .tb-punkte { display: flex; justify-content: center; gap: 8px; margin-top: 14px; }
-.tb-punkte span { width: 10px; height: 10px; border-radius: 50%; background: #d8c6a4; }
-.tb-punkte span.an { background: #8a5a34; }
-#start .neues-spiel { margin-top: 18px; font-size: 16px; padding: 8px 18px; border: none; border-radius: 20px; background: rgba(255,255,255,0.25); color: #fff; }
-#start .willkommen { font-size: 20px; }
+.tb-punkte span { width: 12px; height: 12px; border-radius: 50%; background: #d8c6a4; border: 2px solid #b89a6a; }
+.tb-punkte span.an { background: #f29a12; border-color: var(--holz-rand); }
+#start .neues-spiel { margin-top: 18px; font-size: 17px; padding: 8px 18px; border: 2px solid rgba(255,255,255,0.6); border-radius: 20px; background: rgba(255,255,255,0.25); color: #fff; }
+#start .willkommen { font-size: 21px; font-weight: 600; text-shadow: 0 2px 3px rgba(0, 0, 0, 0.5); }
 
 /* Fenster dürfen nie größer als der Bildschirm sein – sonst scrollen */
 #rucksack-fenster, .spiel-fenster, #karte-fenster {
@@ -383,34 +674,50 @@ button { font-family: inherit; cursor: pointer; }
   touch-action: pan-y;
 }
 @media (max-height: 600px) {
-  #rucksack-fenster, .spiel-fenster { padding: 14px; }
+  #rucksack-fenster, .spiel-fenster { padding: 12px 14px 14px; }
   .platz .bild { font-size: 34px; }
-  .fenster-kopf { margin-bottom: 8px; }
+  .fenster-kopf { margin-bottom: 10px; }
+  .fenster-kopf h2 { font-size: 24px; }
+  .rezept-bild { width: 64px; height: 64px; font-size: 42px; }
+  .ware-bild { width: 58px; height: 58px; font-size: 38px; }
+  .rezept { padding: 10px 12px; }
 }
 
 /* ---------- Aufgabenbuch ---------- */
 #aufgabe-anzeige {
-  max-width: min(320px, 40vw); padding: 8px 14px; border: none; border-radius: 16px;
-  background: rgba(255, 248, 225, 0.95); color: #5a3a10; font-size: 16px; font-weight: bold; text-align: left;
-  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15); white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  display: inline-flex; align-items: center; gap: 8px;
+  max-width: min(330px, 40vw); min-height: 44px; padding: 3px 14px 1px 6px;
+  border-radius: 18px;
+  font-size: 17px; font-weight: 700; text-align: left; color: #5a3a10;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
 }
-#aufgaben-fenster { border-color: #c98a2a; }
-.aufgaben-liste { list-style: none; display: flex; flex-direction: column; gap: 8px; }
-.aufgabe { display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 16px; background: #f3e6cf; font-size: 18px; color: #3a2a18; }
-.aufgabe.fertig { opacity: 0.6; }
-.aufgabe.jetzt { background: #fff1cf; border: 3px solid #ffb02e; }
-.aufgabe.spaeter { opacity: 0.45; }
+#aufgabe-anzeige .ui-bild { flex: none; width: 32px; height: 32px; }
+#aufgabe-anzeige span { overflow: hidden; text-overflow: ellipsis; }
+#aufgaben-fenster { --band: #3f8fd6; --band-dunkel: #174f86; }
+.aufgaben-liste { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+.aufgabe {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 14px; border-radius: 18px;
+  background: linear-gradient(180deg, #fffaf0, #fbefd2);
+  border: 3px solid #d4b07a;
+  font-size: 19px; line-height: 1.25; color: var(--tinte);
+}
+.aufgabe b { font-weight: 800; }
+.aufgabe.fertig { opacity: 0.7; background: #eef7e2; border-color: #a8cf8a; }
+.aufgabe.jetzt { background: linear-gradient(180deg, #fffbe6, #ffeab0); border-color: #f29a12; box-shadow: 0 4px 0 #d98a10; }
+.aufgabe.spaeter { opacity: 0.5; }
 .aufgabe > div { flex: 1; }
-.aufgabe-zeichen { font-size: 24px; }
-.aufgabe-tipp { font-size: 16px; color: #6a4a20; margin-top: 4px; font-weight: normal; }
-.aufgabe-lohn { font-size: 16px; font-weight: bold; color: #7a4b00; white-space: nowrap; }
+.aufgabe-zeichen { flex: none; font-size: 32px; line-height: 1; }
+.aufgabe-tipp { font-size: 17px; color: #6a4a20; margin-top: 4px; font-weight: 600; }
+.aufgabe-lohn {
+  flex: none; display: inline-flex; align-items: center; gap: 4px;
+  padding: 1px 10px 0; border-radius: 14px; background: #ffefc2; border: 2px solid #e2b85a;
+  font-size: 18px; font-weight: 800; color: #7a4b00; white-space: nowrap;
+}
 .platz.mitbelegt { background: #ece0c8; border-style: dashed; }
 .platz .bild.blass { opacity: 0.35; }
-.haendler-hinweis { font-size: 16px; color: #2d5a22; text-align: center; padding: 4px 8px 8px; }
+.haendler-hinweis { font-size: 18px; font-weight: 600; color: #2d5a22; text-align: center; padding: 2px 8px 4px; }
 
-/* Satt-Balken neben dem Brot */
-#hunger-anzeige { display: inline-flex; align-items: center; gap: 8px; }
-.satt-balken { display: inline-block; width: 70px; height: 12px; border-radius: 8px; background: #e6e0d2; overflow: hidden; }
-.satt-balken span { display: block; height: 100%; border-radius: 8px; background: linear-gradient(90deg, #f0a93a, #6cbf3c); transition: width 0.5s; }
-#hunger-anzeige.knurrt { background: #fff1d6; }
-#hunger-anzeige.knurrt .satt-balken span { background: #e8892c; }
+/* Die Bild-Platzhalter in den runden Knöpfen genau in die Mitte setzen */
+.rund-knopf > span { display: flex; line-height: 0; }
+.rund-knopf .ui-bild { filter: drop-shadow(0 2px 0 rgba(60, 35, 10, 0.25)); }

@@ -10,6 +10,11 @@
   <title>Inselspiel</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="icon.png">
+  <!-- Die runde Spiele-Schrift "Baloo 2" (Google Fonts). Lädt nebenbei, ohne das Spiel aufzuhalten.
+       Ohne Internet nimmt der Browser einfach eine Ersatz-Schrift (siehe --schrift in style.css). -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" media="print" onload="this.media='all'">
   <link rel="stylesheet" href="css/style.css">
   <link rel="stylesheet" href="css/karte.css">
   <link rel="stylesheet" href="css/fernrohr.css">
@@ -17,6 +22,7 @@
   <link rel="stylesheet" href="css/tutorial.css">
   <link rel="stylesheet" href="css/finale.css">
   <link rel="stylesheet" href="css/bewohner.css">
+  <link rel="stylesheet" href="css/bilder.css">
   <script type="importmap">
     {
       "imports": {
@@ -36,21 +42,21 @@
 
     <div id="hud">
       <div id="oben-links">
-        <div id="muenz-anzeige">🪙 <span id="muenzen">0</span></div>
+        <div id="muenz-anzeige"><span data-ui-bild="muenze">🪙</span> <span id="muenzen">0</span></div>
         <div id="hunger-anzeige" title="Essen">🍞 satt</div>
-        <button id="rucksack-knopf" class="rund-knopf" aria-label="Rucksack öffnen">🎒</button>
+        <button id="rucksack-knopf" class="rund-knopf" aria-label="Rucksack öffnen"><span data-ui-bild="rucksack">🎒</span></button>
       </div>
       <div id="uhr"></div>
-      <button id="musik-knopf" class="rund-knopf" aria-label="Musik an oder aus">🎵</button>
+      <button id="musik-knopf" class="rund-knopf" aria-label="Musik an oder aus"><span data-ui-bild="note">🎵</span></button>
       <div id="meldung"></div>
       <div id="hand-anzeige" title="In der Hand"></div>
       <button id="aktion-knopf" aria-label="Aktion"><span id="aktion-bild">✋</span><span id="aktion-text">Aktion</span></button>
-      <button id="sprung-knopf" class="rund-knopf" aria-label="Springen">⤒</button>
+      <button id="sprung-knopf" class="rund-knopf" aria-label="Springen"><span data-ui-bild="sprung">⤒</span></button>
     </div>
 
     <div id="rucksack-fenster">
       <div class="fenster-kopf">
-        <h2>🎒 Dein Rucksack</h2>
+        <h2><span data-ui-bild="rucksack">🎒</span> Dein Rucksack</h2>
         <button id="rucksack-zu" aria-label="Schließen">✕</button>
       </div>
       <div id="rucksack-raster"></div>
@@ -62,6 +68,8 @@
 
     <div id="joystick"><div id="joystick-knopf"></div></div>
   </div>
+  <!-- Zuerst die HUD-Bilder einsetzen, dann startet das Spiel -->
+  <script type="module" src="js/ui-bilder.js"></script>
   <script type="module" src="js/main.js"></script>
 </body>
 </html>
