@@ -21,7 +21,7 @@ const SORTEN = {
     erdeDunkel: '#3a2314', erde: '#6b4527', erdeHell: '#9a6b3e',
     rand: '#58662a', // der Rand geht ins Gras über
     nass: '#22150c', // frisch gegrabene, feuchte Erde
-    hoehe: 0.58,
+    hoehe: 0.5,
     steine: 4, steinGroesse: 0.075, steinFarben: ['#8d877d', '#6e675e', '#a39a8a'],
     wurzeln: 2, gras: 7, grasFarben: ['#3f6a1f', '#8fbf45'],
     muscheln: 0, moos: 0,
@@ -32,7 +32,7 @@ const SORTEN = {
     erdeDunkel: '#8a6a43', erde: '#bf9b66', erdeHell: '#e2c995',
     rand: '#d2ba8e',
     nass: '#5e4628',
-    hoehe: 0.52,
+    hoehe: 0.46,
     steine: 2, steinGroesse: 0.06, steinFarben: ['#b0a898', '#8f877a'],
     wurzeln: 0, gras: 3, grasFarben: ['#7c7a32', '#c9c06a'], // trockenes Strandgras
     muscheln: 11, moos: 0,
@@ -43,7 +43,7 @@ const SORTEN = {
     erdeDunkel: '#33261c', erde: '#5c493a', erdeHell: '#7e6c5b',
     rand: '#686456',
     nass: '#1f1812',
-    hoehe: 0.5,
+    hoehe: 0.45,
     steine: 10, steinGroesse: 0.13, steinFarben: ['#8a877f', '#6b6964', '#9c968b', '#5b5955'],
     wurzeln: 1, gras: 2, grasFarben: ['#4c6526', '#89a648'],
     muscheln: 0, moos: 4,
@@ -71,7 +71,7 @@ function erdhaufen(S, x, z) {
   const umriss = 1 + 0.12 * Math.sin(2 * a + S.p1) + 0.07 * Math.sin(3 * a + S.p2) + 0.04 * Math.sin(5 * a + S.p3);
   const q = r / umriss;
   let h;
-  if (q < 1) h = S.hoehe * Math.pow(1 - q * q, 1.15) + 0.02;
+  if (q < 1) h = S.hoehe * Math.pow(1 - q * q, 0.85) + 0.02;
   else h = 0.02 - 0.3 * Math.pow(Math.min(1, (q - 1) / 0.42), 1.3); // Rand verschwindet im Boden
   // Beulen und Klumpen
   h += (fbm(x * 2.3 + S.seed, z * 2.3, 3, S.seed) - 0.5) * 0.18 * Math.max(0, 1 - q * 0.75);
@@ -186,8 +186,8 @@ function beiwerk(S, zufall, teile, hoeheFn, { mitWurzeln = true, randStart = 1.0
     const [x, y, z] = ort(0.15, 1.15);
     const gr = 0.06 + zufall() * 0.08;
     const mix = zufall() * 0.6;
-    const g = klumpen(zufall, gr, 0.7, 0.3, (vx, vy) => zwischen(dunkel, erde, mix + vy * 0.2));
-    teile.push(fertig(hinlegen(g, x, y + gr * 0.2, z, zufall), 1));
+    const g = klumpen(zufall, gr, 0.55, 0.35, (vx, vy) => zwischen(dunkel, erde, mix + vy * 0.25));
+    teile.push(fertig(hinlegen(g, x, y, z, zufall), 1));
   }
   // Steinchen
   for (let i = 0; i < S.steine; i++) {
