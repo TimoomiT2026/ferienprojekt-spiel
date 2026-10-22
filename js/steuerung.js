@@ -7,6 +7,12 @@
 // =============================================================
 
 // Macht aus einem Element einen Knopf, der auf dem iPad sofort reagiert
+// Liegt der Finger in einem Fenster (Werkbank, Händler, Rucksack …)?
+// Dort soll man wischen und scrollen können, statt die Kamera zu drehen.
+function imFenster(e) {
+  return !!e.target?.closest?.('.spiel-fenster, [id$="-fenster"]');
+}
+
 export function knopf(element, wasPassiert) {
   let letzterTouch = 0;
   element.addEventListener('touchstart', (e) => {
@@ -85,6 +91,7 @@ export class Steuerung {
   }
 
   fingerRunter(e) {
+    if (imFenster(e)) return; // in Fenstern (Werkbank, Händler …) darf man scrollen
     e.preventDefault();
     for (const t of e.changedTouches) {
       const linkeSeite = t.clientX < window.innerWidth / 2;
@@ -103,6 +110,7 @@ export class Steuerung {
   }
 
   fingerBewegt(e) {
+    if (imFenster(e)) return; // nicht blockieren – sonst kann man die Liste nicht scrollen
     e.preventDefault();
     for (const t of e.changedTouches) {
       if (t.identifier === this.joystickFinger) {
