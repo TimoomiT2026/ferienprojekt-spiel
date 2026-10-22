@@ -438,4 +438,8 @@ export const EINSTELLUNGEN = {
     // Wie laut sind Plopp, Klonk und Knarzen? (0 = aus, 1 = laut)
     lautstaerke: 0.8,
   },
+
+  // ---------- Etappe 4: Wochenmarkt ----------
+  // Alle wie viele Spieltage ist Markt im Palmendorf? (3 = Tag 3, 6, 9 …)
+  markt: { alleTage: 3 },
 };
