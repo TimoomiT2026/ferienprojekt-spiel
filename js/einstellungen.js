@@ -187,6 +187,21 @@ export const EINSTELLUNGEN = {
   // Wie viel Holz gibt ein Baum / ein Busch?
   holzProBaum: 3,
   holzProBusch: 1,
+  // Wie wackelt und fällt ein Baum? (Sekunden und Winkel)
+  baumFallen: {
+    wackelWinkel: 0.07, // so weit neigt sich der Baum bei einem Treffer
+    wackelDauer: 1.1, // so lange schwingt er nach
+    fallDauer: 1.6, // so lange kippt er um (wird dabei immer schneller)
+    liegenDauer: 0.7, // so lange liegt er am Boden
+    weg: 0.5, // dann versinkt er und wird zu Holz
+    splitter: 6, // Holzsplitter pro Treffer
+    blaetter: 8, // fallende Blätter pro Treffer
+  },
+  // Bewegungen der Spielfigur (Sekunden)
+  // Graben: ansetzen → reintreten → hebeln → Erde auswerfen → zurück.
+  // (Der Fund erscheint nach 0,9 s – genau beim Auswerfen.)
+  grabDauer: 1.4,
+  schwungDauer: 0.45, // ein Schwert-Schlag: ausholen → durchziehen → zurück
 
   // ---------- Base ----------
   // Deine Base kannst du in 5 Stufen ausbauen (Stufe 1 = Zelt hast du schon).
