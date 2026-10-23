@@ -118,7 +118,7 @@ b, strong { font-weight: 700; }
 #oben-links {
   position: absolute;
   top: max(16px, env(safe-area-inset-top));
-  left: 16px;
+  left: max(16px, env(safe-area-inset-left));
   display: flex;
   flex-direction: column;
   align-items: flex-start;
@@ -167,7 +167,7 @@ b, strong { font-weight: 700; }
 #musik-knopf {
   position: absolute;
   top: max(16px, env(safe-area-inset-top));
-  right: 16px;
+  right: max(16px, env(safe-area-inset-right));
   width: 64px;
   height: 64px;
   font-size: 38px;
@@ -189,7 +189,7 @@ b, strong { font-weight: 700; }
 /* Meldungen: Papierzettel mit Holzrand */
 #meldung {
   position: absolute;
-  top: 84px;
+  top: calc(max(16px, env(safe-area-inset-top)) + 68px);
   left: 50%;
   transform: translate(-50%, -10px);
   max-width: min(640px, 80vw);
@@ -211,7 +211,7 @@ b, strong { font-weight: 700; }
 /* Sprungknopf: großer runder Knopf mit blauem Pfeil */
 #sprung-knopf {
   position: absolute;
-  right: 36px;
+  right: max(36px, env(safe-area-inset-right));
   bottom: max(36px, env(safe-area-inset-bottom));
   width: 96px;
   height: 96px;
@@ -221,7 +221,7 @@ b, strong { font-weight: 700; }
 /* Aktionsknopf: der große, orange glänzende Knopf */
 #aktion-knopf {
   position: absolute;
-  right: 150px;
+  right: calc(max(36px, env(safe-area-inset-right)) + 114px);
   bottom: max(70px, env(safe-area-inset-bottom));
   width: 120px;
   height: 120px;
@@ -257,7 +257,7 @@ b, strong { font-weight: 700; }
 /* Was man gerade in der Hand hat */
 #hand-anzeige {
   position: absolute;
-  right: 170px;
+  right: calc(max(36px, env(safe-area-inset-right)) + 134px);
   bottom: max(200px, env(safe-area-inset-bottom));
   width: 60px;
   height: 60px;
@@ -732,3 +732,243 @@ b, strong { font-weight: 700; }
 /* Karte: Kopfzeile ist schmal – Titel etwas kleiner, damit das X immer passt */
 #karte-fenster .fenster-kopf { gap: 8px; }
 #karte-fenster .fenster-kopf h2 { min-width: 0; font-size: 21px; padding: 4px 14px 0; overflow: hidden; text-overflow: ellipsis; }
+
+/* =============================================================
+   📱 HANDY QUER (Bildschirm höchstens 500 px hoch)
+   Auf dem Handy ist alles viel kleiner als auf dem iPad.
+   Darum: HUD kompakter, Fenster fast so groß wie der Bildschirm.
+   Knöpfe bleiben aber mindestens 44 px groß (Finger-Größe!).
+   env(safe-area-inset-…) = Platz für Kamera-Loch ("Notch") und Home-Strich.
+   ============================================================= */
+@media (max-height: 500px) {
+  :root {
+    --rand-l: max(10px, env(safe-area-inset-left));
+    --rand-r: max(10px, env(safe-area-inset-right));
+    --rand-o: max(8px, env(safe-area-inset-top));
+    --rand-u: max(10px, env(safe-area-inset-bottom));
+  }
+
+  /* ---------- Startbildschirm ---------- */
+  #start { gap: 4px; padding: 8px var(--rand-r) 8px var(--rand-l); }
+  #start h1 { font-size: clamp(44px, 19vh, 96px); -webkit-text-stroke-width: 2px; text-shadow: 0 5px 0 var(--holz-rand), 0 9px 18px rgba(0, 0, 0, 0.35); }
+  #start .untertitel, #start .willkommen { font-size: 16px; }
+  #start .tippen { margin-top: 12px; font-size: 21px; padding: 7px 28px 4px; }
+  #start .neues-spiel { margin-top: 10px; font-size: 15px; min-height: 44px; padding: 6px 16px; }
+
+  /* ---------- HUD oben links: zwei Spalten statt einer langen Reihe ----------
+     Münzen | Satt-Balken
+     Rucksack | Karte
+     Aufgabe (über beide Spalten) */
+  #oben-links {
+    top: var(--rand-o);
+    left: var(--rand-l);
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-items: start;
+    align-items: center;
+    gap: 6px 8px;
+  }
+  #muenz-anzeige { grid-area: 1 / 1; font-size: 19px; gap: 5px; padding: 1px 12px 0 3px; border-width: 2px; box-shadow: 0 3px 0 var(--holz-rand); }
+  #muenz-anzeige .ui-bild { width: 26px; height: 26px; }
+  #hunger-anzeige { grid-area: 1 / 2; font-size: 20px; gap: 5px; padding: 2px 9px 2px 4px; border-width: 2px; box-shadow: 0 3px 0 var(--holz-rand); }
+  #hunger-anzeige .ui-bild { width: 24px; height: 24px; }
+  #hunger-anzeige.hunger { font-size: 15px; }
+  .satt-balken { width: 56px; height: 12px; }
+  #rucksack-knopf, #karte-knopf { width: 52px; height: 52px; font-size: 32px; border-width: 3px; box-shadow: inset 0 -4px 0 rgba(150, 100, 40, 0.25), 0 4px 0 var(--holz-rand); }
+  #rucksack-knopf { grid-area: 2 / 1; }
+  #karte-knopf { grid-area: 2 / 2; }
+  #aufgabe-anzeige {
+    grid-area: 3 / 1 / 4 / 3;
+    max-width: min(250px, 30vw); min-height: 36px;
+    padding: 2px 10px 0 4px; border-width: 2px; box-shadow: 0 3px 0 var(--holz-rand);
+    font-size: 14px;
+  }
+  #aufgabe-anzeige .ui-bild { width: 24px; height: 24px; }
+
+  /* ---------- Uhr, Musik, Meldung ---------- */
+  #uhr { top: var(--rand-o); padding: 2px 14px 0; font-size: 15px; border-width: 2px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.25), 0 3px 0 var(--holz-rand); }
+  #musik-knopf { top: var(--rand-o); right: var(--rand-r); width: 46px; height: 46px; font-size: 26px; border-width: 3px; }
+  #musik-knopf.aus::after { left: 6px; right: 6px; height: 5px; }
+  #meldung.sichtbar { transform: none; }
+  #meldung {
+    /* Mittig im Streifen zwischen Rucksack/Karte (links) und Musik-Knopf (rechts) */
+    top: calc(var(--rand-o) + 38px);
+    left: calc(var(--rand-l) + 160px);
+    right: calc(var(--rand-r) + 56px);
+    width: fit-content;
+    max-width: 480px;
+    margin: 0 auto;
+    transform: translateY(-10px);
+    padding: 6px 14px 4px;
+    border-width: 3px; border-radius: 16px;
+    box-shadow: 0 4px 0 var(--holz-rand), 0 8px 14px rgba(0, 0, 0, 0.2);
+    font-size: 15px; line-height: 1.3;
+  }
+
+  /* ---------- Sprung- und Aktionsknopf unten rechts ---------- */
+  #sprung-knopf { right: var(--rand-r); bottom: var(--rand-u); width: 64px; height: 64px; font-size: 36px; }
+  #aktion-knopf {
+    right: calc(var(--rand-r) + 70px);
+    bottom: calc(var(--rand-u) + 26px);
+    width: 86px; height: 86px;
+    border-width: 4px;
+    box-shadow: inset 0 -5px 0 rgba(160, 70, 0, 0.35), 0 4px 0 var(--holz-rand), 0 0 0 0 rgba(255, 176, 46, 0.6);
+    animation-name: winken-klein;
+  }
+  #aktion-bild { font-size: 32px; }
+  #aktion-text { font-size: 14px; white-space: nowrap; letter-spacing: -0.2px; }
+  #hand-anzeige { right: calc(var(--rand-r) + 90px); bottom: calc(var(--rand-u) + 122px); width: 44px; height: 44px; font-size: 24px; line-height: 39px; border-width: 2px; }
+
+  /* ---------- Joystick etwas kleiner ---------- */
+  #joystick { width: 110px; height: 110px; margin: -55px 0 0 -55px; border-width: 3px; }
+  #joystick-knopf { width: 50px; height: 50px; border-width: 3px; }
+
+  #schlafen { font-size: 44px; }
+
+  /* Luft-Anzeige beim Tauchen (Grund-Stil steht in js/tauchen.js) */
+  #spielfeld #luft-anzeige { bottom: var(--rand-u); padding: 4px 12px; gap: 8px; font-size: 15px; border-radius: 16px; }
+  #spielfeld #luft-anzeige .balken { height: 12px; }
+
+  /* ---------- Fenster: fast der ganze Bildschirm ---------- */
+  #rucksack-fenster, .spiel-fenster {
+    width: calc(100vw - var(--rand-l) - var(--rand-r));
+    max-width: 820px;
+    max-height: calc(100dvh - 12px);
+    padding: 8px 10px 10px;
+    border-width: 8px;
+    border-radius: 22px;
+    box-shadow:
+      inset 0 0 0 2px var(--holz-rand),
+      0 0 0 2px var(--holz-rand),
+      0 5px 0 2px var(--holz-dunkel),
+      0 10px 22px rgba(0, 0, 0, 0.35);
+  }
+  /* Kopfzeile: kleineres Titel-Band, Schließen-Knopf 44 px */
+  .fenster-kopf { gap: 8px; margin-bottom: 8px; }
+  .fenster-kopf h2 { margin-left: 12px; padding: 2px 14px 0; font-size: 19px; border-width: 2px; border-radius: 10px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.35), 0 3px 0 var(--holz-rand); min-width: 0; overflow: hidden; text-overflow: ellipsis; }
+  .fenster-kopf h2::before, .fenster-kopf h2::after { top: 6px; bottom: -6px; width: 16px; border-width: 2px; }
+  .fenster-kopf h2::before { left: -11px; }
+  .fenster-kopf h2::after { right: -11px; }
+  .fenster-kopf .zu, #rucksack-zu, #karte-zu { width: 44px; height: 44px; border-width: 3px; background-size: 22px 22px, auto; }
+
+  /* Rucksack: 12 Fächer nebeneinander → 24 Plätze passen in 2 Reihen */
+  #rucksack-raster { grid-template-columns: repeat(12, 1fr); gap: 6px; }
+  .platz { border-width: 2px; border-radius: 12px; box-shadow: inset 0 3px 0 rgba(120, 80, 30, 0.12), 0 2px 0 #d8b880; }
+  .platz .bild { font-size: 30px; }
+  .platz .anzahl { right: -4px; bottom: -5px; min-width: 22px; padding: 0 4px; border-width: 2px; font-size: 14px; line-height: 1.2; }
+  .platz .hand { left: 2px; top: 0; font-size: 13px; }
+  .platz .haltbar { bottom: 3px; height: 4px; }
+  .platz.gewaehlt { box-shadow: 0 0 0 3px rgba(255, 176, 46, 0.55), 0 2px 0 #d8b880; }
+  .platz.ausgewaehlt { outline-width: 3px; outline-offset: 1px; }
+  #rucksack-info { margin-top: 8px; min-height: 2.6em; font-size: 15px; line-height: 1.3; }
+  #rucksack-knoepfe, .knopf-reihe { gap: 8px; margin-top: 6px; }
+  .fenster-knopf { min-height: 44px; padding: 2px 16px 0; font-size: 16px; border-radius: 22px; box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.55), inset 0 -4px 0 rgba(0, 0, 0, 0.14), 0 4px 0 var(--holz-rand); }
+
+  /* Werkbank (und Base): kompakte Rezept-Zeilen */
+  .rezepte { gap: 8px; }
+  .rezept { gap: 10px; padding: 6px 10px; border-radius: 16px; border-width: 2px; box-shadow: 0 3px 0 #c99a5c; }
+  .rezept-bild, .ware-bild { width: 50px; height: 50px; font-size: 32px; border-width: 2px; border-radius: 12px; }
+  .rezept-mitte { font-size: 16px; line-height: 1.2; }
+  .zutaten { gap: 6px 8px; margin-top: 4px; }
+  .zutat { min-height: 34px; padding: 1px 8px 0 2px; gap: 4px; font-size: 14px; border-radius: 10px; }
+  .rezept .zutat .spiel-bild, .rezept .zutat .ui-bild, .rezept .zutat .svg-bild { width: 28px; height: 28px; padding: 2px; border-radius: 7px; }
+  .zutat.ok::before { left: -6px; top: -6px; width: 17px; height: 17px; }
+  .rezept .bauen { min-width: 84px; height: 46px; padding: 0 12px; font-size: 16px; }
+  .werkbank-info { margin-top: 8px; min-height: 2.4em; font-size: 15px; }
+
+  /* Händler: Reiter und Waren-Zeilen kompakt. Die Liste scrollt nicht extra –
+     das ganze Fenster scrollt (sonst wäre die Liste nur ein winziger Streifen). */
+  .haendler-fenster .geld { font-size: 17px; padding: 1px 10px 0 4px; border-width: 2px; }
+  .reiter { gap: 8px; margin-bottom: 8px; }
+  .reiter-knopf { height: 44px; font-size: 16px; border-width: 2px; border-radius: 14px; }
+  .reiter-knopf.aktiv { border-radius: 14px; }
+  .waren { max-height: none; overflow: visible; gap: 8px; }
+  .ware { gap: 10px; padding: 5px 8px; border-radius: 16px; border-width: 2px; box-shadow: 0 3px 0 #c99a5c; }
+  .ware-bild { width: 46px; height: 46px; font-size: 30px; }
+  .ware-mitte { font-size: 16px; }
+  .ware-preis { font-size: 14px; margin-top: 2px; }
+  .ware-knoepfe { gap: 6px; }
+  .ware-knoepfe .fenster-knopf { padding: 2px 12px 0; font-size: 15px; }
+  .waren .leer { font-size: 15px; padding: 10px; }
+  .haendler-info { margin-top: 6px; min-height: 1.4em; font-size: 15px; }
+  .haendler-hinweis { font-size: 14px; }
+
+  /* Aufgabenbuch */
+  .aufgaben-liste { gap: 6px; }
+  .aufgabe { gap: 8px; padding: 5px 10px; border-radius: 14px; border-width: 2px; font-size: 15px; }
+  .aufgabe.jetzt { box-shadow: 0 3px 0 #d98a10; }
+  .aufgabe-zeichen { font-size: 24px; }
+  .aufgabe-tipp { font-size: 14px; margin-top: 2px; }
+  .aufgabe-lohn { font-size: 14px; padding: 0 8px; }
+
+  /* ---------- Vorgeschichte (Tagebuch) ---------- */
+  .tagebuch {
+    width: min(640px, calc(100vw - var(--rand-l) - var(--rand-r)));
+    max-height: calc(100dvh - 12px);
+    overflow-y: auto; -webkit-overflow-scrolling: touch; touch-action: pan-y;
+    padding: 8px 18px 10px; border-width: 8px; border-radius: 20px;
+  }
+  .tb-bild { font-size: 38px; line-height: 1.1; }
+  .tb-text { font-size: 15px; line-height: 1.4; margin: 4px 0 4px; }
+  .tb-text br + br { display: none; } /* Leerzeilen weg – spart Platz */
+  .tb-punkte { margin-top: 8px; }
+}
+/* Etwas schwächer "winken", damit der Leuchtring nicht über den Rand geht */
+@keyframes winken-klein {
+  50% { box-shadow: inset 0 -5px 0 rgba(160, 70, 0, 0.35), 0 4px 0 var(--holz-rand), 0 0 0 9px rgba(255, 176, 46, 0); }
+}
+
+/* Ganz flache Handys (z. B. 667 × 375 mit Browser-Leisten): noch etwas enger */
+@media (max-height: 340px) {
+  #rucksack-raster { gap: 5px; }
+  .platz .bild { font-size: 26px; }
+  #rucksack-info { min-height: 2.4em; margin-top: 6px; }
+  .fenster-kopf { margin-bottom: 6px; }
+}
+
+/* =============================================================
+   📱↻ HANDY HOCHKANT: Bitte quer drehen!
+   Nur auf schmalen Handys im Hochformat (nicht auf dem iPad).
+   ============================================================= */
+#dreh-hinweis { display: none; }
+@media (orientation: portrait) and (max-width: 600px) {
+  #dreh-hinweis {
+    position: fixed; inset: 0; z-index: 1000;
+    display: flex; align-items: center; justify-content: center;
+    padding: max(20px, env(safe-area-inset-top)) 20px max(20px, env(safe-area-inset-bottom));
+    background: radial-gradient(circle at 50% 30%, #c8ecff 0%, #7fcaf2 55%, #3d93c9 100%);
+    touch-action: none;
+  }
+  .dreh-karte {
+    width: min(340px, 100%);
+    padding: 26px 22px 24px;
+    border: 10px solid transparent;
+    border-radius: 34px;
+    background:
+      radial-gradient(ellipse at 15% 0%, rgba(255, 255, 255, 0.7), transparent 45%) padding-box,
+      linear-gradient(180deg, var(--papier), #f7e6bd) padding-box,
+      var(--holz-maserung) 0 0 / 160px 48px border-box,
+      var(--holz);
+    box-shadow: inset 0 0 0 3px var(--holz-rand), 0 0 0 3px var(--holz-rand), 0 8px 0 3px var(--holz-dunkel), 0 18px 34px rgba(0, 0, 0, 0.3);
+    color: var(--tinte);
+    text-align: center;
+  }
+  .dreh-handy { display: inline-block; font-size: 84px; line-height: 1; animation: drehen 2.4s ease-in-out infinite; }
+  .dreh-pfeil { display: inline-block; font-size: 46px; font-weight: 800; color: #f08a12; vertical-align: 18px; margin-left: 4px; }
+  .dreh-titel {
+    margin-top: 18px;
+    font-size: 26px; font-weight: 800; line-height: 1.2;
+    color: #ffd84a;
+    -webkit-text-stroke: 2px var(--holz-rand);
+    paint-order: stroke fill;
+    text-shadow: 0 3px 0 var(--holz-rand);
+  }
+  .dreh-text { margin-top: 10px; font-size: 17px; font-weight: 600; line-height: 1.35; }
+}
+/* Das Handy dreht sich hin und her: hochkant → quer → hochkant */
+@keyframes drehen {
+  0%, 20% { transform: rotate(0deg); }
+  45%, 75% { transform: rotate(-90deg); }
+  100% { transform: rotate(0deg); }
+}
+@media (prefers-reduced-motion: reduce) { .dreh-handy { animation: none; transform: rotate(-90deg); } }

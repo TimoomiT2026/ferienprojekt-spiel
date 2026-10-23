@@ -35,3 +35,19 @@
   .base-schritt .gross { font-size: 30px; }
   .truhe-raster .platz .bild { font-size: 36px; }
 }
+
+/* 📱 Handy quer: kompakter */
+@media (max-height: 500px) {
+  .base-leiste { gap: 4px; margin-bottom: 6px; }
+  .base-schritt { padding: 3px 2px 2px; border-width: 2px; border-radius: 12px; font-size: 12px; }
+  .base-schritt .gross { font-size: 24px; margin-bottom: 0; }
+  .base-schritt.jetzt { box-shadow: 0 3px 0 #d98a10; }
+  .base-jetzt { font-size: 15px; margin: 2px 0 4px; }
+  .base-ueberschrift { font-size: 16px; margin: 8px 0 6px; }
+  .base-klein, .base-fehlt { font-size: 14px; }
+  .base-fertig { padding: 8px; font-size: 15px; border-width: 2px; }
+  #base-fenster .rezept { margin-bottom: 6px; }
+  .truhe-raster { gap: 5px; }
+  .truhe-raster .platz .bild { font-size: 28px; }
+  .truhe-raster .platz .anzahl { font-size: 13px; min-width: 20px; }
+}

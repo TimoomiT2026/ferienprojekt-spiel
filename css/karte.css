@@ -5,7 +5,7 @@
 /* ---------- Der Karten-Knopf (unter dem Rucksack) ---------- */
 #karte-knopf { width: 78px; height: 78px; font-size: 52px; }
 #karte-knopf.aktiv { background: radial-gradient(circle at 50% 30%, #fffbe6, #ffd36b); }
-#karte-knopf.allein { position: absolute; top: 120px; left: 16px; }
+#karte-knopf.allein { position: absolute; top: 120px; left: max(16px, env(safe-area-inset-left)); }
 
 /* ---------- Das Kartenfenster ---------- */
 #karte-fenster {
@@ -159,3 +159,45 @@
 }
 #navi.erreicht #navi-pfeil { display: none; }
 #navi.erreicht #navi-text { background: #ffb02e; color: #fff; font-size: 28px; animation: pulsieren 0.9s ease-in-out infinite; }
+
+/* =============================================================
+   📱 HANDY QUER: Karte links (so hoch wie möglich), Kopf und Tipp rechts daneben
+   ============================================================= */
+@media (max-height: 500px) {
+  /* Karten-Knopf so klein wie der Rucksack-Knopf (Rest steht in style.css) */
+  #karte-knopf { width: 52px; height: 52px; font-size: 32px; }
+  #karte-knopf.allein { top: calc(var(--rand-o) + 48px); left: var(--rand-l); }
+
+  #karte-fenster {
+    --blatt: min(calc(100dvh - 44px), calc(100vw - 300px));
+    display: grid;
+    grid-template-columns: var(--blatt) minmax(0, 1fr);
+    grid-template-rows: auto 1fr;
+    column-gap: 10px;
+    width: min(calc(var(--blatt) + 330px), calc(100vw - var(--rand-l) - var(--rand-r)));
+    max-height: calc(100dvh - 12px);
+    padding: 8px 10px;
+    border-width: 8px;
+    border-radius: 22px;
+    box-shadow: inset 0 0 0 2px var(--holz-rand), 0 0 0 2px var(--holz-rand), 0 5px 0 2px var(--holz-dunkel), 0 10px 22px rgba(0, 0, 0, 0.35);
+  }
+  #karte-fenster .fenster-kopf { grid-column: 2; grid-row: 1; flex-wrap: wrap; align-items: flex-start; margin-bottom: 6px; }
+  #karte-fenster .fenster-kopf h2 { font-size: 18px; padding: 2px 12px 0; flex: 1 1 auto; margin-right: 0; }
+  /* "Alle Inseln" in eine eigene Zeile (die Farbe steht direkt im HTML, darum !important) */
+  #karte-ansicht { order: 3; flex: 1 1 100%; min-height: 44px; margin: 6px 0 0 !important; font-size: 15px !important; }
+  #karte-blatt { grid-column: 1; grid-row: 1 / span 2; border-radius: 10px; }
+  .karte-fuss { grid-column: 2; grid-row: 2; flex-direction: column; align-items: stretch; justify-content: flex-start; gap: 8px; min-height: 0; margin-top: 4px; }
+  #karte-tipp { font-size: 15px; }
+  #karte-navi-aus { min-height: 44px; padding: 2px 12px 0; font-size: 15px; }
+
+  .karte-punkt { width: 44px; height: 44px; margin: -22px 0 0 -22px; border-width: 3px; }
+  .karte-punkt .punkt-bild { font-size: 23px; }
+  .karte-punkt .punkt-name { font-size: 13px; padding: 1px 7px; transform: translate(-50%, 2px); }
+  #karte-ich { width: 30px; height: 30px; }
+
+  /* Navi-Pfeil unten in der Mitte */
+  #navi { bottom: var(--rand-u); gap: 4px; }
+  #navi-pfeil { width: 64px; height: 64px; padding: 7px; }
+  #navi-text { font-size: 16px; padding: 2px 14px 0; border-width: 2px; }
+  #navi.erreicht #navi-text { font-size: 19px; }
+}

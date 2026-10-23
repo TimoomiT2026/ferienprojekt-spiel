@@ -129,3 +129,28 @@
   .zeitung-artikel.gross h3 { font-size: 28px; }
   .zeitung-name { font-size: 46px; }
 }
+
+/* 📱 Handy quer: Zeitung fast bildschirmbreit, Schrift kleiner, aber ≥ 14 px */
+@media (max-height: 500px) {
+  #zeitung-fenster { width: calc(100vw - var(--rand-l) - var(--rand-r)); max-width: 860px; }
+  .zeitung-blatt { padding: 8px 12px 12px; transform: none; }
+  .zeitung-kopf { margin-bottom: 8px; padding-bottom: 4px; }
+  .zeitung-name { font-size: 36px; padding-top: 2px; }
+  .zeitung-zeile { font-size: 14px; margin-top: 4px; }
+  .zeitung-spalten { gap: 10px 14px; }
+  .zeitung-artikel h3 { font-size: 18px; margin-bottom: 4px; }
+  .zeitung-artikel.gross h3 { font-size: 21px; }
+  .zeitung-artikel p, .zeitung-artikel.gross p { font-size: 15px; line-height: 1.35; }
+  .zeitung-foto { padding: 4px 4px 6px; margin: 2px 2px 8px; }
+  .zeitung-kasten { padding: 6px 10px 8px; font-size: 15px; border-width: 2px; box-shadow: 0 3px 0 var(--zeitung-tinte); }
+  .zeitung-kasten h4 { margin: -6px -10px 6px; padding: 2px 10px 0; font-size: 16px; border-bottom-width: 2px; }
+  .zeitung-kasten .schlagzeile { font-size: 17px; }
+  .zeitung-kasten .klein { font-size: 14px; }
+  .z-staende { grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 6px 12px; }
+  .z-stand-name, .z-preis { font-size: 15px; }
+  .z-ware, .zahlen li { font-size: 14px; }
+  .z-ware-bild, .z-ware-bild .spiel-bild { width: 24px; height: 24px; font-size: 19px; line-height: 24px; }
+  .zeitung-leer { font-size: 16px; padding: 6px 12px 10px; }
+  .zeitung-leer-bild { font-size: 48px; }
+  .zeitung-blaettern { margin-top: 10px; }
+}

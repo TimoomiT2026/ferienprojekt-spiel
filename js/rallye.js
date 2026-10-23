@@ -1257,7 +1257,8 @@ export class Rallye {
       gross.innerHTML = `<div class="rallye-pokal">🏆</div><b>Du hast gewonnen!</b><br>` +
         (gewinn ? `<span class="rallye-gewinn">+${gewinn} ${muenze}</span>` : '<span class="rallye-klein">Den Gewinn gibt es nur einmal pro Markttag – aber du warst wieder der Schnellste!</span>');
     } else {
-      gross.innerHTML = `<div class="rallye-pokal">${this.spielerPlatz === 2 ? '🥈' : this.spielerPlatz === 3 ? '🥉' : '🚣'}</div><b>Platz ${this.spielerPlatz}!</b><br><span class="rallye-klein">Nächstes Mal! Tipp: Vor engen Kurven bremsen und die Zauberpilze mitnehmen.</span>`;
+      const platz = this.spielerPlatz || this.boote.length; // noch nicht im Ziel? Dann letzter Platz
+      gross.innerHTML = `<div class="rallye-pokal">${platz === 2 ? '🥈' : platz === 3 ? '🥉' : '🚣'}</div><b>Platz ${platz}!</b><br><span class="rallye-klein">Nächstes Mal! Tipp: Vor engen Kurven bremsen und die Zauberpilze mitnehmen.</span>`;
     }
     gross.innerHTML += `<div class="rallye-klein">Deine Zeit: <b>${zeitText(du.fertig)}</b>${neueBestzeit ? ' · ⭐ Neue Bestzeit!' : ` · Bestzeit: ${zeitText(this.bestzeit)}`}</div>`;
     this.zeigeListe();

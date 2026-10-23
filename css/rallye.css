@@ -6,7 +6,7 @@
 #rallye-hud {
   position: absolute;
   top: calc(max(16px, env(safe-area-inset-top)) + 96px);
-  right: 16px;
+  right: max(16px, env(safe-area-inset-right));
   display: none;
   flex-direction: column;
   align-items: flex-end;
@@ -123,3 +123,23 @@
 
 /* Konfetti über allem */
 .rallye-konfetti { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; z-index: 30; }
+
+/* 📱 Handy quer: Anzeigen kompakt unter dem Musik-Knopf */
+@media (max-height: 500px) {
+  #rallye-hud { top: calc(var(--rand-o) + 54px); right: var(--rand-r); gap: 6px; }
+  .rallye-schild { padding: 1px 12px 0; font-size: 16px; border-width: 2px; box-shadow: 0 3px 0 var(--holz-rand); }
+  .rallye-platz b { font-size: 21px; }
+  .rallye-balken { width: 120px; height: 12px; border-width: 2px; }
+  #rallye-hud .rallye-aufgeben { min-height: 40px; padding: 2px 12px 0; font-size: 14px; border-width: 2px; }
+  #rallye-countdown { font-size: 96px; -webkit-text-stroke-width: 4px; text-shadow: 0 5px 0 var(--holz-rand), 0 10px 18px rgba(0, 0, 0, 0.35); }
+  #rallye-hinweis { bottom: calc(var(--rand-u) + 84px); padding: 3px 14px 0; font-size: 18px; border-width: 3px; }
+  #rallye-hinweis.turbo { font-size: 22px; }
+  #rallye-fenster { width: min(560px, calc(100vw - var(--rand-l) - var(--rand-r))); }
+  .rallye-gross { font-size: 20px; }
+  .rallye-pokal { font-size: 42px; }
+  .rallye-gewinn { font-size: 22px; }
+  .rallye-gewinn svg { width: 28px; height: 28px; }
+  .rallye-klein { font-size: 15px; margin-top: 2px; }
+  .rallye-liste { margin: 6px auto 2px; }
+  .rallye-liste li { font-size: 15px; margin: 2px 0; padding: 1px 10px 0; }
+}

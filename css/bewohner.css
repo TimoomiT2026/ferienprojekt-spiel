@@ -66,3 +66,24 @@
 
 /* Die wertvolle Münze im Rucksack: größer und mit goldenem Schimmer */
 .muenze-bild { width: 1.35em; height: 1.35em; filter: drop-shadow(0 0 5px #ffd84a); }
+
+/* 📱 Handy quer: schmaler und flacher (man soll die Person noch sehen) */
+@media (max-height: 500px) {
+  #bewohner-blase {
+    bottom: max(6px, env(safe-area-inset-bottom));
+    width: min(560px, calc(100vw - var(--rand-l) - var(--rand-r)));
+    padding: 6px 12px 8px 14px;
+    border-width: 4px;
+    border-radius: 26px;
+    box-shadow: 0 4px 0 #1d8a94, 0 10px 22px rgba(0, 0, 0, 0.25);
+  }
+  #bewohner-blase::before { width: 18px; height: 18px; top: -19px; border-width: 3px; }
+  #bewohner-blase::after { width: 10px; height: 10px; top: -33px; border-width: 3px; }
+  .bw-kopf { gap: 8px; margin-bottom: 2px; }
+  .bw-gesicht { width: 34px; height: 34px; font-size: 21px; }
+  .bw-name { font-size: 17px; }
+  .bw-text { font-size: 15px; line-height: 1.35; }
+  .bw-fuss { margin-top: 6px; gap: 8px; }
+  .bw-zaehler { font-size: 14px; padding: 3px 10px; }
+  .bw-ok { min-width: 70px; height: 44px; padding: 2px 12px 0; font-size: 16px; }
+}

@@ -63,3 +63,25 @@
   #tutorial-blase { padding: 10px 12px 10px 18px; }
   .tutorial-text { font-size: 18px; }
 }
+
+/* 📱 Handy quer: rechts neben den Anzeigen, unter der Meldung –
+   und oberhalb vom Aktions- und Sprungknopf */
+@media (max-height: 500px) {
+  #tutorial-blase {
+    left: max(calc(var(--rand-l) + min(262px, 30vw + 12px)), calc(50% - 240px));
+    right: var(--rand-r);
+    max-width: 480px;
+    top: calc(var(--rand-o) + 108px);
+    gap: 10px;
+    padding: 6px 8px 6px 16px;
+    border-width: 3px;
+    border-radius: 24px;
+    box-shadow: 0 4px 0 var(--holz-rand), 0 8px 16px rgba(0, 0, 0, 0.22);
+  }
+  #tutorial-blase::before { width: 18px; height: 18px; left: 30px; bottom: -17px; border-width: 3px; }
+  #tutorial-blase::after { width: 10px; height: 10px; left: 20px; bottom: -30px; border-width: 3px; }
+  .tutorial-text { font-size: 15px; line-height: 1.25; }
+  .tutorial-ok { min-width: 60px; height: 44px; padding: 2px 10px 0; font-size: 15px; }
+  /* Beim Rennen stehen rechts die Rallye-Anzeigen – dann Platz lassen */
+  #spielfeld:has(#rallye-hud.sichtbar) #tutorial-blase { right: calc(var(--rand-r) + 140px); }
+}

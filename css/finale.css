@@ -66,3 +66,15 @@
   .insadorium-stein { animation: none; }
   #finale-fenster .finale-buch { transition: none; transform: none; }
 }
+
+/* 📱 Handy quer: Stein klein, Text kompakt – alles passt ohne Scrollen */
+@media (max-height: 500px) {
+  #finale-fenster { padding: 6px var(--rand-r) 6px var(--rand-l); }
+  #finale-fenster .finale-buch { width: min(640px, 100%); max-height: calc(100dvh - 12px); padding: 8px 18px 10px; }
+  .insadorium-stein { width: 44px; height: 44px; margin: 2px auto 6px; }
+  .finale-titel { font-size: 21px; }
+  #finale-fenster .tb-text { font-size: 15px; line-height: 1.35; margin: 4px 0 4px; }
+  .finale-danke { font-size: 16px; padding: 6px 12px; margin: 4px auto; border-radius: 16px; }
+  .finale-hinweis { font-size: 14px; margin: 4px 0 2px; }
+  #finale-fenster .fenster-knopf { min-height: 46px; padding: 0 22px; font-size: 17px; }
+}
