@@ -58,16 +58,16 @@ Antworten vom Game Designer (Tag 4):
 - Die Limo-Nacht zählt **nicht** als „nicht geschlafen“
 - Zeitung: Bilder von Dingen, die **im Spiel wirklich passiert sind** (Claude denkt sich lustige Bilder dazu aus)
 
-- [ ] **Wochenmarkt** einmal pro Woche
-  - [ ] Obst- & Gemüsestand: günstigere Angebote
-  - [ ] Kaffeestand ☕: Kaffee = einmal nicht schlafen müssen (ca. 15 Münzen, Luxus)
-  - [ ] Limonadenstand 🍋: „Nacht-Limo“ in den Rucksack; trinken = diese eine Nacht wird taghell, macht aber müde. Mit Kaffee zusammen: wach + helle Nacht. Luxus – schwer leistbar, aber möglich
-  - [ ] Stein-, Metall- & Edelsteinhändler: Edelsteine, Goldnuggets, Eisenerz, Kohle zu okayen Preisen
-- [ ] **Challenge: Zauberpilz-Rallye** 🚣 (Teilnahme 10 Münzen, Gewinn 50 Münzen)
-  - [ ] Alle starten in Booten auf dem Wasser, feste abgesteckte Rennstrecke, breit genug zum Überholen
-  - [ ] Zu schnell in die Kurve → man treibt aus der Bahn und wird langsamer; nur in der Strecke volles Tempo
-  - [ ] KI-Gegner: nicht schlecht, aber nicht unrealistisch gut
-- [ ] **Briefkasten an der Base** 📬: einmal pro Woche morgens die **Inselgruppen-Zeitung** – lustige Bilder von Menschen und Tieren der Insel in skurrilen Situationen, Angebote vom Wochenmarkt, Ergebnis und Sieger der letzten Challenge
+- [x] **Wochenmarkt** einmal pro Woche
+  - [x] Obst- & Gemüsestand: günstigere Angebote
+  - [x] Kaffeestand ☕: Kaffee = einmal nicht schlafen müssen (ca. 15 Münzen, Luxus)
+  - [x] Limonadenstand 🍋: „Nacht-Limo“ in den Rucksack; trinken = diese eine Nacht wird taghell, macht aber müde. Mit Kaffee zusammen: wach + helle Nacht. Luxus – schwer leistbar, aber möglich
+  - [x] Stein-, Metall- & Edelsteinhändler: Edelsteine, Goldnuggets, Eisenerz, Kohle zu okayen Preisen
+- [x] **Challenge: Zauberpilz-Rallye** 🚣 (Teilnahme 10 Münzen, Gewinn 50 Münzen)
+  - [x] Alle starten in Booten auf dem Wasser, feste abgesteckte Rennstrecke, breit genug zum Überholen
+  - [x] Zu schnell in die Kurve → man treibt aus der Bahn und wird langsamer; nur in der Strecke volles Tempo
+  - [x] KI-Gegner: nicht schlecht, aber nicht unrealistisch gut
+- [x] **Briefkasten an der Base** 📬: einmal pro Woche morgens die **Inselgruppen-Zeitung** – lustige Bilder von Menschen und Tieren der Insel in skurrilen Situationen, Angebote vom Wochenmarkt, Ergebnis und Sieger der letzten Challenge
 
 ## Vor Etappe 4 (Feedback Tag 4)
 - [x] Grabehügel hochwertiger (nicht mehr wie aus Version 1)

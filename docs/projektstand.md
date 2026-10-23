@@ -3,7 +3,7 @@
 Diese Seite fasst zusammen, was gebaut ist und **warum** wir etwas so entschieden haben.
 Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.md`.
 
-## Was es gibt (Stand: Tag 3, Etappe 3 fertig)
+## Was es gibt (Stand: Tag 5, Etappe 4 fertig)
 - **Insel** mit Bergen, Wald, Seen, Strand, Trampelpfad, Dorf mit Händler, 7 Ruderbooten, Schafen, Hasen und 4 Wildpferden
 - **Spielfigur:** der Game Designer selbst (Ringelpulli, Jogginghose, orange Sohlen), mit Skelett und Animationen
 - **Überleben:** einmal am Tag essen (sonst halb so schnell), spätestens jede 2. Nacht schlafen (sonst −50 Münzen)
@@ -19,6 +19,10 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - **Tauchen** (js/tauchen.js) mit Luft-Anzeige; im See oben auf der Klippe liegt das **Insadorium** (roter, grell leuchtender Stein) → **Finale** mit Konfetti + Dankeschön (js/finale.js), danach frei weiterspielen
   - **Heißluftballon** (js/ballon.js, 150 Münzen): Ziel aussuchen (Dorf, Palmendorf, Base), fliegt jeden Morgen von selbst heim
   - Wind über der Klippe (Zauberpilz bringt einen nicht hoch), neue Funde (Muscheln, Kokosnüsse; Eisen & Gold oben auf der Klippe), Angelstellen auf allen Inseln, Fernrohr sieht durch den Dunst
+- **Etappe 4 · Wochenmarkt & Inselzeitung** (alle 3 Spieltage = Markttag, js/markttag.js):
+  - **Wochenmarkt** im Palmendorf (js/markt.js): Obst & Gemüse (billiger), Kaffee ☕ 35 (eine Nacht ohne Schlaf zählt nicht), Nacht-Limo 🍋 40 (die Nacht wird taghell, zählt nicht als wach), Steine & Erze
+  - **Zauberpilz-Rallye** (js/rallye.js): 10 Münzen Startgeld, Bootsrennen gegen 4 KI-Gegner, Pilze = Turbo, zu schnell in der Kurve = rausrutschen; Sieg = 50 Münzen (einmal pro Markttag)
+  - **Briefkasten & Inselzeitung** (js/zeitung.js, js/ereignisse.js): am Morgen jedes Markttags; gezeichnete Bilder von Dingen, die wirklich passiert sind, Marktpreise, Rallye-Ergebnis
 - **Zauberpilze** im Wald: 1 Minute fliegen (Sprungknopf halten = höher)
 - **Fernrohr:** zoomen, Boote entdecken (später andere Inseln). Durch Berge sieht man nicht.
 - **Karte & Navigation**, Tag/Nacht (5 + 3 Minuten), Wellen, Musik, automatisches Speichern
@@ -39,8 +43,8 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 | Kein Zauberpilz-Flug aufs Klippen-Plateau (Wind) | Game Designer: Man soll sich die Seilkanone erarbeiten |
 | Die 30 alten Grabestellen, Bäume, Pilze bleiben exakt gleich, Neues wird hinten angehängt | Damit alte Spielstände weiter funktionieren |
 
-## Als Nächstes: Etappe 4 · Wochenmarkt & Inselzeitung
-Steht in `docs/warteliste.md`. Vorher muss der Game Designer noch ein paar Fragen klären (wann/wo ist der Markt, Preise für Kaffee & Limo, was in der Zeitung steht).
+## Als Nächstes
+Was der Game Designer als Nächstes will – Ideen stehen in `docs/warteliste.md` (z. B. Farmen, Monster in der Nacht, Höhlen).
 
 ## Bekannte Schwächen
 - Auf dem iPad Air (2025) läuft es flüssig; am MacBook ruckelte es kurz am Anfang (Shader werden jetzt vorab vorbereitet)

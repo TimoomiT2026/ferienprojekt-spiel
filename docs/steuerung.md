@@ -59,3 +59,9 @@ Wenn nichts zu hören ist: Lautstärke hochdrehen und prüfen, ob das iPad auf *
 - **Tauchen 🤿:** Taucherbrille im Rucksack, an tiefes Wasser, „Tauchen“. Joystick = schwimmen, Sprungknopf halten = hoch. Unten steht die Luft – bei 0 taucht man auf.
 - **Das Insadorium 🔴:** liegt im See oben auf der Klippeninsel. „Aufheben“ → Ziel erreicht! 🎉
 - **Heißluftballon 🎈:** beim Händler im ersten Dorf (150 Münzen). Antippen = Ziel aussuchen, zweimal schnell tippen = sofort los. Morgens steht er wieder an der Base.
+
+## Neu in Etappe 4 · Wochenmarkt
+- **Markttag:** jeden 3. Tag (Tag 3, 6, 9 …) im Palmendorf 🌴. Morgens kommt eine Meldung.
+- **Stände:** Obst & Gemüse (billiger als sonst), Kaffee ☕ (35: einmal nicht schlafen müssen), Nacht-Limo 🍋 (40: im Rucksack „Trinken“ → die Nacht wird hell), Steine & Erze.
+- **Zauberpilz-Rallye 🍄:** Am Stand am Strand „Mitmachen“ (10 Münzen). Joystick = rudern. In Kurven nicht zu schnell, sonst rutschst du raus! Pilze auf der Strecke = Turbo. Wer zuerst im Ziel ist, bekommt 50 Münzen.
+- **Briefkasten 📬** an der Base: Am Markttag morgens liegt die **Inselzeitung** drin. „◀ vorige Ausgabe“ zeigt alte Zeitungen.
