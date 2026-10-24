@@ -22,12 +22,14 @@ In den Ferien haben wir zusammen ein eigenes 3D-Spiel gebaut: Mein Sohn war der 
 
 ## 2. So startet ihr das Spiel
 
+**Bebilderte Anleitung für alle Geräte (iPhone neues/altes Safari, iPad, Android, Computer):** https://timoomit2026.github.io/ferienprojekt-spiel/anleitung.html
+
 **Am besten auf dem iPad, Tablet oder Computer.** Auf dem Handy geht es auch – dann bitte **quer** halten.
 
 **📱 iPad / iPhone (Safari):**
 1. Link in **Safari** öffnen
-2. Unten auf das **Teilen-Symbol** tippen (Viereck mit Pfeil nach oben)
-3. **„Zum Home-Bildschirm“** → „Hinzufügen“
+2. **Teilen-Symbol** tippen (Viereck mit Pfeil nach oben). Im neuen Safari: erst unten links in der Adressleiste auf **☰** (oder **•••**), dann **„Teilen“**
+3. Nach unten wischen → **„Zum Home-Bildschirm“** → „Hinzufügen“
 4. Ab jetzt über das neue Symbol starten – dann läuft es im Vollbild wie eine App
 
 **🤖 Android (Chrome):**

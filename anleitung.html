@@ -1,0 +1,160 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Inselspiel – so startest du es</title>
+<link rel="icon" href="icon.png?v=4">
+<link rel="apple-touch-icon" href="icon.png?v=4">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* Anleitung: So kommt das Inselspiel auf den Home-Bildschirm */
+  :root { --holz: #a2622f; --holz-rand: #3b2412; --papier: #fbf0d4; --tinte: #4a2e14; --gelb: #ffd84a; --blau: #2f78c8; }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 18px 16px 40px; min-height: 100vh;
+    font-family: "Baloo 2", "Arial Rounded MT Bold", system-ui, sans-serif; color: var(--tinte); font-size: 18px; line-height: 1.35;
+    background: linear-gradient(#7fd0ff, #2f9be0 70%, #1673c4);
+  }
+  .seite { max-width: 640px; margin: 0 auto; }
+  header { text-align: center; color: #fff; }
+  header img { width: 96px; height: 96px; border-radius: 22px; border: 3px solid var(--holz-rand); box-shadow: 0 6px 0 var(--holz-rand); }
+  h1 {
+    margin: 10px 0 0; font-size: 46px; font-weight: 800; line-height: 1; font-style: italic; color: var(--gelb);
+    -webkit-text-stroke: 2px var(--holz-rand); paint-order: stroke fill; text-shadow: 0 4px 0 var(--holz-rand);
+  }
+  header p { margin: 6px 0 16px; font-weight: 600; text-shadow: 0 2px 3px rgba(0,0,0,.4); }
+  .karte { background: var(--papier); border: 4px solid var(--holz-rand); border-radius: 18px; padding: 14px 16px; margin: 0 0 14px; box-shadow: 0 5px 0 var(--holz-rand); }
+  .link { display: block; text-align: center; font-weight: 800; font-size: 20px; color: var(--blau); word-break: break-all; text-decoration: none; }
+  .knopf { display: block; margin: 10px auto 0; max-width: 320px; text-align: center; background: #5cc23a; color: #fff; font-weight: 800; font-size: 22px;
+           padding: 8px 18px 5px; border-radius: 14px; border: 3px solid #2f6a1a; box-shadow: 0 4px 0 #2f6a1a; text-decoration: none; }
+  h2 { margin: 0 0 6px; font-size: 22px; color: #8a4f1c; }
+
+  /* Geräte-Auswahl */
+  details { background: var(--papier); border: 4px solid var(--holz-rand); border-radius: 18px; margin: 0 0 12px; box-shadow: 0 5px 0 var(--holz-rand); overflow: hidden; }
+  summary { list-style: none; cursor: pointer; padding: 12px 16px; font-weight: 800; font-size: 21px; display: flex; align-items: center; gap: 10px; }
+  summary::-webkit-details-marker { display: none; }
+  summary .pfeil { margin-left: auto; transition: transform .2s; font-size: 18px; }
+  details[open] summary .pfeil { transform: rotate(90deg); }
+  summary small { display: block; font-size: 14px; font-weight: 600; color: #8b6a48; }
+  .inhalt { padding: 0 16px 14px; }
+  ol { margin: 0; padding-left: 0; list-style: none; counter-reset: s; }
+  ol li { counter-increment: s; position: relative; padding: 6px 0 6px 42px; border-top: 2px dashed #e2c99b; }
+  ol li:first-child { border-top: none; }
+  ol li::before { content: counter(s); position: absolute; left: 0; top: 6px; width: 30px; height: 30px; border-radius: 50%;
+                  background: var(--holz); color: #fff; font-weight: 800; display: grid; place-items: center; border: 2px solid var(--holz-rand); }
+  .symbol { display: inline-grid; place-items: center; vertical-align: middle; width: 30px; height: 30px; border-radius: 8px;
+            background: #fff; border: 2px solid #c9a57a; margin: 0 2px; }
+  .symbol svg { width: 20px; height: 20px; }
+  b { color: #2b1a0a; }
+  .tipp { font-size: 16px; background: #fff7d6; border-radius: 10px; padding: 6px 10px; margin-top: 8px; }
+  ul.gut { margin: 0; padding-left: 20px; }
+  ul.gut li { margin: 4px 0; }
+  footer { text-align: center; color: #fff; font-size: 15px; margin-top: 16px; text-shadow: 0 1px 2px rgba(0,0,0,.4); }
+</style>
+</head>
+<body>
+<div class="seite">
+
+  <header>
+    <img src="icon.png?v=4" alt="">
+    <h1>Inselspiel</h1>
+    <p>So kommt das Spiel auf deinen Home-Bildschirm – dann startet es im Vollbild wie eine App.</p>
+  </header>
+
+  <div class="karte">
+    <a class="link" href="./">timoomit2026.github.io/ferienprojekt-spiel</a>
+    <a class="knopf" href="./">▶ Zum Spiel</a>
+  </div>
+
+  <!-- iPhone, neues Safari -->
+  <details>
+    <summary>📱 <span>iPhone<small>neues Safari – Adressleiste unten mit <b>☰</b> links</small></span><span class="pfeil">▶</span></summary>
+    <div class="inhalt">
+      <ol>
+        <li>Den Link in <b>Safari</b> öffnen.</li>
+        <li>Unten in der Adressleiste <b>links</b> auf das Symbol mit den Strichen tippen
+          <span class="symbol"><svg viewBox="0 0 20 20"><path d="M3 6h14M3 10h10M3 14h12" stroke="#333" stroke-width="2" stroke-linecap="round"/></svg></span>
+          (manchmal sind es drei Punkte <b>•••</b> rechts).</li>
+        <li>Auf <b>„Teilen“</b> tippen
+          <span class="symbol"><svg viewBox="0 0 20 20"><path d="M10 2v11M6 6l4-4 4 4M5 9H4v9h12V9h-1" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>.
+          Steht es nicht da: erst auf <b>„Mehr“</b>.</li>
+        <li>Nach unten wischen → <b>„Zum Home-Bildschirm“</b>.</li>
+        <li><b>„Als Web-App öffnen“</b> eingeschaltet lassen → <b>„Hinzufügen“</b>.</li>
+      </ol>
+    </div>
+  </details>
+
+  <!-- iPhone, älteres Safari -->
+  <details>
+    <summary>📱 <span>iPhone<small>älteres Safari – Teilen-Symbol unten in der Mitte</small></span><span class="pfeil">▶</span></summary>
+    <div class="inhalt">
+      <ol>
+        <li>Den Link in <b>Safari</b> öffnen.</li>
+        <li>Unten in der Mitte auf das <b>Teilen-Symbol</b> tippen
+          <span class="symbol"><svg viewBox="0 0 20 20"><path d="M10 2v11M6 6l4-4 4 4M5 9H4v9h12V9h-1" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          (Viereck mit Pfeil nach oben).</li>
+        <li>Nach unten wischen → <b>„Zum Home-Bildschirm“</b>.</li>
+        <li>Oben rechts auf <b>„Hinzufügen“</b>.</li>
+      </ol>
+    </div>
+  </details>
+
+  <!-- iPad -->
+  <details>
+    <summary>📲 <span>iPad<small>Safari</small></span><span class="pfeil">▶</span></summary>
+    <div class="inhalt">
+      <ol>
+        <li>Den Link in <b>Safari</b> öffnen.</li>
+        <li><b>Oben rechts</b> neben der Adresse auf das <b>Teilen-Symbol</b>
+          <span class="symbol"><svg viewBox="0 0 20 20"><path d="M10 2v11M6 6l4-4 4 4M5 9H4v9h12V9h-1" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          tippen. Nicht da? Dann auf <b>•••</b> oder <b>☰</b> neben der Adresse und dort auf <b>„Teilen“</b>.</li>
+        <li>Nach unten wischen → <b>„Zum Home-Bildschirm“</b>.</li>
+        <li><b>„Hinzufügen“</b> antippen.</li>
+      </ol>
+    </div>
+  </details>
+
+  <!-- Android -->
+  <details>
+    <summary>🤖 <span>Android<small>Chrome (Samsung, Pixel, …)</small></span><span class="pfeil">▶</span></summary>
+    <div class="inhalt">
+      <ol>
+        <li>Den Link in <b>Chrome</b> öffnen.</li>
+        <li>Oben rechts auf die <b>drei Punkte ⋮</b> tippen.</li>
+        <li><b>„Zum Startbildschirm hinzufügen“</b> wählen (manchmal heißt es <b>„App installieren“</b>).</li>
+        <li><b>„Hinzufügen“</b> / <b>„Installieren“</b> bestätigen.</li>
+      </ol>
+      <div class="tipp">Samsung-Internet: unten rechts auf <b>☰</b> → <b>„Seite hinzufügen zu“</b> → <b>„Startbildschirm“</b>.</div>
+    </div>
+  </details>
+
+  <!-- Computer -->
+  <details>
+    <summary>💻 <span>Computer<small>Mac oder Windows</small></span><span class="pfeil">▶</span></summary>
+    <div class="inhalt">
+      <p style="margin:0 0 6px">Einfach den Link im Browser öffnen – fertig.</p>
+      <ul class="gut">
+        <li>Laufen: <b>W A S D</b> oder <b>Pfeiltasten</b></li>
+        <li>Umschauen: <b>Maus gedrückt ziehen</b></li>
+        <li>Springen: <b>Leertaste</b> · Aktion: <b>E</b> · Rucksack: <b>R</b></li>
+      </ul>
+    </div>
+  </details>
+
+  <div class="karte">
+    <h2>✅ Gut zu wissen</h2>
+    <ul class="gut">
+      <li>Immer über das <b>neue Symbol</b> starten und das Gerät <b>quer</b> halten.</li>
+      <li>Das Spiel <b>speichert von selbst</b> – auf deinem Gerät. Kein Konto, keine Anmeldung.</li>
+      <li>Nicht im <b>privaten Modus</b> spielen, sonst ist der Spielstand weg.</li>
+      <li>Ton an! 🎵 Links Finger hinlegen und schieben = laufen, rechts wischen = umschauen.</li>
+      <li>Oben links im <b>Aufgabenbuch 📋</b> steht, was als Nächstes dran ist.</li>
+    </ul>
+  </div>
+
+  <footer>Ein Ferienprojekt von Vater &amp; Sohn 💛</footer>
+</div>
+</body>
+</html>
