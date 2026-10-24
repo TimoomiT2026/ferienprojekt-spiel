@@ -309,6 +309,7 @@ const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
 aufgaben.spiel.tauchen = tauchen;
 aufgaben.spiel.rallye = rallye;
+aufgaben.spiel.werkbank = werkbank;
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
 function groessererRucksack() {
   const n = rucksack.plaetze.length;

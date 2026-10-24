@@ -38,10 +38,17 @@ const AUFGABEN = [
   { titel: 'Sprich mit den Bewohnern der Palmeninsel', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
   { titel: 'Finde 3 wertvolle Münzen', tipp: 'Auf jeder Insel ist eine in einem golden glitzernden Grabehügel versteckt. Schau auf die Karte ❓!', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
   { titel: 'Hol dir die Taucherbrille', tipp: 'Bring die 3 Münzen zurück zur Person mit der Taucherbrille.', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.hat('taucherbrille'), belohnung: 5 },
-  { titel: 'Gewinne die Zauberpilz-Rallye', start: 'rallye', tipp: 'Jeden 3. Tag ist Markttag im Palmendorf 🌴 – dann startet dort die Rallye. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
+  { titel: 'Sammle alles für die Seilkanone', start: 'seilkanone', tipp: 'Bau an der Werkbank 🔨 ein Seil (aus 3 Schnüren). Dazu brauchst du 4 Holz und 3 Eisenerz.', geschafft: (s) => alleTeileAusserHaken(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5, danach: 'widerhakenFehlt' },
+  { titel: 'Gewinne die Zauberpilz-Rallye', start: 'widerhakenFehlt', tipp: 'Jeden 3. Tag ist Markttag im Palmendorf 🌴 – dann startet dort die Rallye. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Bau eine Seilkanone', tipp: 'Werkbank: erst ein Seil (3 Schnüre), dann die Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken aus der Rallye).', geschafft: (s) => s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Finde das Insadorium', tipp: 'Kletter auf die Klippeninsel und tauch in den geheimnisvollen See. Es leuchtet rot! 🔴', geschafft: (s) => !!s.tauchen?.gefunden || s.rucksack.hat('insadorium'), belohnung: 0 },
 ];
+
+// Hat man alles für die Seilkanone – außer dem Widerhaken?
+function alleTeileAusserHaken(s) {
+  const r = EINSTELLUNGEN.rezepte.seilkanone;
+  return Object.entries(r).every(([id, n]) => id === 'widerhaken' || s.rucksack.anzahl(id) >= n);
+}
 
 // ---------- Die großen Erklärungen (kommen einmal, nach bestimmten Aufgaben) ----------
 // „start“ bei einer Aufgabe = diese Erklärung kommt, wenn die Aufgabe dran ist
@@ -211,6 +218,21 @@ const ERKLAERUNG = {
       <p>Über der Klippe weht ein starker <b>Wind</b> – fliegen geht hier nicht. Hinauf kommst du nur mit einer <b>Seilkanone</b>.</p>
       <p class="erklaer-aufgabe">Unten am Strand kannst du graben – hier gibt es <b>Eisenerz und Gold</b>!</p>`,
   },
+  seilkanone: {
+    bild: '🪝',
+    titel: 'Die Seilkanone',
+    text: `<p>Auf der <b>Klippeninsel</b> ragen riesige Felswände auf. Hinauf kommst du nur mit einer <b>Seilkanone</b>: Sie schießt ein Seil mit Haken nach oben, und du kletterst daran hoch.</p>
+      <p class="erklaer-aufgabe">Sammle die Teile: Bau an der <b>Werkbank</b> ein <b>Seil</b> (aus 3 Schnüren). Dazu brauchst du <b>4 Holz</b> und <b>3 Eisenerz</b>.</p>
+      <p>Ein Teil fehlt dann noch – aber das erfährst du, wenn du alles andere hast … 😉</p>`,
+  },
+  widerhakenFehlt: {
+    bild: '⚠️',
+    titel: 'Achtung: Dir fehlt das wichtigste Teil!',
+    text: `<p>Seil, Holz und Eisenerz hast du – aber die Seilkanone braucht noch einen <b>Widerhaken</b> 🪝. Der krallt sich oben an der Klippe fest.</p>
+      <p>Einen Widerhaken kann man <b>nicht bauen</b> und <b>nicht kaufen</b>. Es gibt ihn nur als <b>Siegerpreis</b> bei der <b>Zauberpilz-Rallye</b> 🏁!</p>
+      <p class="erklaer-aufgabe">Jeden <b>3. Tag ist Markttag</b> im <b>Palmendorf</b> 🌴. Dann startet dort die Rallye. Gewinne sie – und der Widerhaken gehört dir!</p>
+      <p>Tipp: Fahr durch die <b>Zauberpilze</b> 🍄 – die geben dir einen Turbo. Und vor engen Kurven bremsen!</p>`,
+  },
   rallye: {
     bild: '🏁',
     titel: 'Die Zauberpilz-Rallye',
@@ -374,6 +396,8 @@ export class Aufgaben {
     if (this.nummer === 2) this.grabeFortschritt();
     // Fernrohr zum ersten Mal im Rucksack (und noch eine Insel im Nebel): erklären, wie man entdeckt
     if (!this.erklaert.includes('nebel') && this.spiel.rucksack.hat('fernrohr') && (this.spiel.karte?.entdeckteInseln || []).length < 2) this.erklaere('nebel');
+    // An der Werkbank alles für die Seilkanone – nur der Widerhaken fehlt? Dann groß warnen
+    if (!this.erklaert.includes('widerhakenFehlt') && this.spiel.werkbank?.offen && alleTeileAusserHaken(this.spiel) && !this.spiel.rucksack.hat('widerhaken')) this.erklaere('widerhakenFehlt');
     // Zauberpilz zum ersten Mal im Rucksack
     if (!this.erklaert.includes('zauberpilz') && this.spiel.rucksack.hat('zauberpilz')) this.erklaere('zauberpilz');
     // Am ersten Tag kurz vor der Nacht: erklären, wie Schlafen geht
@@ -499,7 +523,7 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 5 };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 6 };
   }
 
   ladeDaten(d) {
@@ -513,6 +537,8 @@ export class Aufgaben {
     // Version 4 kannte „Bau ein Fernrohr“ (jetzt Nummer 21) und „Gewinne die Rallye“ (jetzt Nummer 26) noch nicht
     // (Wer bei „Bau eine Seilkanone“ war, landet bei der Rallye – hat er den Widerhaken schon, geht es von selbst weiter)
     if ((d.version || 1) < 5 && nummer >= 21) nummer += nummer >= 26 ? 2 : 1;
+    // Version 5 kannte „Sammle alles für die Seilkanone“ (jetzt Nummer 26) noch nicht
+    if ((d.version || 1) < 6 && nummer >= 26) nummer += 1;
     this.rallyePruefen = true; // einmal nachschauen, ob die Rallye übersprungen wurde (siehe aktualisiere)
     this.holzGekauft = !!d.holzGekauft || nummer > 12;
     this.brotGegessen = !!d.brotGegessen || nummer > 4;

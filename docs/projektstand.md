@@ -31,7 +31,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 - **Fortschritt in Stufen** (Wunsch des Produzenten nach dem Testen):
   - **Nebel** 🌫️ um Palmen- und Klippeninsel (js/nebel.js): Boot und Zauberpilz drehen um. Erst wer die Insel mit dem **Fernrohr** entdeckt, kommt durch.
   - **Fernrohr** an der Werkbank erst, wenn man sich selbst versorgt (Fisch gegessen + großes Zelt) und ab **Tag 3** (`fernrohrAbTag`, `fernrohrNachAufgaben`)
-  - Neue Aufgaben „Bau ein Fernrohr“ und „Gewinne die Zauberpilz-Rallye“ – der **erste Rallye-Sieg bringt den Widerhaken** (nicht mehr baubar)
+  - Neue Aufgaben „Bau ein Fernrohr“, „Sammle alles für die Seilkanone“ (danach: „Achtung, dir fehlt der Widerhaken!“) und „Gewinne die Zauberpilz-Rallye“ – der **erste Rallye-Sieg bringt den Widerhaken** (nicht baubar, nicht kaufbar)
   - **Großes Ziel** steht oben im Aufgabenbuch; Erklär-Fenster bei Selbstversorgung, Insel entdeckt, erste Ankunft auf Palmen- und Klippeninsel
   - **Ohnmacht**: 1 Tag mit leerem Satt-Balken → man wacht am Zelt auf, −50 Münzen (`ohnmachtNachTagen`, `ohnmachtKosten`)
   - Schwert hält 24 statt 12 Schläge; Kaffee-/Limo-Bonus wird unter der Uhr angezeigt

@@ -98,7 +98,8 @@ export class Werkbank {
       const zutatenHtml = Object.entries(zutaten)
         .map(([z, n]) => {
           const hat = rucksack.anzahl(z);
-          return `<span class="zutat ${hat >= n ? 'ok' : 'fehlt'}">${DINGE[z].bild} ${Math.min(hat, n)}/${n} ${DINGE[z].name}</span>`;
+          const preis = z === 'widerhaken' && hat < n ? ' <b>🏁 nur als Rallye-Preis!</b>' : ''; // den kann man nicht bauen
+          return `<span class="zutat ${hat >= n ? 'ok' : 'fehlt'}">${DINGE[z].bild} ${Math.min(hat, n)}/${n} ${DINGE[z].name}${preis}</span>`;
         })
         .join('');
       zeile.innerHTML = `
