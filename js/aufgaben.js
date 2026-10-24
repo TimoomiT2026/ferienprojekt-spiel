@@ -354,6 +354,7 @@ export class Aufgaben {
     this.erklaerFenster.addEventListener('touchstart', (e) => e.stopPropagation());
     this.erklaerOffen = false;
     this.erklaerWarte = [];
+    this.nachGespraech = []; // Erklärungen, die warten, bis die Sprechblase eines Bewohners zu ist
     knopf(this.erklaerFenster.querySelector('.erklaer-ok'), () => {
       this.erklaerOffen = false;
       this.erklaerFenster.classList.remove('offen');
@@ -392,6 +393,13 @@ export class Aufgaben {
   }
 
   aktualisiere(dt) {
+    // Sprechblase zu? Dann kommen die Erklärungen, die so lange gewartet haben
+    if (this.nachGespraech.length && !this.spiel.bewohner?.offen) {
+      for (const w of this.nachGespraech.splice(0)) {
+        if (this.erklaerOffen) this.erklaerWarte.push(w);
+        else this.zeigeErklaerung(w);
+      }
+    }
     this.pruefZeit -= dt;
     if (this.pruefZeit > 0 || this.nummer >= AUFGABEN.length) return;
     this.pruefZeit = 0.5;
@@ -486,6 +494,7 @@ export class Aufgaben {
 
   // Ein Fenster, das nicht fest ausgedacht ist (z. B. mit Zahlen drin)
   zeigeFrei(inhalt) {
+    if (this.spiel.bewohner?.offen) { this.nachGespraech.push(inhalt); return; }
     if (this.erklaerOffen) { this.erklaerWarte.push(inhalt); return; }
     this.zeigeErklaerung(inhalt);
   }
@@ -495,6 +504,8 @@ export class Aufgaben {
     const e = ERKLAERUNG[welche];
     if (!e || this.erklaert.includes(welche)) return;
     this.erklaert.push(welche);
+    // Spricht gerade ein Bewohner mit dir? Dann erst nach seinem „OK“ zeigen
+    if (this.spiel.bewohner?.offen) { this.nachGespraech.push(welche); return; }
     // Ist gerade schon eine Erklärung offen? Dann kommt diese danach dran
     if (this.erklaerOffen) { this.erklaerWarte.push(welche); return; }
     this.zeigeErklaerung(welche);
