@@ -34,7 +34,7 @@ const STUFEN = [
   { name: 'Großes Zelt', bild: BILDER.zeltGross, text: 'Viel Platz und ein Vordach gegen Regen.', radius: 2.5, tuer: 3.4 },
   { name: 'Holzhütte', bild: BILDER.huette, text: 'Eine echte Hütte! Mit Truhe 📦 für deine Schätze.', radius: 2.7, tuer: 2.6 },
   { name: 'Hütte mit Garten', bild: BILDER.huetteGarten, text: 'Mit Kamin – und im Garten wachsen Karotten 🥕.', radius: 2.8, tuer: 2.7 },
-  { name: 'Haus mit Fischteich', bild: BILDER.haus, text: 'Ein richtiges Haus! Am Teich kannst du angeln 🎣.', radius: 3.2, tuer: 3.25 },
+  { name: 'Haus mit Fischteich', bild: BILDER.haus, text: 'Ein richtiges Haus! In deinem eigenen Teich beißen nur Fische an 🎣 – kein Müll!', radius: 3.2, tuer: 3.25 },
 ];
 
 const V = (x, y, z) => new THREE.Vector3(x, y, z);
@@ -805,7 +805,8 @@ export class Base {
     const standX = TEICH.x + sx * 2.85, standZ = TEICH.z + sz * 2.85;
     const stand = V(standX, bodenHoehe(standX, standZ), standZ);
     const ziel = V(TEICH.x - sx * 0.25, this.teichWasserY(), TEICH.z - sz * 0.25);
-    const ia = this.spiel.angeln.stelleHinzufuegen(stand, ziel);
+    // Im eigenen Fischteich beißen nur Fische an – keine alten Schuhe oder Dosen
+    const ia = this.spiel.angeln.stelleHinzufuegen(stand, ziel, { nurFisch: true });
     this.teichStelle = ia;
     this._interaktionen.push(ia);
     if (this.beiNeuerInteraktion) this.beiNeuerInteraktion(ia);

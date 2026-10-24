@@ -502,8 +502,10 @@ export class Angeln {
   // ---------- Eine neue Angelstelle (z. B. am Fischteich der Base) ----------
   // stand = wo man steht, wasserZiel = wohin der Schwimmer fliegt (mit der Höhe des Wassers!)
   // Gibt die neue Interaktion zurück – die muss noch in objekte.interaktionen.
-  stelleHinzufuegen(stand, wasserZiel) {
+  // nurFisch = hier beißen nur Fische an (der eigene Fischteich an der Base)
+  stelleHinzufuegen(stand, wasserZiel, { nurFisch = false } = {}) {
     const stelle = {
+      nurFisch,
       stand: stand.clone(),
       ziel: wasserZiel.clone(),
       richtung: Math.atan2(wasserZiel.x - stand.x, wasserZiel.z - stand.z),
@@ -576,7 +578,7 @@ export class Angeln {
       zeit: 0,
       warten: WARTEN_MIN + Math.random() * (WARTEN_MAX - WARTEN_MIN),
       zuckenBei: 0.3 + Math.random() * 0.4, // kurzes Zucken vorher – Spannung!
-      fund: wuerfeln(FANG_CHANCEN),
+      fund: stelle.nurFisch ? 'tofufisch' : wuerfeln(FANG_CHANCEN), // im eigenen Fischteich gibt es keinen Müll!
       start: new THREE.Vector3(),
       arm: -0.9,
     };
