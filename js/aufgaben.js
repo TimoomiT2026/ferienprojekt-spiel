@@ -27,17 +27,19 @@ const AUFGABEN = [
   { titel: 'Bau ein Feuerzeug', start: 'feuerzeug', tipp: 'An der Werkbank: 2 Steine + 1 Eisenerz + 1 Kohle.', geschafft: (s) => s.rucksack.hat('feuerzeug') || s.lagerfeuer.brennt > 0, belohnung: 5 },
   { titel: 'Zünde das Lagerfeuer an', start: 'lagerfeuer', tipp: 'Am Lagerfeuer neben dem Zelt: 1 Holz + Feuerzeug.', geschafft: (s) => s.lagerfeuer.brennt > 0, belohnung: 3 },
   { titel: 'Grill den Tofu-Fisch', start: 'grillen', tipp: 'Wenn das Feuer brennt: „Fisch grillen“ drücken.', geschafft: (s) => s.rucksack.hat('gegrillterFisch') || s.aufgaben.fischGegessen, belohnung: 3 },
-  { titel: 'Iss deinen selbst gefangenen Fisch', tipp: 'Rucksack öffnen, Fisch antippen, „Essen“. Jetzt versorgst du dich selbst! 🎉', geschafft: (s) => s.aufgaben.fischGegessen, belohnung: 10 },
+  { titel: 'Iss deinen selbst gefangenen Fisch', tipp: 'Rucksack öffnen, Fisch antippen, „Essen“. Jetzt versorgst du dich selbst! 🎉', geschafft: (s) => s.aufgaben.fischGegessen, belohnung: 10, danach: 'selbstversorger' },
   { titel: 'Bau das große Zelt', tipp: 'Am Schild „BASE“ neben dem Zelt das Base-Menü öffnen und ausbauen.', geschafft: (s) => (s.base?.stufe || 1) >= 2, belohnung: 10 },
   { titel: 'Bau eine Holzhütte', tipp: 'Wieder im Base-Menü. In der Hütte steht eine Truhe 📦 – dort kannst du Sachen aufbewahren, wenn dein Rucksack voll ist!', geschafft: (s) => (s.base?.stufe || 1) >= 3, belohnung: 15 },
   { titel: 'Zähme ein Wildpferd', tipp: 'Kauf Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
   { titel: 'Spar 150 Münzen', tipp: 'Verkauf, was du findest. Bald brauchst du viel Geld für das große Abenteuer …', geschafft: (s) => s.rucksack.muenzen >= 150, belohnung: 25 },
   // ---------- Etappe 3: Das große Abenteuer ----------
-  { titel: 'Entdecke eine neue Insel', tipp: 'Nimm ein Boot 🚣 und fahr aufs Meer hinaus. Mit dem Fernrohr 🔭 siehst du weiter!', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
+  { titel: 'Bau ein Fernrohr', start: 'fernrohrBauen', tipp: 'An der Werkbank 🔨: 2 Eisenerz + 1 Gold + 1 Holz. Das geht ab Tag 3 – wenn du dich selbst versorgst und eine Holzhütte hast.', geschafft: (s) => s.rucksack.hat('fernrohr') || (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
+  { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Halt den Kreis auf eine Insel im Nebel, bis sie entdeckt ist.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
   { titel: 'Sprich mit den Bewohnern der Palmeninsel', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
   { titel: 'Finde 3 wertvolle Münzen', tipp: 'Auf jeder Insel ist eine in einem golden glitzernden Grabehügel versteckt. Schau auf die Karte ❓!', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
   { titel: 'Hol dir die Taucherbrille', tipp: 'Bring die 3 Münzen zurück zur Person mit der Taucherbrille.', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.hat('taucherbrille'), belohnung: 5 },
-  { titel: 'Bau eine Seilkanone', tipp: 'Werkbank: erst Seil (3 Schnüre) und Widerhaken (2 Eisenerz + 1 Stein), dann die Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken).', geschafft: (s) => s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
+  { titel: 'Gewinne die Zauberpilz-Rallye', start: 'rallye', tipp: 'Jeden 3. Tag ist Markttag im Palmendorf 🌴 – dann startet dort die Rallye. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
+  { titel: 'Bau eine Seilkanone', tipp: 'Werkbank: erst ein Seil (3 Schnüre), dann die Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken aus der Rallye).', geschafft: (s) => s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Finde das Insadorium', tipp: 'Kletter auf die Klippeninsel und tauch in den geheimnisvollen See. Es leuchtet rot! 🔴', geschafft: (s) => !!s.tauchen?.gefunden || s.rucksack.hat('insadorium'), belohnung: 0 },
 ];
 
@@ -49,7 +51,7 @@ const ERKLAERUNG = {
     bild: '📋',
     titel: 'Dein Aufgabenbuch',
     text: `<p>Oben links steht immer <b>deine nächste Aufgabe</b>. Tipp darauf, dann siehst du die ganze Liste mit Tipps.</p>
-      <p>Für jede geschaffte Aufgabe bekommst du <b>Münzen</b> 🪙 – und lernst Schritt für Schritt, wie du auf der Insel überlebst.</p>
+      <p>Für jede geschaffte Aufgabe bekommst du <b>Münzen</b> 🪙 – und lernst Schritt für Schritt, wie du auf der Insel überlebst. Und am Ende führen dich die Aufgaben zu deinem <b>großen Ziel</b>: dem <b>Insadorium</b> 🔴!</p>
       <p class="erklaer-aufgabe">Deine erste Aufgabe: <b>Finde die Schaufel!</b> Sie liegt glitzernd ✨ neben deinem Zelt.</p>`,
   },
   schaufel: {
@@ -127,6 +129,7 @@ const ERKLAERUNG = {
     text: `<p>Oben in der Mitte siehst du, wie lange der Tag noch geht. Ist die Zeit fast um, wird sie <b>rot</b> und es piept.</p>
       <p>Nachts gehst du in dein <b>Zelt</b> und <b>schläfst</b>. Dann ist die Nacht ganz schnell vorbei und du bist sicher. 😴</p>
       <p>Schläfst du <b>zwei Nächte hintereinander nicht</b>, bist du so müde, dass du <b>50 Münzen verlierst</b>!</p>
+      <p>Und vergiss das <b>Essen</b> nicht: Wer einen ganzen Tag lang Hunger hat, wird <b>ohnmächtig</b> 😵 – dann verlierst du <b>20 Münzen</b> und <b>alle Steine, Erze, Gold und Edelsteine</b>!</p>
       <p class="erklaer-aufgabe">Achte immer auf die Uhr und geh rechtzeitig <b>zurück zu deinem Zelt</b>. Die Karte 🗺️ zeigt dir den Weg.</p>`,
   },
   zauberpilz: {
@@ -136,6 +139,62 @@ const ERKLAERUNG = {
       <p>Von oben siehst du die ganze Insel – und kommst schnell über Berge und Seen.</p>
       <p>Oder du <b>verkaufst</b> ihn teuer beim Händler. 💰</p>
       <p>Nur über die hohe <b>Klippeninsel</b> weht ein starker Wind – da oben musst du anders hinkommen …</p>`,
+  },
+  selbstversorger: {
+    bild: '🏅',
+    titel: 'Du versorgst dich selbst!',
+    text: `<p>Graben, handeln, bauen, angeln, Feuer machen, grillen, schlafen – du kannst jetzt auf der Insel <b>überleben</b>. Super! 🎉</p>
+      <p>Aber vergiss dein <b>großes Ziel</b> nicht: Du bist Forscher und suchst das <b>Insadorium</b> 🔴. Es liegt auf einer der <b>anderen Inseln</b> – hinter dem Nebel.</p>
+      <p class="erklaer-aufgabe">Bau als Nächstes deine <b>Base</b> aus: erst das <b>große Zelt</b>, dann die <b>Holzhütte</b>. Danach (ab <b>Tag 3</b>) kannst du ein <b>Fernrohr</b> 🔭 bauen. Damit schaust du durch den Nebel!</p>`,
+  },
+  fernrohrBauen: {
+    bild: '🔭',
+    titel: 'Zeit für ein Fernrohr!',
+    text: `<p>Die anderen Inseln liegen im <b>dichten Nebel</b> 🌫️. Mit dem Boot oder dem Zauberpilz kommst du nicht hindurch.</p>
+      <p>Nur mit einem <b>Fernrohr</b> kannst du durch den Dunst schauen und eine Insel entdecken – dann findest du den Weg.</p>
+      <p class="erklaer-aufgabe">Bau an der <b>Werkbank</b> ein Fernrohr: 2 Eisenerz + 1 Gold + 1 Holz. Gold findest du beim Graben (selten!).</p>`,
+  },
+  nebel: {
+    bild: '🌫️',
+    titel: 'Schau durch den Nebel!',
+    text: `<p>Nimm das <b>Fernrohr</b> in die Hand und geh an die <b>Küste</b> – am besten auf einen Hügel. Drück <b>„Durchschauen“</b>.</p>
+      <p class="erklaer-aufgabe">Halt den Kreis auf eine <b>Nebelbank</b> über dem Meer, bis er voll ist. Dann hast du die Insel entdeckt!</p>
+      <p>Auf der Karte 🗺️ sind die Inseln mit <b>❓</b> markiert. Eine liegt im <b>Westen</b>, eine im <b>Osten</b>.</p>`,
+  },
+  inselEntdeckt: {
+    bild: '🏝️',
+    titel: 'Eine neue Insel!',
+    text: `<p>Der Nebel ist weg – jetzt kannst du mit dem <b>Boot</b> 🚣 hinüberfahren.</p>
+      <p>Denk dran: Nimm genug <b>Essen</b> mit und schau, wo du <b>schlafen</b> kannst. Mit dem großen Zelt hast du ein <b>Reisezelt</b> ⛺ für unterwegs!</p>
+      <p class="erklaer-aufgabe">Dein großes Ziel bleibt: das <b>Insadorium</b> 🔴 finden. Vielleicht wissen die Menschen auf den anderen Inseln mehr …</p>`,
+  },
+  pferd: {
+    bild: '🐴',
+    titel: 'Ein Wildpferd!',
+    text: `<p>Auf der Insel leben <b>Wildpferde</b>. Wenn du eins zähmst, kannst du darauf <b>reiten</b> – viel schneller als laufen!</p>
+      <p class="erklaer-aufgabe">So geht's: Kauf <b>Äpfel</b> 🍎 beim Händler, nimm einen <b>in die Hand</b> und geh langsam zum Pferd. Füttere es <b>3 Mal</b> – dann gehört es dir!</p>
+      <p>Mit einer <b>Leine</b> (alter Schuh + Schnur) bindest du es am <b>Pferdestall</b> an deiner Base an. Füttere es alle 2 Tage, sonst läuft es weg.</p>`,
+  },
+  palmeninsel: {
+    bild: '🌴',
+    titel: 'Willkommen auf der Palmeninsel!',
+    text: `<p>Hier leben <b>13 Menschen</b> im <b>Palmendorf</b>. Es gibt einen zweiten <b>Händler</b> und am <b>Markttag</b> (jeden 3. Tag) einen Wochenmarkt mit der <b>Zauberpilz-Rallye</b> 🏁.</p>
+      <p>Hier findest du auch <b>Muscheln</b> 🐚 und <b>Kokosnüsse</b> 🥥 zum Verkaufen.</p>
+      <p class="erklaer-aufgabe">Sprich mit den Bewohnern! Einer von ihnen weiß etwas, das dir auf der Suche nach dem <b>Insadorium</b> 🔴 hilft.</p>`,
+  },
+  klippeninsel: {
+    bild: '🪨',
+    titel: 'Die Klippeninsel',
+    text: `<p>Riesige <b>Felswände</b>! Oben auf der Klippe soll ein geheimnisvoller <b>See</b> liegen.</p>
+      <p>Über der Klippe weht ein starker <b>Wind</b> – fliegen geht hier nicht. Hinauf kommst du nur mit einer <b>Seilkanone</b>.</p>
+      <p class="erklaer-aufgabe">Unten am Strand kannst du graben – hier gibt es <b>Eisenerz und Gold</b>!</p>`,
+  },
+  rallye: {
+    bild: '🏁',
+    titel: 'Die Zauberpilz-Rallye',
+    text: `<p>Für die Seilkanone brauchst du einen <b>Widerhaken</b>. Den kann man nicht bauen – den gibt es nur als <b>Siegerpreis</b> bei der Rallye!</p>
+      <p class="erklaer-aufgabe">Jeden <b>3. Tag ist Markttag</b> im Palmendorf. Dann startet die Rallye. Gewinne einmal – und der Widerhaken gehört dir!</p>
+      <p>Tipp: Fahr durch die <b>Zauberpilze</b> 🍄 – die geben dir einen Turbo!</p>`,
   },
   verkaufen: {
     bild: '💰',
@@ -171,7 +230,8 @@ const ERKLAERUNG = {
     titel: 'Deine Base',
     text: `<p>Hier ist dein Zuhause. Nachts schläfst du hier – dann bist du sicher und verlierst keine Münzen. 😴</p>
       <p>Du kannst deine Base <b>in 5 Stufen ausbauen</b>: Zelt → großes Zelt → Hütte mit <b>Truhe</b> 📦 → Garten mit <b>Karotten</b> 🥕 → Haus mit <b>Fischteich</b> 🎣. Ab der Hütte gibt es auch einen <b>Pferdestall</b>.</p>
-      <p><b>Ab Stufe 2</b> wird dein altes Zelt zum <b>Reisezelt</b> ⛺. Das packst du in den Rucksack und stellst es <b>überall</b> auf – auch auf anderen Inseln! Dann musst du zum Schlafen nicht zurückkommen.</p>`,
+      <p><b>Ab Stufe 2</b> wird dein altes Zelt zum <b>Reisezelt</b> ⛺. Das packst du in den Rucksack und stellst es <b>überall</b> auf – auch auf anderen Inseln! Und im großen Zelt schläfst du so gut, dass du nachts <b>nur halb so schnell hungrig</b> wirst.</p>
+      <p><b>Ab Stufe 3</b> (Holzhütte) hast du eine <b>Vorratskammer</b>: Jeden 2. Morgen liegt ein <b>Brot</b> 🍞 in deiner Truhe. Und erst mit der Hütte kannst du ein <b>Fernrohr</b> bauen!</p>`,
   },
   holz: {
     bild: '🪵',
@@ -186,6 +246,7 @@ const ERKLAERUNG = {
     text: `<p>Oben links siehst du deinen <b>Satt-Balken</b>. Er wird in einem ganzen Tag leer – <b>auch wenn du schläfst</b>.</p>
       <p>Ist er leer, hast du <b>Hunger</b> und läufst nur noch <b>halb so schnell</b>. 😫</p>
       <p>Ein <b>Brot</b> oder ein <b>gegrillter Fisch</b> macht dich wieder ganz satt. Eine Karotte ein bisschen.</p>
+      <p>Hast du einen <b>ganzen Tag</b> lang Hunger, wirst du <b>ohnmächtig</b> 😵 und verlierst Münzen und deine Funde!</p>
       <p>Du hast noch 2 Brote – die reichen für 2 Tage. Bis dahin lernst du, dich <b>selbst</b> zu versorgen!</p>`,
   },
   fisch: {
@@ -217,7 +278,7 @@ export class Aufgaben {
     this.fenster = document.createElement('div');
     this.fenster.id = 'aufgaben-fenster';
     this.fenster.className = 'spiel-fenster';
-    this.fenster.innerHTML = `<div class="fenster-kopf"><h2>📋 Aufgabenbuch</h2><button class="zu" aria-label="Schließen">✕</button></div><ol class="aufgaben-liste"></ol>`;
+    this.fenster.innerHTML = `<div class="fenster-kopf"><h2>📋 Aufgabenbuch</h2><button class="zu" aria-label="Schließen">✕</button></div><div class="grosses-ziel">🔴 <b>Dein großes Ziel:</b> Finde das <b>Insadorium</b>! Es liegt auf einer der Inseln hinter dem Nebel.</div><ol class="aufgaben-liste"></ol>`;
     spiel.elternElement.appendChild(this.fenster);
     this.fenster.addEventListener('touchstart', (e) => e.stopPropagation());
     knopf(this.fenster.querySelector('.zu'), () => this.schliessen());
@@ -253,6 +314,12 @@ export class Aufgaben {
   gegessen(id) {
     if (id === 'gegrillterFisch') this.fischGegessen = true;
     if (id === 'brot') this.brotGegessen = true;
+  }
+
+  // Ist die Aufgabe mit diesem Titel schon geschafft?
+  istGeschafft(titel) {
+    const i = AUFGABEN.findIndex((a) => a.titel === titel);
+    return i >= 0 && i < this.nummer;
   }
 
   oeffnen() {
@@ -391,7 +458,7 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 4 };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 5 };
   }
 
   ladeDaten(d) {
@@ -402,6 +469,8 @@ export class Aufgaben {
     if ((d.version || 1) < 3 && nummer >= 3) nummer += 2;
     // Version 3 kannte „Kauf Holz beim Händler“ (Nummer 12) noch nicht
     if ((d.version || 1) < 4 && nummer >= 12) nummer += 1;
+    // Version 4 kannte „Bau ein Fernrohr“ (jetzt Nummer 21) und „Gewinne die Rallye“ (jetzt Nummer 26) noch nicht
+    if ((d.version || 1) < 5 && nummer >= 21) nummer += nummer >= 25 ? 2 : 1;
     this.holzGekauft = !!d.holzGekauft || nummer > 12;
     this.brotGegessen = !!d.brotGegessen || nummer > 4;
     this.erklaert = Array.isArray(d.erklaert) ? d.erklaert : nummer > 4 ? ['essen'] : [];

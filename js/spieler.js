@@ -341,7 +341,15 @@ export class Spieler {
         this.beiWind?.();
       }
     }
-    const neuX = pos.x + this.flugV.x * dt, neuZ = pos.z + this.flugV.y * dt;
+    let neuX = pos.x + this.flugV.x * dt, neuZ = pos.z + this.flugV.y * dt;
+    // Im Nebel und über fremden Inseln (starker Wind) kann man nicht hinfliegen: sanft zurückschubsen
+    const sperre = this.flugSperre?.(pos.x, pos.z, neuX, neuZ);
+    if (sperre) {
+      this.flugV.multiplyScalar(-0.6);
+      neuX = pos.x;
+      neuZ = pos.z;
+      this.beiFlugSperre?.(sperre);
+    }
     const ueberBoden = pos.y - Math.max(bodenHoehe(pos.x, pos.z), WASSER_HOEHE);
     if (ueberBoden > 1.2 || this.landeZiel || wind > 0 || !this.hindernisse.trifft(neuX, neuZ, 0.4)) {
       // in der Luft gibt es keine Hindernisse

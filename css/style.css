@@ -484,6 +484,7 @@ b, strong { font-weight: 700; }
 
 /* Zutaten: kleine Fächer mit Häkchen, wenn genug da ist */
 .zutaten { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 8px; }
+.rezept-sperre { margin-top: 6px; font-size: 15px; font-weight: 700; color: #8a4f1c; background: #fff2b8; border-radius: 8px; padding: 3px 8px; display: inline-block; }
 .zutat {
   position: relative;
   display: inline-flex; align-items: center; gap: 6px;
@@ -695,6 +696,8 @@ b, strong { font-weight: 700; }
 #aufgabe-anzeige span { overflow: hidden; text-overflow: ellipsis; }
 #aufgaben-fenster { --band: #3f8fd6; --band-dunkel: #174f86; }
 .aufgaben-liste { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+/* Das große Ziel oben im Aufgabenbuch */
+.grosses-ziel { background: #ffe1dc; border: 3px solid #d63a2a; border-radius: 12px; padding: 8px 12px; margin: 0 0 12px; font-size: 17px; line-height: 1.35; }
 .aufgabe {
   display: flex; align-items: center; gap: 12px;
   padding: 10px 14px; border-radius: 18px;
@@ -986,6 +989,12 @@ b, strong { font-weight: 700; }
 /* Die Uhr wird rot, wenn der Tag fast um ist */
 #uhr.knapp { color: #fff; background: #d63a2a; animation: uhr-pochen 1s ease-in-out infinite; }
 @keyframes uhr-pochen { 50% { transform: translateX(-50%) scale(1.08); } }
+/* Kaffee-/Limo-Bonus unter der Uhr */
+#bonus-anzeige { position: absolute; left: 50%; transform: translateX(-50%); top: calc(max(16px, env(safe-area-inset-top)) + 50px);
+  display: none; padding: 3px 14px 1px; border-radius: 20px; background: #fff3dc; border: 3px solid var(--holz-rand); color: var(--tinte);
+  font-weight: 700; font-size: 16px; white-space: nowrap; box-shadow: 0 3px 0 var(--holz-rand); z-index: 5; pointer-events: none; }
+#bonus-anzeige.sichtbar { display: block; }
+@media (max-height: 500px) { #bonus-anzeige { top: calc(var(--rand-o) + 34px); font-size: 13px; border-width: 2px; padding: 1px 10px 0; } }
 #aufgabe-anzeige.leuchtet { animation: aufgabe-leuchten 0.9s ease-in-out 6; }
 @keyframes aufgabe-leuchten { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 216, 74, 0); transform: scale(1); } 50% { box-shadow: 0 0 0 8px rgba(255, 216, 74, 0.9); transform: scale(1.06); } }
 @media (max-height: 500px) {

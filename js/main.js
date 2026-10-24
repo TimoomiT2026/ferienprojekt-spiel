@@ -14,7 +14,7 @@ import { Dorf } from './dorf.js';
 import { Tageszeit } from './tageszeit.js';
 import { Spieler } from './spieler.js';
 import { Steuerung, knopf } from './steuerung.js';
-import { Rucksack } from './rucksack.js';
+import { Rucksack, DINGE } from './rucksack.js';
 import { Objekte } from './objekte.js';
 import { Musik } from './musik.js';
 import { Karte } from './karte.js';
@@ -34,6 +34,7 @@ import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
 import { ladeSpielstand, speichereSpielstand, loescheSpielstand } from './speicher.js';
 import { zeigeVorgeschichte } from './vorgeschichte.js';
+import { Nebel } from './nebel.js';
 import { Tutorial } from './tutorial.js';
 import { Seilkanone } from './seilkanone.js';
 import { Tauchen } from './tauchen.js';
@@ -134,9 +135,54 @@ const haendler = new Haendler({ rucksack, meldung, musik, tageszeit, elternEleme
 // Das Palmendorf auf der Palmeninsel mit dem zweiten Händler 🌴
 const palmendorf = new Palmendorf(szene, hindernisse, { rucksack, meldung, musik, tageszeit, elternElement: spielfeld });
 objekte.interaktionen.push(...palmendorf.interaktionen);
+// Notausgang: Wer ohne Boot auf der Palmeninsel festsitzt, fährt mit dem Fischer heim (kostet etwas)
+objekte.interaktionen.push({
+  pos: palmendorf.mitte.clone().add(new THREE.Vector3(6, 0, 6)),
+  radius: 3,
+  bild: '⛵',
+  text: 'Heimfahren',
+  ausfuehren: () => {
+    const kosten = Math.min(rucksack.muenzen, EINSTELLUNGEN.heimfahrtKosten);
+    rucksack.aendereMuenzen(-kosten);
+    window.__spiel.teleport(7, -1.5);
+    meldung(`⛵ Der Fischer hat dich zu deinem Zelt gebracht${kosten ? ` – für ${kosten} Münzen` : ''}. (Dein Boot bleibt, wo es ist.)`, 6);
+  },
+});
 const lagerfeuer = new Lagerfeuer(szene, hindernisse, { rucksack, meldung, musik });
 objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
+// Im großen Zelt (Base-Stufe 2+) schläft man gut: nachts wird man langsamer hungrig
+ueberleben.schlafFaktor = () => (base.stufe >= EINSTELLUNGEN.schlafHungerAbStufe ? EINSTELLUNGEN.schlafHungerFaktor : 1);
+// Zu lange gehungert: ohnmächtig! Man wacht am nächsten Morgen am Zelt auf.
+ueberleben.beiOhnmacht = () => {
+  if (schlaeft || boote.faehrt || spieler.fliegt || ballon.faehrt || tauchen.taucht || rallye.laeuft || pferde.reitet) return false; // erst später
+  const kosten = Math.min(rucksack.muenzen, EINSTELLUNGEN.ohnmachtKosten);
+  rucksack.aendereMuenzen(-kosten);
+  // Beim Umkippen fallen alle Steine, Erze, Gold und Edelsteine aus dem Rucksack
+  const verloren = (EINSTELLUNGEN.ohnmachtVerliert || []).filter((id) => rucksack.anzahl(id) > 0);
+  const verlorenText = verloren.map((id) => `${rucksack.anzahl(id)} ${DINGE[id].name}`).join(', ');
+  verloren.forEach((id) => rucksack.nehmen(id, rucksack.anzahl(id)));
+  schlafen();
+  setTimeout(() => {
+    window.__spiel.teleport(7, -1.5); // vor dem Zelt
+    ueberleben.nachOhnmacht();
+    // Beim ersten Mal groß erklären, danach reicht eine Meldung
+    if (aufgaben.erklaert.includes('ohnmacht')) {
+      meldung(`😵 Ohnmächtig vor Hunger! −${kosten} Münzen${verloren.length ? ` und alle Funde weg (${verlorenText})` : ''}. Iss jeden Tag!`, 8);
+      return;
+    }
+    aufgaben.erklaert.push('ohnmacht');
+    aufgaben.zeigeFrei({
+      bild: '😵',
+      titel: 'Du bist ohnmächtig geworden!',
+      text: `<p>Du hattest so lange <b>nichts gegessen</b>, dass du umgekippt bist.</p>
+        <p>Ein Dorfbewohner hat dich gefunden, zu deinem <b>Zelt</b> gebracht und dir etwas zu essen gegeben. Dafür wollte er <b>${kosten} Münzen</b>.</p>
+        ${verloren.length ? `<p>Beim Umfallen ist dir alles aus dem Rucksack gefallen: <b>${verlorenText}</b> – weg! 😢</p>` : ''}
+        <p class="erklaer-aufgabe">Iss <b>jeden Tag</b> etwas! Nimm immer ein Brot oder einen gegrillten Fisch mit, wenn du weit weg gehst.</p>`,
+    });
+  }, 1900);
+  return true;
+};
 rucksack.beimEssen = (id) => {
   ueberleben.gegessen(id);
   aufgaben.gegessen(id);
@@ -172,8 +218,30 @@ const tiere = new Tiere(szene, hindernisse);
 
 // ---------- Karte & Navigation ----------
 const karte = new Karte(spielfeld);
+// Nebel um die anderen Inseln: erst mit dem Fernrohr entdecken, dann kommt man hin
+const nebel = new Nebel(szene, karte);
+karte.nurMitFernrohr = !!EINSTELLUNGEN.nebel?.an; // im Nebel entdeckt man nichts durchs Hinfahren
+// Beim Fliegen: nicht in den Nebel – und auf fremden Inseln landen geht auch nicht (zu viel Wind).
+// Fremde Inseln erreicht man nur mit dem Boot – so kommt man auch sicher wieder heim.
+spieler.flugSperre = (x, z, nx, nz) => {
+  if (nebel.sperrt(nx, nz)) return 'nebel';
+  const I = INSELN.slice(1).find((I) => Math.hypot(nx - I.x, nz - I.z) < I.radius * 1.3 + 15);
+  // Nur der Weg ZUR Insel ist gesperrt – wegfliegen darf man immer
+  if (I && Math.hypot(nx - I.x, nz - I.z) < Math.hypot(x - I.x, z - I.z)) return I.name;
+  return null;
+};
+let flugSperreGemeldet = 0;
+spieler.beiFlugSperre = (grund) => {
+  if (grund === 'nebel') return nebel.meldeSperre(meldung);
+  if (performance.now() - flugSperreGemeldet < 8000) return;
+  flugSperreGemeldet = performance.now();
+  meldung(`🌬️ Über der ${grund} weht ein viel zu starker Wind – landen kannst du da nicht! Auf andere Inseln kommst du nur mit dem Boot 🚣.`, 7);
+};
+boote.nebelSperre = (x, z) => nebel.sperrt(x, z);
+boote.beiNebel = () => nebel.meldeSperre(meldung);
 karte.beiInselEntdeckt = (name) => {
-  meldung(`🏝️ Neue Insel entdeckt: ${name}!`, 4);
+  nebel.aktualisiere();
+  meldung(nebel.waende.size ? `🔭 Neue Insel entdeckt: ${name}! Jetzt findest du den Weg durch den Nebel. 🌫️➡️🏝️` : `🏝️ Neue Insel entdeckt: ${name}!`, 6);
   tutorial.neu('insel');
   if (name === 'Palmeninsel') zeigePalmendorf();
   zeigeAngelstellen();
@@ -235,7 +303,16 @@ objekte.interaktionen.push(...tauchen.interaktionen);
 const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
 aufgaben.spiel.tauchen = tauchen;
+aufgaben.spiel.rallye = rallye;
 aufgaben.spiel.tageszeit = tageszeit;
+// Das Fernrohr gibt es erst, wenn man sich selbst versorgt – und frühestens ab Tag 3
+werkbank.spiel.sperre = (id) => {
+  if (id !== 'fernrohr' || rucksack.hat('fernrohr') || karte.entdeckteInseln.length > 0) return null;
+  const fehlt = (EINSTELLUNGEN.fernrohrNachAufgaben || []).filter((t) => !aufgaben.istGeschafft(t));
+  if (fehlt.length) return `Erst wenn du dich selbst versorgst: ${fehlt.join(' + ')}`;
+  if (tageszeit.tag < EINSTELLUNGEN.fernrohrAbTag) return `Erst ab Tag ${EINSTELLUNGEN.fernrohrAbTag}`;
+  return null;
+};
 objekte.spiel.aufgaben = aufgaben; // für die Anfänger-Funde beim ersten Graben
 rucksack.beimBenutzen = (id) => {
   if (id !== 'zauberpilz') return;
@@ -271,7 +348,10 @@ function tutorialPruefen(dt, naechste, pos) {
     else if (naechste.text === 'Schläft') tutorial.neu('haendlerSchlaeft');
     else if (angeln.interaktionen.includes(naechste)) tutorial.neu('angelstelle');
     else if (boote.interaktionen.includes(naechste)) tutorial.neu('boot');
-    else if (pferde.interaktionen.includes(naechste)) tutorial.neu('pferd');
+    else if (pferde.interaktionen.includes(naechste)) {
+      tutorial.neu('pferd');
+      if (!pferde.eigenes) aufgaben.erklaere('pferd'); // erstes Mal bei einem Wildpferd
+    }
     else if (pilze.interaktionen.includes(naechste)) tutorial.neu('zauberpilz');
     else if (ballon.interaktionen.includes(naechste)) tutorial.neu('ballon');
     else if (naechste.text === 'Ansprechen') tutorial.neu('bewohner');
@@ -491,6 +571,7 @@ function spielSchleife() {
   spieler.angel.visible = hand === 'angel';
   lagerfeuer.aktualisiere(dt);
   if (laeuft) {
+    pruefeVorrat();
     ueberleben.aktualisiere();
     zeitung.aktualisiere(dt);
     aufgaben.aktualisiere(dt);
@@ -531,6 +612,12 @@ function spielSchleife() {
     inselUhr = 1;
     const palmendorf = ballon.ziele.find((z) => z.id === 'palmendorf');
     if (palmendorf && !palmendorf.freigeschaltet && aufWelcherInsel(pos.x, pos.z) === 'Palmeninsel') ballon.freischalten('palmendorf');
+    // Zum ersten Mal an Land auf einer neuen Insel: groß erklären, was es dort gibt
+    const insel = aufWelcherInsel(pos.x, pos.z);
+    if (!boote.faehrt && !spieler.fliegt && !ballon.faehrt) {
+      if (insel === 'Palmeninsel') aufgaben.erklaere('palmeninsel');
+      if (insel === 'Klippeninsel') aufgaben.erklaere('klippeninsel');
+    }
   }
   if (laeuft) tutorialPruefen(dt, naechste, pos);
   if (tauchen.taucht) naechste = tauchen.aktionText(pos);
@@ -550,6 +637,18 @@ function spielSchleife() {
   }
   zeigeUhr();
   nach.render(dt);
+}
+
+// ---------- Vorratskammer: ab der Holzhütte liegt jeden 2. Morgen ein Brot in der Truhe ----------
+let vorratTag = null;
+function pruefeVorrat() {
+  const tag = tageszeit.tag;
+  if (vorratTag === null) vorratTag = tag; // beim Laden nichts verschenken
+  if (tag === vorratTag) return;
+  vorratTag = tag;
+  if (base.stufe < EINSTELLUNGEN.vorratAbStufe || tag % EINSTELLUNGEN.vorratAlleTage !== 0) return;
+  base.truheLegen('brot', 1);
+  setTimeout(() => meldung('🍞 Frisch gebacken! In deiner Truhe 📦 liegt ein Brot aus der Vorratskammer.', 6), 4000);
 }
 
 // ---------- Mit dem Schwert Bäume fällen ----------
@@ -736,7 +835,7 @@ verbindeEreignisse(ereignisse, { rucksack, angeln, objekte, base, pferde, karte,
 
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye, ereignisse, zeitung,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, nebel, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye, ereignisse, zeitung,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {

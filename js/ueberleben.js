@@ -23,6 +23,11 @@ export class Ueberleben {
     this.letzterTag = spiel.tageszeit.tag;
     this.letzteZeit = this.spielZeit();
     this.anzeige = document.getElementById('hunger-anzeige');
+    // Kleines Schild unter der Uhr: Kaffee-Bonus ☕ oder Nacht-Limo 🍋
+    this.bonusFeld = document.createElement('div');
+    this.bonusFeld.id = 'bonus-anzeige';
+    document.getElementById('uhr')?.after(this.bonusFeld);
+    this.bonusText = null;
     this.zeichnen();
   }
 
@@ -39,8 +44,18 @@ export class Ueberleben {
   gegessen(id) {
     const warHungrig = this.hungrig;
     this.satt = Math.min(100, this.satt + (EINSTELLUNGEN.sattVon[id] ?? 50));
+    this.hungerZeit = 0;
     this.gewarnt = this.satt <= EINSTELLUNGEN.hungerWarnung;
     this.spiel.meldung(warHungrig ? '😋 Mmh! Der Hunger ist weg, du bist wieder schnell.' : '😋 Mmh, lecker!', 4);
+    this.zeichnen();
+  }
+
+  // Nach der Ohnmacht: wieder halb satt, und der Zeitsprung zählt nicht zum Hungern
+  nachOhnmacht() {
+    this.satt = 50;
+    this.hungerZeit = 0;
+    this.letzteZeit = this.spielZeit();
+    this.gewarnt = false;
     this.zeichnen();
   }
 
@@ -68,9 +83,11 @@ export class Ueberleben {
 
     // Essen: der Balken wird langsam leer
     const jetzt = this.spielZeit();
-    const vergangen = Math.max(0, jetzt - this.letzteZeit);
+    let vergangen = Math.max(0, jetzt - this.letzteZeit);
     this.letzteZeit = jetzt;
     if (vergangen > 0) {
+      // Gerade geschlafen (die Nacht ist vorbeigesprungen)? Im großen Zelt wird man langsamer hungrig
+      if (vergangen > 5 && this.geschlafen && this.schlafFaktor) vergangen *= this.schlafFaktor();
       const warHungrig = this.hungrig;
       const tagLaenge = (t.tagSekunden + t.nachtSekunden) * EINSTELLUNGEN.sattTage;
       const alt = Math.ceil(this.satt);
@@ -82,6 +99,11 @@ export class Ueberleben {
         meldung('🍽️ Dein Bauch knurrt. Iss bald etwas!', 5);
       }
       if (Math.ceil(this.satt) !== alt) this.zeichnen();
+      // Zu lange nichts gegessen? Dann wird man ohnmächtig (main.js bringt einen heim)
+      if (this.hungrig) {
+        this.hungerZeit = (this.hungerZeit || 0) + vergangen;
+        if (this.hungerZeit >= tagLaenge * EINSTELLUNGEN.ohnmachtNachTagen && this.beiOhnmacht?.()) this.hungerZeit = 0;
+      } else this.hungerZeit = 0;
     }
 
     if (t.tag !== this.letzterTag) {
@@ -113,6 +135,21 @@ export class Ueberleben {
       }
     }
     spieler.tempoFaktor = this.hungrig ? EINSTELLUNGEN.hungerTempo : 1;
+    this.zeigeBonus();
+  }
+
+  // Kaffee oder Limo getrunken? Dann sieht man es unter der Uhr – nachts mit Restzeit
+  zeigeBonus() {
+    const t = this.spiel.tageszeit;
+    const rest = Math.ceil(t.restSekunden());
+    const uhr = `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, '0')}`;
+    let text = '';
+    if (this.limo) text = t.istNacht() ? `🍋 Helle Nacht – noch ${uhr}` : '🍋 Limo: Die nächste Nacht wird hell';
+    else if (this.kaffee > 0) text = t.istNacht() && !this.geschlafen ? `☕ Kaffee wirkt – du bleibst wach, noch ${uhr}` : `☕ Kaffee-Bonus: 1 Nacht ohne Schlaf`;
+    if (text === this.bonusText || !this.bonusFeld) return;
+    this.bonusText = text;
+    this.bonusFeld.textContent = text;
+    this.bonusFeld.classList.toggle('sichtbar', !!text);
   }
 
   zeichnen() {
@@ -127,7 +164,7 @@ export class Ueberleben {
   }
 
   alsDaten() {
-    return { satt: this.satt, naechteWach: this.naechteWach, kaffee: this.kaffee, limo: this.limo };
+    return { satt: this.satt, naechteWach: this.naechteWach, kaffee: this.kaffee, limo: this.limo, hungerZeit: this.hungerZeit || 0 };
   }
 
   ladeDaten(d) {
@@ -137,6 +174,7 @@ export class Ueberleben {
     this.naechteWach = d.naechteWach || 0;
     this.kaffee = d.kaffee || 0; // alte Spielstände: kein Kaffee
     this.limo = !!d.limo;
+    this.hungerZeit = d.hungerZeit || 0;
     this.gewarnt = this.satt <= EINSTELLUNGEN.hungerWarnung;
     this.letzterTag = this.spiel.tageszeit.tag;
     this.letzteZeit = this.spielZeit();

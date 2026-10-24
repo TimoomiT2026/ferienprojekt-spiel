@@ -117,13 +117,13 @@ export const EINSTELLUNGEN = {
     leine: { schuh: 1, schnur: 1 }, // Leder vom alten Schuh + Schnur = Pferde-Leine
     // Seilkanone (schwer zu schaffen!): erst Seil und Widerhaken bauen, dann die Kanone
     seil: { schnur: 3 }, // 3 Schnüre zusammengedreht = ein starkes Seil
-    widerhaken: { eisenerz: 2, stein: 1 },
+    // (Den Widerhaken kann man nicht bauen – den gibt es als Preis bei der Zauberpilz-Rallye! 🏁)
     seilkanone: { holz: 4, eisenerz: 3, seil: 1, widerhaken: 1 },
   },
 
   // Wie oft kann man etwas benutzen, bevor es kaputt / leer ist?
   haltbarkeit: {
-    schwert: 12, // 12 Schläge
+    schwert: 24, // 24 Schläge
     feuerzeug: 3, // 3 Mal Feuer machen
   },
 
@@ -191,6 +191,20 @@ export const EINSTELLUNGEN = {
   sattTage: 1,
   // So viel macht jedes Essen satt (100 = ein ganzer Tag)
   sattVon: { brot: 100, gegrillterFisch: 100, karotte: 40 },
+  // Ab dieser Base-Stufe wird man im Schlaf langsamer hungrig (0.5 = halb so schnell)
+  schlafHungerAbStufe: 2,
+  schlafHungerFaktor: 0.5,
+  // Vorratskammer: Ab dieser Base-Stufe liegt alle paar Tage morgens ein Brot in der Truhe
+  vorratAbStufe: 3,
+  vorratAlleTage: 2,
+  // Heimfahrt mit dem Fischer vom Palmendorf (Notausgang, wenn man kein Boot dort hat)
+  heimfahrtKosten: 15,
+  // Wer so viele Tage lang Hunger hat (leerer Balken), wird ohnmächtig und wacht am Zelt auf
+  ohnmachtNachTagen: 1,
+  // … und das kostet so viele Münzen (der Dorfbewohner, der dich gefunden hat, will Geld fürs Essen)
+  ohnmachtKosten: 20,
+  // … und diese Funde fallen dir aus dem Rucksack (alle davon!)
+  ohnmachtVerliert: ['stein', 'eisenerz', 'gold', 'edelstein'],
   // Ab so viel Satt-Balken kommt die Warnung "Du bekommst Hunger"
   hungerWarnung: 25,
   // Wie viele Nächte darf man durchmachen, bevor es Ärger gibt?
@@ -308,6 +322,18 @@ export const EINSTELLUNGEN = {
   maxFlugHoehe: 40,
   // Klippen-Wind 🌬️ (Entscheidung des Game Designers): Über der Klippeninsel weht
   // ein starker Wind. Mit dem Zauberpilz kommt man NICHT aufs Plateau – nur mit der Seilkanone!
+  // ---------- Nebel um die anderen Inseln 🌫️ ----------
+  // Erst wer eine Insel mit dem Fernrohr 🔭 entdeckt, kommt durch den Nebel.
+  nebel: {
+    an: true, // false = kein Nebel, alle Inseln gleich offen
+    abstand: 60, // so weit vor der Küste fängt der Nebel an (Meter)
+    hoehe: 45, // so hoch ist die Nebelwand (Meter)
+    deckkraft: 0.6, // 0 = unsichtbar, 1 = ganz dicht
+  },
+  // Ab wann kann man das Fernrohr an der Werkbank bauen?
+  fernrohrAbTag: 3,
+  // … und erst, wenn diese Aufgaben geschafft sind (man versorgt sich selbst):
+  fernrohrNachAufgaben: ['Iss deinen selbst gefangenen Fisch', 'Bau eine Holzhütte'],
   klippenWind: {
     // So weit (Meter) hinter der Küste fängt der Wind schon an
     rand: 10,

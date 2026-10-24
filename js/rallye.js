@@ -964,6 +964,7 @@ export class Rallye {
     const neueBestzeit = this.bestzeit === null || zeit < this.bestzeit;
     if (neueBestzeit) this.bestzeit = zeit;
     let gewinn = 0;
+    let widerhaken = false;
     if (this.spielerPlatz === 1) {
       this.siege++;
       if (this.gewinnTag !== tageszeit.tag) {
@@ -972,11 +973,18 @@ export class Rallye {
         rucksack.aendereMuenzen(gewinn);
         musik?.muenzen?.(8);
       }
+      // Der allererste Sieg bringt den Widerhaken für die Seilkanone 🪝
+      if (!this.widerhakenGewonnen) {
+        this.widerhakenGewonnen = true;
+        widerhaken = true;
+        if (!rucksack.hinein('widerhaken')) this.widerhakenGewonnen = false; // Rucksack voll – beim nächsten Sieg
+      }
       this.jubel();
     } else this.trostKlang();
     this.meldeErgebnis(zeit);
-    this.zeigeErgebnis({ gewinn, neueBestzeit });
-    if (this.spielerPlatz === 1) {
+    this.zeigeErgebnis({ gewinn, neueBestzeit, widerhaken });
+    if (widerhaken) meldung('🏆 Gewonnen! Dein Preis: der WIDERHAKEN für die Seilkanone! 🪝', 7);
+    else if (this.spielerPlatz === 1) {
       meldung(gewinn ? `🏆 Du hast die Zauberpilz-Rallye gewonnen! +${gewinn} Münzen!` : '🏆 Wieder Erster! (Den Gewinn gab es heute schon.)', 5);
     } else meldung(`🏁 Platz ${this.spielerPlatz}! Nächstes Mal schaffst du es!`, 5);
   }
@@ -1249,13 +1257,14 @@ export class Rallye {
     }
   }
 
-  zeigeErgebnis({ gewinn, neueBestzeit }) {
+  zeigeErgebnis({ gewinn, neueBestzeit, widerhaken = false }) {
     const du = this.spielerBoot;
     const gross = this.fenster.querySelector('.rallye-gross');
     const muenze = BILDER.muenze || '🪙';
     if (this.spielerPlatz === 1) {
       gross.innerHTML = `<div class="rallye-pokal">🏆</div><b>Du hast gewonnen!</b><br>` +
-        (gewinn ? `<span class="rallye-gewinn">+${gewinn} ${muenze}</span>` : '<span class="rallye-klein">Den Gewinn gibt es nur einmal pro Markttag – aber du warst wieder der Schnellste!</span>');
+        (gewinn ? `<span class="rallye-gewinn">+${gewinn} ${muenze}</span>` : '<span class="rallye-klein">Den Gewinn gibt es nur einmal pro Markttag – aber du warst wieder der Schnellste!</span>') +
+        (widerhaken ? `<br><span class="rallye-gewinn">+ ${BILDER.widerhaken || '🪝'} Widerhaken!</span><br><span class="rallye-klein">Den brauchst du für die Seilkanone.</span>` : '');
     } else {
       const platz = this.spielerPlatz || this.boote.length; // noch nicht im Ziel? Dann letzter Platz
       gross.innerHTML = `<div class="rallye-pokal">${platz === 2 ? '🥈' : platz === 3 ? '🥉' : '🚣'}</div><b>Platz ${platz}!</b><br><span class="rallye-klein">Nächstes Mal! Tipp: Vor engen Kurven bremsen und die Zauberpilze mitnehmen.</span>`;
@@ -1361,6 +1370,7 @@ export class Rallye {
       siege: this.siege,
       teilnahmen: this.teilnahmen,
       letztesErgebnis: this.letztesErgebnis,
+      widerhakenGewonnen: !!this.widerhakenGewonnen,
     };
   }
 
@@ -1370,6 +1380,7 @@ export class Rallye {
     this.siege = d.siege ?? 0;
     this.teilnahmen = d.teilnahmen ?? 0;
     this.letztesErgebnis = d.letztesErgebnis ?? null;
+    this.widerhakenGewonnen = !!d.widerhakenGewonnen;
     this.schildTag = -1;
   }
 }

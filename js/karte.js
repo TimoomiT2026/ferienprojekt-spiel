@@ -687,6 +687,7 @@ export class Karte {
     // Ist eine neue Insel nah? Dann erscheint sie auf der Karte
     for (let i = 1; i < INSELN.length; i++) {
       const I = INSELN[i];
+      if (this.nurMitFernrohr) break; // im Nebel findet man Inseln nur mit dem Fernrohr
       if (!this.entdeckt.has(I.name) && Math.hypot(spielerPos.x - I.x, spielerPos.z - I.z) < I.radius + EINSTELLUNGEN.inselEntdeckenAbstand) this.entdeckeInsel(I.name);
     }
 

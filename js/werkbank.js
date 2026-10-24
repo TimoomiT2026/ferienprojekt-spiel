@@ -90,7 +90,9 @@ export class Werkbank {
     liste.innerHTML = '';
     for (const [id, zutaten] of Object.entries(EINSTELLUNGEN.rezepte)) {
       const ding = DINGE[id];
-      const kannBauen = Object.entries(zutaten).every(([z, n]) => rucksack.anzahl(z) >= n);
+      // Manches darf man erst später bauen (z. B. das Fernrohr) – dann steht da, warum
+      const sperre = this.spiel.sperre?.(id);
+      const kannBauen = !sperre && Object.entries(zutaten).every(([z, n]) => rucksack.anzahl(z) >= n);
       const zeile = document.createElement('div');
       zeile.className = 'rezept';
       const zutatenHtml = Object.entries(zutaten)
@@ -101,8 +103,8 @@ export class Werkbank {
         .join('');
       zeile.innerHTML = `
         <div class="rezept-bild">${ding.bild}</div>
-        <div class="rezept-mitte"><b>${ding.name}</b><div class="zutaten">${zutatenHtml}</div></div>
-        <button class="bauen" ${kannBauen ? '' : 'disabled'}>Bauen</button>`;
+        <div class="rezept-mitte"><b>${ding.name}</b><div class="zutaten">${zutatenHtml}</div>${sperre ? `<div class="rezept-sperre">🔒 ${sperre}</div>` : ''}</div>
+        <button class="bauen" ${kannBauen ? '' : 'disabled'}>${sperre ? '🔒' : 'Bauen'}</button>`;
       knopf(zeile.querySelector('.bauen'), () => this.bauen(id));
       liste.appendChild(zeile);
     }
@@ -112,6 +114,11 @@ export class Werkbank {
     const { rucksack, meldung, musik } = this.spiel;
     const zutaten = EINSTELLUNGEN.rezepte[id];
     const info = this.fenster.querySelector('.werkbank-info');
+    const sperre = this.spiel.sperre?.(id);
+    if (sperre) {
+      info.textContent = `🔒 ${sperre}`;
+      return;
+    }
     if (!Object.entries(zutaten).every(([z, n]) => rucksack.anzahl(z) >= n)) {
       info.textContent = 'Dir fehlen noch Sachen. Grab weiter! ⛏️';
       return;

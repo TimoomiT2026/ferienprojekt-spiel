@@ -43,7 +43,7 @@ export const DINGE = {
   zauberpilz: { name: 'Zauberpilz', bild: BILDER.zauberpilz, zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
   fernrohr: { name: 'Fernrohr', bild: BILDER.fernrohr, werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
   seil: { name: 'Seil', bild: BILDER.seil, artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Jeder Schuss mit der Seilkanone braucht eins.' },
-  widerhaken: { name: 'Widerhaken', bild: BILDER.widerhaken, artikel: 'einen', text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone.' },
+  widerhaken: { name: 'Widerhaken', bild: BILDER.widerhaken, artikel: 'einen', text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone. Den gibt es nur als Preis bei der Zauberpilz-Rallye! 🏁' },
   seilkanone: { name: 'Seilkanone', bild: BILDER.seilkanone, werkzeug: true, artikel: 'eine', text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Jeder Schuss braucht 1 Seil.' },
   // wichtig: kann man nicht wegwerfen. Nicht verkaufbar (steht nicht in den verkaufsPreisen).
   wertvolleMuenze: { name: 'Wertvolle Münze', bild: BILDER.wertvolleMuenze, artikel: 'eine', wichtig: true, text: 'Eine uralte, goldene Münze! Bring 3 davon zum Inselbewohner mit der Taucherbrille auf der Palmeninsel.' },
