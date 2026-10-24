@@ -129,7 +129,11 @@ export class Musik {
     this.ausgang.ratio.value = 12;
     this.ausgang.attack.value = 0.003;
     this.ausgang.release.value = 0.2;
-    this.ausgang.connect(ctx.destination);
+    // Der Hauptschalter: Ist der Ton aus, ist ALLES still (Musik, Geräusche, Wellen, Gras …)
+    this.alles = ctx.createGain();
+    this.alles.gain.value = this.an ? 1 : 0;
+    this.ausgang.connect(this.alles);
+    this.alles.connect(ctx.destination);
 
     this.musikLaut = ctx.createGain();
     this.musikLaut.gain.value = this.an ? EINSTELLUNGEN.musikLautstaerke : 0;
@@ -193,6 +197,7 @@ export class Musik {
     speichere('musikAn', this.an);
     if (this.ctx) {
       this.musikLaut.gain.setTargetAtTime(this.an ? EINSTELLUNGEN.musikLautstaerke : 0, this.ctx.currentTime, 0.3);
+      this.alles.gain.setTargetAtTime(this.an ? 1 : 0, this.ctx.currentTime, 0.05); // alles still – nicht nur die Musik
     }
     return this.an;
   }
