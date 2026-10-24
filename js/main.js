@@ -224,7 +224,7 @@ karte.nurMitFernrohr = !!EINSTELLUNGEN.nebel?.an; // im Nebel entdeckt man nicht
 // Beim Fliegen: nicht in den Nebel – und auf fremden Inseln landen geht auch nicht (zu viel Wind).
 // Fremde Inseln erreicht man nur mit dem Boot – so kommt man auch sicher wieder heim.
 spieler.flugSperre = (x, z, nx, nz) => {
-  if (nebel.sperrt(nx, nz)) return 'nebel';
+  if (nebel.sperrt(nx, nz, x, z)) return 'nebel';
   const I = INSELN.slice(1).find((I) => Math.hypot(nx - I.x, nz - I.z) < I.radius * 1.3 + 15);
   // Nur der Weg ZUR Insel ist gesperrt – wegfliegen darf man immer
   if (I && Math.hypot(nx - I.x, nz - I.z) < Math.hypot(x - I.x, z - I.z)) return I.name;
@@ -237,7 +237,7 @@ spieler.beiFlugSperre = (grund) => {
   flugSperreGemeldet = performance.now();
   meldung(`🌬️ Über der ${grund} weht ein viel zu starker Wind – landen kannst du da nicht! Auf andere Inseln kommst du nur mit dem Boot 🚣.`, 7);
 };
-boote.nebelSperre = (x, z) => nebel.sperrt(x, z);
+boote.nebelSperre = (x, z, vonX, vonZ) => nebel.sperrt(x, z, vonX, vonZ);
 boote.beiNebel = () => nebel.meldeSperre(meldung);
 karte.beiInselEntdeckt = (name) => {
   nebel.aktualisiere();

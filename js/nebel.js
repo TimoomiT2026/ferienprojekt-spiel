@@ -64,11 +64,16 @@ export class Nebel {
   }
 
   // Ist (x, z) mitten in einer Nebelbank? Dann darf man da nicht hin.
-  sperrt(x, z) {
+  // Mit (vonX, vonZ) = wo man gerade ist: Nur der Weg IN den Nebel ist gesperrt,
+  // herausfahren oder herausfliegen geht immer (sonst könnte man festsitzen).
+  sperrt(x, z, vonX, vonZ) {
     if (!N().an) return false;
     for (const I of INSELN.slice(1)) {
       if (!this.imNebel(I.name)) continue;
-      if (Math.hypot(x - I.x, z - I.z) < I.radius + (N().abstand ?? 60)) return true;
+      const d = Math.hypot(x - I.x, z - I.z);
+      if (d >= I.radius + (N().abstand ?? 60)) continue;
+      if (vonX !== undefined && d >= Math.hypot(vonX - I.x, vonZ - I.z)) continue; // es geht nach draußen
+      return true;
     }
     return false;
   }
