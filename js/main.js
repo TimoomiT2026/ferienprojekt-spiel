@@ -223,9 +223,14 @@ const nebel = new Nebel(szene, karte);
 karte.nurMitFernrohr = !!EINSTELLUNGEN.nebel?.an; // im Nebel entdeckt man nichts durchs Hinfahren
 // Beim Fliegen: nicht in den Nebel – und auf fremden Inseln landen geht auch nicht (zu viel Wind).
 // Fremde Inseln erreicht man nur mit dem Boot – so kommt man auch sicher wieder heim.
+let flugStartInsel = 'Startinsel'; // von welcher Insel ist man losgeflogen? (dort darf man wieder landen)
+spieler.landenVerboten = (x, z) => {
+  const insel = aufWelcherInsel(x, z);
+  return !!insel && insel !== 'Startinsel' && insel !== flugStartInsel;
+};
 spieler.flugSperre = (x, z, nx, nz) => {
   if (nebel.sperrt(nx, nz, x, z)) return 'nebel';
-  const I = INSELN.slice(1).find((I) => Math.hypot(nx - I.x, nz - I.z) < I.radius * 1.3 + 15);
+  const I = INSELN.slice(1).find((I) => I.name !== flugStartInsel && Math.hypot(nx - I.x, nz - I.z) < I.radius * 1.3 + 15);
   // Nur der Weg ZUR Insel ist gesperrt – wegfliegen darf man immer
   if (I && Math.hypot(nx - I.x, nz - I.z) < Math.hypot(x - I.x, z - I.z)) return I.name;
   return null;
@@ -572,6 +577,7 @@ function spielSchleife() {
   // (Das Fernrohr hält man nicht sichtbar in der Hand – man schaut nur hindurch)
   spieler.angel.visible = hand === 'angel';
   lagerfeuer.aktualisiere(dt);
+  if (!spieler.fliegt) flugStartInsel = aufWelcherInsel(spieler.figur.position.x, spieler.figur.position.z) || 'Startinsel';
   if (laeuft) {
     pruefeVorrat();
     ueberleben.aktualisiere();

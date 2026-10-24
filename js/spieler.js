@@ -243,7 +243,8 @@ export class Spieler {
   // Darf man hier landen? (fester Boden, kein Baum, kein Wasser)
   kannLanden(x, z) {
     return bodenHoehe(x, z) > wasserHoeheBei(x, z) + 0.3 && this.kannStehen(x, z) && !istKlippenWand(x, z) &&
-      !(this.windSperrt() && aufKlippenPlateau(x, z)); // aufs Plateau nur mit der Seilkanone!
+      !(this.windSperrt() && aufKlippenPlateau(x, z)) && // aufs Plateau nur mit der Seilkanone!
+      (!this.fliegt || !this.landenVerboten?.(x, z)); // fremde Inseln: zu viel Wind zum Landen
   }
 
   // Bläst der Klippen-Wind bei diesem Flug? (nicht, wenn man oben losgeflogen ist)
