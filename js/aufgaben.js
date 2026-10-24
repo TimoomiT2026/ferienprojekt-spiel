@@ -16,7 +16,7 @@ const AUFGABEN = [
   { titel: 'Grab 3 Steine und 2 Eisenerz', start: 'huegel', tipp: 'An den glitzernden Erdhügeln graben. Am nächsten Morgen sind sie wieder voll.', geschafft: (s) => s.rucksack.anzahl('stein') >= 3 && s.rucksack.anzahl('eisenerz') >= 2, belohnung: 3 },
   { titel: 'Kauf dir ein Brot beim Händler', start: 'dorf', tipp: 'Das Dorf 🏘️ ist auf der Karte 🗺️. Beim Händler „Handeln“ drücken, dann bei Brot „Kaufen“. (Nachts schläft er!)', geschafft: (s) => !!s.haendler?.gekauftJemals || s.rucksack.hat('brot') || s.aufgaben.brotGegessen, belohnung: 2 },
   { titel: 'Iss ein Brot', start: 'brotEssen', tipp: 'Rucksack 🎒 öffnen, Brot antippen, „Essen“ drücken.', geschafft: (s) => s.aufgaben.brotGegessen, belohnung: 3, danach: 'essen' },
-  { titel: 'Verkauf etwas beim Händler', start: 'verkaufen', tipp: 'Das Dorf 🏘️ ist auf der Karte 🗺️. Beim Händler „Handeln“ drücken, dann „💰 Verkaufen“. (Nachts schläft er!)', geschafft: (s) => s.aufgaben.gehandelt || Object.keys(s.haendler?.verkauftHeute || {}).length > 0, belohnung: 5, danach: 'werkbank' },
+  { titel: 'Verkauf etwas beim Händler', start: 'verkaufen', tipp: 'Grab erst noch einen Hügel aus ⛏️ – und verkauf, was du findest: beim Händler „Handeln“, dann „💰 Verkaufen“. Deine 3 Steine und 2 Eisenerz behältst du fürs Schwert! (Nachts schläft er!)', geschafft: (s) => s.aufgaben.gehandelt || Object.keys(s.haendler?.verkauftHeute || {}).length > 0, belohnung: 5, danach: 'werkbank' },
   { titel: 'Bau ein Schwert', tipp: 'An der Werkbank 🔨 neben dem Zelt: 2 Eisenerz + 3 Steine.', geschafft: (s) => s.rucksack.hat('schwert'), belohnung: 5 },
   { titel: 'Hack 4 Holz', start: 'holzHacken', tipp: 'Schwert in die Hand, vor einen Baum stellen und „Fällen“ drücken.', geschafft: (s) => s.rucksack.anzahl('holz') >= 4, belohnung: 3 },
   { titel: 'Bau eine Schnur', start: 'angelBauen', tipp: 'An der Werkbank: 2 Holz werden zu einer dünnen Schnur.', geschafft: (s) => s.rucksack.hat('schnur') || s.rucksack.hat('angel'), belohnung: 2 },
@@ -214,8 +214,8 @@ const ERKLAERUNG = {
     bild: '💰',
     titel: 'Verkauf deine Funde!',
     text: `<p>Mit Münzen kaufst du dir Brot, Würmer und vieles mehr. Münzen bekommst du, wenn du <b>verkaufst</b>.</p>
-      <p class="erklaer-aufgabe">Deine Aufgabe: Geh zum <b>Händler</b>, drück <b>„Handeln“</b> und dann <b>„💰 Verkaufen“</b>. Verkauf zum Beispiel eine Kohle.</p>
-      <p>Tipp: Behalte <b>3 Steine und 2 Eisenerz</b> – die brauchst du gleich für dein Schwert!</p>`,
+      <p>Deine <b>3 Steine und 2 Eisenerz</b> behältst du – die brauchst du gleich für dein <b>Schwert</b>!</p>
+      <p class="erklaer-aufgabe">Deine Aufgabe: Grab noch einen <b>Hügel</b> aus ⛏️. Was du dort findest, bringst du zum <b>Händler</b>: <b>„Handeln“</b> und dann <b>„💰 Verkaufen“</b>.</p>`,
   },
   graben: {
     bild: '⛏️',

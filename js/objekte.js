@@ -293,7 +293,10 @@ export class Objekte {
   // Was fehlt noch für „Grab 3 Steine und 2 Eisenerz“? (Nur auf der Startinsel, nur bei dieser Aufgabe)
   anfaengerFunde(stelle) {
     const { rucksack, aufgaben } = this.spiel;
-    if (!aufgaben || aufgaben.nummer !== 2 || stelle.insel) return null;
+    if (!aufgaben || stelle.insel) return null;
+    // Aufgabe „Verkauf etwas“: Der nächste Hügel gibt sicher etwas zum Verkaufen (Kohle)
+    if (aufgaben.nummer === 5 && !aufgaben.gehandelt) return ['kohle'];
+    if (aufgaben.nummer !== 2) return null;
     const funde = [];
     if (rucksack.anzahl('eisenerz') < 2) funde.push('eisenerz');
     if (rucksack.anzahl('stein') < 3) funde.push('stein');
