@@ -23,6 +23,10 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - **Wochenmarkt** im Palmendorf (js/markt.js): Obst & Gemüse (billiger), Kaffee ☕ 35 (eine Nacht ohne Schlaf zählt nicht), Nacht-Limo 🍋 40 (die Nacht wird taghell, zählt nicht als wach), Steine & Erze
   - **Zauberpilz-Rallye** (js/rallye.js): 10 Münzen Startgeld, Bootsrennen gegen 4 KI-Gegner, Pilze = Turbo, zu schnell in der Kurve = rausrutschen; Sieg = 50 Münzen (einmal pro Markttag)
   - **Briefkasten & Inselzeitung** (js/zeitung.js, js/ereignisse.js): am Morgen jedes Markttags; gezeichnete Bilder von Dingen, die wirklich passiert sind, Marktpreise, Rallye-Ergebnis
+- **Geführter Einstieg** (Wunsch nach einer Testrunde): graben → verpflegen → selbst herstellen
+  - Aufgaben „Kauf dir ein Brot“ (beim ersten Brot schenkt der Händler 2 dazu) und „Iss ein Brot“ vor dem Verkaufen; nach dem Angeln „Kauf Holz beim Händler“ (erstes Holz: 3 für 1)
+  - Große Erklär-Fenster über den ganzen Bildschirm (js/aufgaben.js, `ERKLAERUNG`): erster Fund, erster Händler-Besuch, Essen, Werkbank, erster Fisch („Selbst versorgen spart Geld!“), Holz, erstes Öffnen der Base
+  - Nur noch 2 Angelstellen auf der Startinsel (`angelstellenStartinsel`)
 - **Zauberpilze** im Wald: 1 Minute fliegen (Sprungknopf halten = höher)
 - **Fernrohr:** zoomen, Boote entdecken (später andere Inseln). Durch Berge sieht man nicht.
 - **Karte & Navigation**, Tag/Nacht (5 + 3 Minuten), Wellen, Musik, automatisches Speichern
@@ -41,6 +45,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
 | Echte Namen/Fotos nicht ins Repo | Das Repo ist öffentlich |
 | Taucherbrille nur gegen 3 Münzen (eine pro Insel), Münzen erst nach dem Satz der Person mit der Brille | Game Designer: Sonst wären die anderen Inseln sinnlos, und eine Münze ohne Ziel versteht man nicht |
 | Kein Zauberpilz-Flug aufs Klippen-Plateau (Wind) | Game Designer: Man soll sich die Seilkanone erarbeiten |
+| Einstieg mit Brot kaufen + Erklär-Fenstern, Holz-Kauf als Abkürzung | Neue Spieler sollen am Anfang geführt werden: erst verpflegen, dann lernen, dass Selbermachen günstiger ist |
 | Die 30 alten Grabestellen, Bäume, Pilze bleiben exakt gleich, Neues wird hinten angehängt | Damit alte Spielstände weiter funktionieren |
 
 ## Als Nächstes
