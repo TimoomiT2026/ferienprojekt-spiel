@@ -295,7 +295,7 @@ export class Rallye {
       pos: this.standPos,
       radius: e.standRadius ?? 4,
       get bild() { return BILDER.zauberpilz || '🍄'; },
-      get text() { return self.darfHeute() ? `Mitmachen (${E().teilnahme})` : 'Rallye'; },
+      get text() { return self.darfHeute() ? `Mitmachen (${self.preis()})` : 'Rallye'; },
       aktiv: () => this.phase === 'aus' && !spiel.boote?.faehrt && !spiel.pferde?.reitet && !spiel.spieler?.fliegt,
       ausfuehren: () => this.mitmachen(),
     });
@@ -305,10 +305,15 @@ export class Rallye {
     return this.phase !== 'aus';
   }
 
-  // Ist heute Rallye, und ist es Tag?
+  // Kann man jetzt fahren? Jeden Tag – nur nicht nachts
   darfHeute() {
-    const t = this.spiel.tageszeit;
-    return istMarkttag(t.tag) && !t.istNacht();
+    return !this.spiel.tageszeit.istNacht();
+  }
+
+  // Was kostet das Mitmachen heute? Am Markttag billig, sonst teurer
+  preis() {
+    const e = E();
+    return istMarkttag(this.spiel.tageszeit.tag) ? e.teilnahme : (e.teilnahmeSonst ?? e.teilnahme);
   }
 
   // Beim Rennen ist die Kamera etwas weiter weg (man sieht die Kurve besser)
@@ -536,7 +541,7 @@ export class Rallye {
     g.font = 'bold 36px "Baloo 2", "Arial Rounded MT Bold", Arial, sans-serif';
     g.fillStyle = heute ? '#2c7a14' : '#8a3a12';
     g.textAlign = 'center';
-    g.fillText(heute ? `Heute! Mitmachen: ${E().teilnahme} Münzen` : `Nächste Rallye: Tag ${naechsterMarkttag(tag)}`, 256, 196);
+    g.fillText(heute ? `Markttag! Mitmachen: ${E().teilnahme} Münzen` : `Mitmachen: ${E().teilnahmeSonst ?? E().teilnahme} Münzen`, 256, 196);
     this.schildTex.needsUpdate = true;
   }
 
@@ -625,26 +630,23 @@ export class Rallye {
   mitmachen() {
     const { tageszeit, rucksack, meldung, musik } = this.spiel;
     const e = E();
-    if (!istMarkttag(tageszeit.tag)) {
-      meldung(`🍄 Die nächste Zauberpilz-Rallye ist an Tag ${naechsterMarkttag(tageszeit.tag)} – immer am Markttag!`, 5);
-      return;
-    }
     if (tageszeit.istNacht()) {
-      meldung('🌙 Im Dunkeln fährt niemand Rennen. Die nächste Rallye ist am nächsten Markttag!', 5);
+      meldung('🌙 Im Dunkeln fährt niemand Rennen. Komm morgen wieder!', 5);
       return;
     }
-    if (rucksack.muenzen < e.teilnahme) {
+    const preis = this.preis();
+    if (rucksack.muenzen < preis) {
       musik?.gehtNicht?.();
-      meldung(`Du brauchst ${e.teilnahme} Münzen, um mitzumachen.`, 4);
+      meldung(`Du brauchst ${preis} Münzen, um mitzumachen.${istMarkttag(tageszeit.tag) ? '' : ` Am Markttag (Tag ${naechsterMarkttag(tageszeit.tag)}) kostet es nur ${e.teilnahme}!`}`, 6);
       return;
     }
-    rucksack.aendereMuenzen(-e.teilnahme);
+    rucksack.aendereMuenzen(-preis);
     musik?.kasse?.();
     this.teilnahmen++;
     this.starteRennen();
     const schonGewonnen = this.gewinnTag === tageszeit.tag;
     meldung(schonGewonnen
-      ? '🍄 Los geht\'s! (Den Gewinn gibt es nur einmal pro Markttag – heute fährst du um die Ehre!)'
+      ? '🍄 Los geht\'s! (Die Münzen gibt es nur einmal am Tag – heute fährst du um die Ehre!)'
       : `🍄 Willkommen bei der Rallye! Wer zuerst im Ziel ist, gewinnt ${e.gewinn} Münzen.`, 5);
   }
 
@@ -814,7 +816,10 @@ export class Rallye {
     // Wer zu schnell lenkt, rutscht seitlich weg – nach außen aus der Kurve!
     // Wer schon rutscht, hat weniger Griff (wie beim Schlittern auf Eis)
     b.rutscht = Math.abs(seit);
-    const griff = e.griff * (b.rutscht > (e.rutschAb ?? 1.5) ? e.rutschGriff ?? 1 : 1) * dt;
+    // Im Turbo hält das Wasser besser – sonst fliegt man beim Zauberpilz sofort aus der Kurve
+    const griff = b.turbo > 0
+      ? e.griff * (e.turboGriff ?? 1) * dt
+      : e.griff * (b.rutscht > (e.rutschAb ?? 1.5) ? e.rutschGriff ?? 1 : 1) * dt;
     seit = Math.abs(seit) <= griff ? 0 : seit - Math.sign(seit) * griff;
     vor = Math.max(0, vor - b.rutscht * e.rutschBremse * dt); // Rutschen kostet Tempo
     b.vx = fx * vor + rx * seit;
@@ -1117,7 +1122,7 @@ export class Rallye {
     const sichtbar = weit < (e.sichtweite ?? 350) || this.laeuft;
     this.gruppe.visible = sichtbar;
     // Die Turbo-Pilze gibt es nur am Markttag (und natürlich im Rennen)
-    const pilzeDa = sichtbar && (istMarkttag(tag) || this.laeuft);
+    const pilzeDa = sichtbar; // die Rallye gibt es jetzt jeden Tag
     this.pilzStiele.visible = this.pilzHuete.visible = this.pilzRinge.visible = pilzeDa;
     if (!sichtbar) return;
     const wz = wasserZeit();
@@ -1268,7 +1273,7 @@ export class Rallye {
     const muenze = BILDER.muenze || '🪙';
     if (this.spielerPlatz === 1) {
       gross.innerHTML = `<div class="rallye-pokal">🏆</div><b>Du hast gewonnen!</b><br>` +
-        (gewinn ? `<span class="rallye-gewinn">+${gewinn} ${muenze}</span>` : '<span class="rallye-klein">Den Gewinn gibt es nur einmal pro Markttag – aber du warst wieder der Schnellste!</span>') +
+        (gewinn ? `<span class="rallye-gewinn">+${gewinn} ${muenze}</span>` : '<span class="rallye-klein">Die Münzen gibt es nur einmal am Tag – aber du warst wieder der Schnellste!</span>') +
         (widerhaken ? `<br><span class="rallye-gewinn">+ ${BILDER.widerhaken || '🪝'} Widerhaken!</span><br><span class="rallye-klein">Den brauchst du für die Seilkanone.</span>` : '');
     } else {
       const platz = this.spielerPlatz || this.boote.length; // noch nicht im Ziel? Dann letzter Platz

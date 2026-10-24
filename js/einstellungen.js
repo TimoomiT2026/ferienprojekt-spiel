@@ -547,8 +547,9 @@ export const EINSTELLUNGEN = {
 
   // ---------- Etappe 4: Zauberpilz-Rallye 🍄🚣 (js/rallye.js) ----------
   rallye: {
-    teilnahme: 10, // so viel kostet das Mitmachen (Game Designer)
-    gewinn: 50, // so viel bekommt der Sieger – aber nur 1× pro Markttag
+    teilnahme: 10, // so viel kostet das Mitmachen am Markttag (Game Designer)
+    teilnahmeSonst: 50, // an allen anderen Tagen kann man auch fahren – aber teurer (Wunsch eines Testers)
+    gewinn: 50, // so viel bekommt der Sieger – aber nur 1× pro Tag
     runden: 1, // wie viele Runden ein Rennen hat
     // Die Strecke: Punkte auf dem Meer vor der Palmeninsel (x, z). Eine weiche Kurve geht durch alle durch.
     // Der erste Punkt ist die Start- und Ziellinie. (Reihenfolge = Fahrtrichtung)
@@ -590,6 +591,7 @@ export const EINSTELLUNGEN = {
     turboDauer: 2, // Sekunden
     turboTempo: 1.5, // so viel schneller (1.5 = anderthalb mal so schnell)
     turboSchub: 12, // so schnell kommt der Turbo
+    turboGriff: 3, // im Turbo hält das Wasser das Boot so viel besser in der Spur (größer = man fliegt nicht so leicht raus)
 
     // ---- Die KI-Gegner ----
     //  koennen    = wie nah sie an die Kurven-Grenze gehen (1 = perfekt)

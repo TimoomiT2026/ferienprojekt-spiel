@@ -38,7 +38,7 @@ const AUFGABEN = [
   { titel: 'Frag die Bewohner nach dem Insadorium', tipp: 'Fahr mit dem Boot 🚣 auf die Palmeninsel 🌴 und sprich einen der Menschen dort an. Vielleicht weiß jemand etwas über das Insadorium!', geschafft: (s) => !!s.bewohner?.tippBekommen || !!s.bewohner?.trigger, belohnung: 5, danach: 'unterWasser' },
   { titel: 'Finde die Person mit der Taucherbrille', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
   { titel: 'Sammle alles für die Seilkanone', start: 'seilkanone', tipp: 'Bau an der Werkbank 🔨 ein Seil (aus 3 Schnüren). Dazu brauchst du 4 Holz und 3 Eisenerz.', geschafft: (s) => genugMuenzen(s) || alleTeileAusserHaken(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5, danach: 'widerhakenFehlt' },
-  { titel: 'Gewinne die Zauberpilz-Rallye', start: 'widerhakenFehlt', tipp: 'Jeden 3. Tag ist Markttag im Palmendorf 🌴 – dann startet dort die Rallye. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
+  { titel: 'Gewinne die Zauberpilz-Rallye', start: 'widerhakenFehlt', tipp: 'Die Rallye startet am Strand vor dem Palmendorf 🌴 – jeden Tag für 50 Münzen, am Markttag (jeden 3. Tag) für nur 10. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Bau eine Seilkanone', tipp: 'Werkbank: erst ein Seil (3 Schnüre), dann die Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken aus der Rallye).', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Finde 3 wertvolle Münzen', tipp: 'Auf jeder Insel ist eine in einem golden glitzernden Grabehügel versteckt. Schau auf die Karte ❓!', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
   { titel: 'Hol dir die Taucherbrille', tipp: 'Bring die 3 Münzen zurück zur Person mit der Taucherbrille.', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.hat('taucherbrille'), belohnung: 5 },
@@ -213,7 +213,7 @@ const ERKLAERUNG = {
   palmeninsel: {
     bild: '🌴',
     titel: 'Herzlich willkommen auf der Palmeninsel!',
-    text: `<p>Hier leben <b>13 Menschen</b>. Im <b>Palmendorf</b> gibt es einen zweiten <b>Händler</b> – und jeden 3. Tag ist <b>Markttag</b> mit Wochenmarkt und der <b>Zauberpilz-Rallye</b> 🏁.</p>
+    text: `<p>Hier leben <b>13 Menschen</b>. Im <b>Palmendorf</b> gibt es einen zweiten <b>Händler</b> – jeden 3. Tag ist <b>Markttag</b> mit Wochenmarkt – und am Strand gibt es die <b>Zauberpilz-Rallye</b> 🏁.</p>
       <p>Beim Graben findest du hier <b>Muscheln</b> 🐚 und <b>Kokosnüsse</b> 🥥 zum Verkaufen.</p>
       <p class="erklaer-aufgabe">Und denk an dein großes Ziel: Du suchst immer noch das <b>Insadorium</b> 🔴! <b>Sprich die Menschen hier an</b> – vielleicht weiß jemand etwas darüber.</p>`,
   },
@@ -244,14 +244,14 @@ const ERKLAERUNG = {
     titel: 'Achtung: Dir fehlt das wichtigste Teil!',
     text: `<p>Seil, Holz und Eisenerz hast du – aber die Seilkanone braucht noch einen <b>Widerhaken</b> 🪝. Der krallt sich oben an der Klippe fest.</p>
       <p>Einen Widerhaken kann man <b>nicht bauen</b> und <b>nicht kaufen</b>. Es gibt ihn nur als <b>Siegerpreis</b> bei der <b>Zauberpilz-Rallye</b> 🏁!</p>
-      <p class="erklaer-aufgabe">Jeden <b>3. Tag ist Markttag</b> im <b>Palmendorf</b> 🌴. Dann startet dort die Rallye. Gewinne sie – und der Widerhaken gehört dir!</p>
+      <p class="erklaer-aufgabe">Die Rallye startet am Strand vor dem <b>Palmendorf</b> 🌴 – <b>jeden Tag</b> für 50 Münzen, am <b>Markttag</b> (jeden 3. Tag) für nur 10. Gewinne sie – und der Widerhaken gehört dir!</p>
       <p>Tipp: Fahr durch die <b>Zauberpilze</b> 🍄 – die geben dir einen Turbo. Und vor engen Kurven bremsen!</p>`,
   },
   rallye: {
     bild: '🏁',
     titel: 'Die Zauberpilz-Rallye',
     text: `<p>Für die Seilkanone brauchst du einen <b>Widerhaken</b>. Den kann man nicht bauen – den gibt es nur als <b>Siegerpreis</b> bei der Rallye!</p>
-      <p class="erklaer-aufgabe">Jeden <b>3. Tag ist Markttag</b> im Palmendorf. Dann startet die Rallye. Gewinne einmal – und der Widerhaken gehört dir!</p>
+      <p class="erklaer-aufgabe">Die Rallye gibt es jeden Tag (50 Münzen), am <b>Markttag</b> ist sie billiger (10 Münzen). Gewinne einmal – und der Widerhaken gehört dir!</p>
       <p>Tipp: Fahr durch die <b>Zauberpilze</b> 🍄 – die geben dir einen Turbo!</p>`,
   },
   verkaufen: {
