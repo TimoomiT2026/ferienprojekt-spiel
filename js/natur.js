@@ -825,7 +825,7 @@ function baueFelsen(gruppe, hindernisse) {
       matrix: m4().compose(v3(x, h + s * 0.12, z), q, v3(s * 1.3, s * 0.8, s)),
       farbe: new THREE.Color().setScalar(0.85 + zufall() * 0.25),
     });
-    hindernisse.hinzufuegen(x, z, s * 1.05);
+    hindernisse.hinzufuegen(x, z, s * 1.05, { unten: h, hoehe: s * 0.9, r: s * 1.2 }); // drüberklettern erlaubt
     n++;
   }
   formen.forEach((geo, i) => gruppe.add(inStuecken(geo, material, listen[i], { sichtweite: 220 })));
@@ -1233,7 +1233,7 @@ function baueInselNatur(gruppe, hindernisse, insel) {
       matrix: m4().compose(v3(x, b.hoehe + s * 0.12, zz), new THREE.Quaternion().setFromEuler(new THREE.Euler(z() * 0.4, z() * 6.3, z() * 0.4)), v3(s * 1.3, s * 0.8, s)),
       farbe: new THREE.Color().setScalar(0.85 + z() * 0.25),
     });
-    hindernisse.hinzufuegen(x, zz, s * 1.05);
+    hindernisse.hinzufuegen(x, zz, s * 1.05, { unten: b.hoehe, hoehe: s * 0.9, r: s * 1.2 }); // drüberklettern erlaubt
   }
   gruppe.add(inStuecken(B.felsForm, felsMat, felsen, { sichtweite: 220, stueck: INSEL_STUECK }));
 

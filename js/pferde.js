@@ -591,12 +591,12 @@ export class Pferde {
     if (h < 0.8 || h > 22) return false;
     if (Math.hypot(x, z) < 30) return false;
     if (abstandZumDorf(x, z) < DORF.radius + 8) return false;
-    return !this.hindernisse.trifft(x, z, PFERD_RADIUS);
+    return !this.hindernisse.trifft(x, z, PFERD_RADIUS, true); // über Felsen steigt ein Pferd drüber
   }
 
   // Darf das eigene Pferd hierhin? (fast überall, nur nicht ins tiefe Wasser)
   eigenDarf(x, z) {
-    return bodenOk(x, z) && !this.hindernisse.trifft(x, z, PFERD_RADIUS);
+    return bodenOk(x, z) && !this.hindernisse.trifft(x, z, PFERD_RADIUS, true);
   }
 
   // ---------- Aktions-Knopf ----------
@@ -1315,8 +1315,10 @@ export class Pferde {
   lage(p, dt) {
     const s = Math.sin(p.drehung), c = Math.cos(p.drehung);
     const L = 0.95 * p.groesse;
-    const vorne = Math.max(bodenHoehe(p.x + s * L, p.z + c * L), -0.6);
-    const hinten = Math.max(bodenHoehe(p.x - s * L, p.z - c * L), -0.6);
+    // (über Felsen steigt das Pferd hinauf – wie über einen kleinen Hügel)
+    const boden = (x, z) => Math.max(bodenHoehe(x, z), this.hindernisse.felsHoehe(x, z));
+    const vorne = Math.max(boden(p.x + s * L, p.z + c * L), -0.6);
+    const hinten = Math.max(boden(p.x - s * L, p.z - c * L), -0.6);
     const links = bodenHoehe(p.x + c * 0.4, p.z - s * 0.4), rechts = bodenHoehe(p.x - c * 0.4, p.z + s * 0.4);
     const y = (vorne + hinten) / 2;
     const nicken = THREE.MathUtils.clamp(-Math.atan2(vorne - hinten, L * 2), -0.45, 0.45);

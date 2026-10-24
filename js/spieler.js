@@ -352,13 +352,13 @@ export class Spieler {
       this.beiFlugSperre?.(sperre);
     }
     const ueberBoden = pos.y - Math.max(bodenHoehe(pos.x, pos.z), WASSER_HOEHE);
-    if (ueberBoden > 1.2 || this.landeZiel || wind > 0 || !this.hindernisse.trifft(neuX, neuZ, 0.4)) {
+    if (ueberBoden > 1.2 || this.landeZiel || wind > 0 || !this.hindernisse.trifft(neuX, neuZ, 0.4, true)) {
       // in der Luft gibt es keine Hindernisse
       pos.x = neuX;
       pos.z = neuZ;
-    } else if (!this.hindernisse.trifft(neuX, pos.z, 0.4)) {
+    } else if (!this.hindernisse.trifft(neuX, pos.z, 0.4, true)) {
       pos.x = neuX;
-    } else if (!this.hindernisse.trifft(pos.x, neuZ, 0.4)) {
+    } else if (!this.hindernisse.trifft(pos.x, neuZ, 0.4, true)) {
       pos.z = neuZ;
     }
 
@@ -539,9 +539,9 @@ export class Spieler {
   }
 
   kannStehen(x, z) {
-    if (this.plattformBei(x, z)) return !this.hindernisse.trifft(x, z, 0.4); // auf dem Steg darf man immer stehen
+    if (this.plattformBei(x, z)) return !this.hindernisse.trifft(x, z, 0.4, true); // auf dem Steg darf man immer stehen
     // Nicht ins tiefe Wasser (Meer oder Lagune) – am flachen Rand darf man waten
-    return bodenHoehe(x, z) > wasserHoeheBei(x, z) - 0.5 && !this.hindernisse.trifft(x, z, 0.4);
+    return bodenHoehe(x, z) > wasserHoeheBei(x, z) - 0.5 && !this.hindernisse.trifft(x, z, 0.4, true); // über Felsen klettert man
   }
 
   schwingen() {
@@ -629,7 +629,7 @@ export class Spieler {
     }
     this.geschwindigkeitY -= EINSTELLUNGEN.schwerkraft * dt;
     pos.y += this.geschwindigkeitY * dt;
-    let boden = Math.max(bodenHoehe(pos.x, pos.z), WASSER_HOEHE - 0.5);
+    let boden = Math.max(bodenHoehe(pos.x, pos.z), WASSER_HOEHE - 0.5, this.hindernisse.felsHoehe(pos.x, pos.z)); // oben auf Felsen
     // Auf einem Steg steht man OBEN auf den Brettern (nicht drin)
     const brett = this.plattformBei(pos.x, pos.z);
     if (brett && pos.y > brett.oben - 0.6) boden = Math.max(boden, brett.oben);
