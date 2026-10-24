@@ -37,10 +37,12 @@ const AUFGABEN = [
   { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Halt den Kreis auf eine Insel im Nebel, bis sie entdeckt ist.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
   { titel: 'Frag die Bewohner nach dem Insadorium', tipp: 'Fahr mit dem Boot 🚣 auf die Palmeninsel 🌴 und sprich einen der Menschen dort an. Vielleicht weiß jemand etwas über das Insadorium!', geschafft: (s) => !!s.bewohner?.tippBekommen || !!s.bewohner?.trigger, belohnung: 5, danach: 'unterWasser' },
   { titel: 'Finde die Person mit der Taucherbrille', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
-  { titel: 'Sammle alles für die Seilkanone', start: 'seilkanone', tipp: 'Bau an der Werkbank 🔨 ein Seil (aus 3 Schnüren). Dazu brauchst du 4 Holz und 3 Eisenerz.', geschafft: (s) => genugMuenzen(s) || alleTeileAusserHaken(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5, danach: 'widerhakenFehlt' },
+  { titel: 'Finde die Münzen auf der Palmeninsel und deiner Heimatinsel', start: 'muenzenSuche', tipp: 'Such die golden glitzernden Hügel ✨ – einer liegt auf der Palmeninsel, einer auf deiner Heimatinsel. Auf der Karte 🗺️ sind sie mit ❓ markiert. Schaufel nicht vergessen!', geschafft: (s) => zweiMuenzen(s) || genugMuenzen(s), belohnung: 5 },
+  { titel: 'Fahr zur Klippeninsel', tipp: 'Die dritte Münze liegt auf der Klippeninsel im Osten. Fahr mit dem Boot 🚣 hin! (Liegt sie noch im Nebel? Dann erst mit dem Fernrohr 🔭 entdecken.)', geschafft: (s) => !!s.aufgaben.klippeBesucht || s.rucksack.hat('seilkanone') || s.rucksack.hat('widerhaken') || genugMuenzen(s), belohnung: 5 },
+  { titel: 'Bau eine Seilkanone an der Werkbank', tipp: 'An der Werkbank 🔨: Für die Seilkanone brauchst du ein Seil (aus 3 Schnüren), 4 Holz und 3 Eisenerz – und noch ein besonderes Teil …', geschafft: (s) => genugMuenzen(s) || alleTeileAusserHaken(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5, danach: 'widerhakenFehlt' },
   { titel: 'Gewinne die Zauberpilz-Rallye', start: 'widerhakenFehlt', tipp: 'Die Rallye startet am Strand vor dem Palmendorf 🌴 – jeden Tag für 50 Münzen, am Markttag (jeden 3. Tag) für nur 10. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
-  { titel: 'Bau eine Seilkanone', tipp: 'Werkbank: erst ein Seil (3 Schnüre), dann die Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken aus der Rallye).', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
-  { titel: 'Finde 3 wertvolle Münzen', tipp: 'Auf jeder Insel ist eine in einem golden glitzernden Grabehügel versteckt. Schau auf die Karte ❓!', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
+  { titel: 'Bau die Seilkanone fertig', tipp: 'Jetzt hast du den Widerhaken! An der Werkbank: 4 Holz + 3 Eisenerz + Seil + Widerhaken.', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
+  { titel: 'Hol die dritte Münze oben auf der Klippe', tipp: 'Schieß mit der Seilkanone 🪝 ein Seil an die Felswand der Klippeninsel und kletter hoch. Oben glitzert der goldene Hügel ✨ (Karte ❓).', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
   { titel: 'Hol dir die Taucherbrille', tipp: 'Bring die 3 Münzen zurück zur Person mit der Taucherbrille.', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.hat('taucherbrille'), belohnung: 5 },
   { titel: 'Finde das Insadorium', tipp: 'Kletter auf die Klippeninsel und tauch in den geheimnisvollen See. Es leuchtet rot! 🔴', geschafft: (s) => !!s.tauchen?.gefunden || s.rucksack.hat('insadorium'), belohnung: 0 },
 ];
@@ -48,6 +50,12 @@ const AUFGABEN = [
 // Hat man die 3 wertvollen Münzen schon (oder schon abgegeben)? Dann ist man an der Klippe vorbei
 function genugMuenzen(s) {
   return !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3;
+}
+
+// Hat man die Münzen der Palmeninsel und der Heimatinsel schon ausgegraben?
+function zweiMuenzen(s) {
+  const h = s.bewohner?.huegel || [];
+  return h.length > 0 && h.filter((x) => x.insel !== 'Klippeninsel').every((x) => x.gefunden);
 }
 
 // Hat man alles für die Seilkanone – außer dem Widerhaken?
@@ -220,9 +228,10 @@ const ERKLAERUNG = {
   klippeninsel: {
     bild: '🪨',
     titel: 'Die Klippeninsel',
-    text: `<p>Riesige <b>Felswände</b>! Oben auf der Klippe soll ein geheimnisvoller <b>See</b> liegen.</p>
-      <p>Über der Klippe weht ein starker <b>Wind</b> – fliegen geht hier nicht. Hinauf kommst du nur mit einer <b>Seilkanone</b>.</p>
-      <p class="erklaer-aufgabe">Unten am Strand kannst du graben – hier gibt es <b>Eisenerz und Gold</b>!</p>`,
+    text: `<p>Riesige <b>Felswände</b>! Die dritte wertvolle Münze liegt ganz <b>oben auf der Klippe</b> – und dort oben soll auch ein geheimnisvoller <b>See</b> sein …</p>
+      <p>Hochklettern geht nicht, und über der Klippe weht ein starker <b>Wind</b> – fliegen geht auch nicht. Hinauf kommst du nur mit einer <b>Seilkanone</b> 🪝: Sie schießt ein Seil mit Haken nach oben, und du kletterst daran hoch.</p>
+      <p class="erklaer-aufgabe">Fahr zurück zu deiner <b>Werkbank</b> 🔨 und bau eine Seilkanone: Seil (aus 3 Schnüren), 4 Holz und 3 Eisenerz – und ein besonderes Teil …</p>
+      <p>Tipp: Unten am Strand findest du beim Graben <b>Eisenerz und Gold</b>!</p>`,
   },
   unterWasser: {
     bild: '🌊',
@@ -230,6 +239,13 @@ const ERKLAERUNG = {
     text: `<p>Jetzt weißt du es: Das <b>Insadorium</b> 🔴 liegt irgendwo <b>unter Wasser</b>!</p>
       <p>Dafür brauchst du eine <b>Taucherbrille</b> 🤿. Du hast keine – aber <b>einer der Menschen</b> auf der Palmeninsel hat eine.</p>
       <p class="erklaer-aufgabe">Sprich mit <b>allen Bewohnern</b> der Palmeninsel, bis du die Person mit der Taucherbrille gefunden hast. Auf der Karte 🗺️ siehst du, wo sie wohnen.</p>`,
+  },
+  muenzenSuche: {
+    bild: '🏅',
+    titel: 'Die 3 wertvollen Münzen',
+    text: `<p>Für die <b>Taucherbrille</b> 🤿 willst du <b>3 wertvolle Münzen</b> – eine von jeder Insel. Sie liegen in <b>golden glitzernden Grabehügeln</b> ✨.</p>
+      <p class="erklaer-aufgabe">Such zuerst die Münzen auf der <b>Palmeninsel</b> 🌴 und auf deiner <b>Heimatinsel</b> 🏠. Auf der Karte 🗺️ sind sie mit <b>❓</b> markiert. Nimm die Schaufel mit!</p>
+      <p>Die dritte Münze liegt auf der <b>Klippeninsel</b> – um die kümmerst du dich danach.</p>`,
   },
   seilkanone: {
     bild: '🪝',
@@ -548,7 +564,7 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 8 };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 9, klippeBesucht: !!this.klippeBesucht };
   }
 
   ladeDaten(d) {
@@ -569,6 +585,9 @@ export class Aufgaben {
     if ((d.version || 1) < 7) nummer = { 24: 24, 25: 24, 26: 24, 27: 25, 28: 26 }[nummer] ?? nummer;
     // Version 7: „Frag nach dem Insadorium“ kam neu vor „Finde die Person mit der Taucherbrille“ (jetzt 24)
     if ((d.version || 1) < 8 && nummer >= 24) nummer += 1;
+    // Version 8: Erst Münzen auf Palmen- und Heimatinsel, dann zur Klippe, dann Seilkanone (geschafft-Prüfungen schieben weiter)
+    if ((d.version || 1) < 9) nummer = { 25: 25, 26: 28, 27: 29, 28: 25, 29: 31, 30: 32 }[nummer] ?? nummer;
+    this.klippeBesucht = !!d.klippeBesucht;
     this.rallyePruefen = true; // einmal nachschauen, ob die Rallye übersprungen wurde (siehe aktualisiere)
     this.holzGekauft = !!d.holzGekauft || nummer > 12;
     this.brotGegessen = !!d.brotGegessen || nummer > 4;

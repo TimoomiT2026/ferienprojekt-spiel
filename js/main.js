@@ -674,7 +674,7 @@ function spielSchleife() {
     const insel = aufWelcherInsel(pos.x, pos.z);
     if (!boote.faehrt && !spieler.fliegt && !ballon.faehrt) {
       if (insel === 'Palmeninsel') aufgaben.erklaere('palmeninsel');
-      if (insel === 'Klippeninsel') aufgaben.erklaere('klippeninsel');
+      if (insel === 'Klippeninsel') { aufgaben.klippeBesucht = true; aufgaben.erklaere('klippeninsel'); }
     }
   }
   if (laeuft) tutorialPruefen(dt, naechste, pos);
