@@ -322,6 +322,15 @@ const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
 aufgaben.spiel.tauchen = tauchen;
 aufgaben.spiel.rallye = rallye;
+// Rallye-Preis bei vollem Rucksack: in die Truhe an der Base (ab der Holzhütte)
+// nurPruefen = true: liegt er schon drin?
+rallye.inDieTruhe = (id, nurPruefen = false) => {
+  if (base.stufe < 3) return false;
+  if (nurPruefen) return base.truhe.some((p) => p && p.id === id);
+  if (!base.truhe.includes(null) && !base.truhe.some((p) => p && p.id === id && p.anzahl < EINSTELLUNGEN.stapelGroesse)) return false;
+  base.truheLegen(id, 1);
+  return true;
+};
 aufgaben.spiel.werkbank = werkbank;
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
 function groessererRucksack() {

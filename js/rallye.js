@@ -977,14 +977,17 @@ export class Rallye {
       if (!this.widerhakenGewonnen) {
         this.widerhakenGewonnen = true;
         widerhaken = true;
-        // Rucksack voll? Dann wartet der Preis – sobald ein Platz frei ist, kommt er (siehe widerhakenNachliefern)
-        if (!rucksack.hinein('widerhaken')) this.widerhakenWartet = true;
+        // Rucksack voll? Dann in die Truhe an der Base – und ist die auch voll, wartet der Preis (siehe widerhakenNachliefern)
+        if (rucksack.hinein('widerhaken')) this.widerhakenWo = 'rucksack';
+        else if (this.inDieTruhe?.('widerhaken')) this.widerhakenWo = 'truhe';
+        else { this.widerhakenWo = 'wartet'; this.widerhakenWartet = true; }
       }
       this.jubel();
     } else this.trostKlang();
     this.meldeErgebnis(zeit);
     this.zeigeErgebnis({ gewinn, neueBestzeit, widerhaken });
-    if (widerhaken && this.widerhakenWartet) meldung('🏆 Gewonnen! Dein Preis ist der WIDERHAKEN 🪝 – aber dein Rucksack ist voll! Mach einen Platz frei, dann kommt er von selbst zu dir.', 9);
+    if (widerhaken && this.widerhakenWo === 'wartet') meldung('🏆 Gewonnen! Dein Preis ist der WIDERHAKEN 🪝 – aber dein Rucksack UND deine Truhe sind voll! Mach irgendwo einen Platz frei, dann kommt er von selbst.', 10);
+    else if (widerhaken && this.widerhakenWo === 'truhe') meldung('🏆 Gewonnen! Dein Rucksack ist voll – darum liegt dein Preis, der WIDERHAKEN 🪝, in deiner Truhe 📦 an der Base!', 10);
     else if (widerhaken) meldung('🏆 Gewonnen! Dein Preis: der WIDERHAKEN für die Seilkanone! 🪝', 7);
     else if (this.spielerPlatz === 1) {
       meldung(gewinn ? `🏆 Du hast die Zauberpilz-Rallye gewonnen! +${gewinn} Münzen!` : '🏆 Wieder Erster! (Den Gewinn gab es heute schon.)', 5);
@@ -1370,9 +1373,14 @@ export class Rallye {
     const { rucksack, meldung } = this.spiel;
     if (!this.widerhakenWartet) return;
     if (rucksack.hat('widerhaken') || rucksack.hat('seilkanone')) { this.widerhakenWartet = false; return; }
-    if (!rucksack.passt('widerhaken') || !rucksack.hinein('widerhaken')) return;
-    this.widerhakenWartet = false;
-    meldung('🪝 Da ist er: Dein Rallye-Preis, der WIDERHAKEN, ist jetzt in deinem Rucksack!', 7);
+    if (this.inDieTruhe?.('widerhaken', true)) { this.widerhakenWartet = false; return; } // liegt schon in der Truhe?
+    if (rucksack.passt('widerhaken') && rucksack.hinein('widerhaken')) {
+      this.widerhakenWartet = false;
+      meldung('🪝 Da ist er: Dein Rallye-Preis, der WIDERHAKEN, ist jetzt in deinem Rucksack!', 7);
+    } else if (this.inDieTruhe?.('widerhaken')) {
+      this.widerhakenWartet = false;
+      meldung('🪝 Dein Rallye-Preis, der WIDERHAKEN, liegt jetzt in deiner Truhe 📦 an der Base!', 7);
+    }
   }
 
   alsDaten() {
