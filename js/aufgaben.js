@@ -182,6 +182,13 @@ const ERKLAERUNG = {
       <p>Deine <b>Vorratskammer</b>: Jeden 2. Morgen liegt ein <b>Brot</b> 🍞 in der Truhe.</p>
       <p class="erklaer-aufgabe">Jetzt kannst du (ab Tag 3) auch ein <b>Fernrohr</b> 🔭 an der Werkbank bauen – damit findest du die Inseln hinter dem Nebel! Ab Tag 3 gibt es auch einen <b>Pferdestall</b> 🐴.</p>`,
   },
+  rucksackVoll: {
+    bild: '🎒',
+    titel: 'Dein Rucksack ist voll!',
+    text: `<p>Es passt nichts mehr hinein. Du kannst etwas <b>verkaufen</b>, etwas <b>wegwerfen</b> – oder ab der Holzhütte in deine <b>Truhe</b> 📦 legen.</p>
+      <p class="erklaer-aufgabe">Beim <b>Händler</b> im Dorf gibt es größere Rucksäcke: den <b>Großen Rucksack</b> (18 Plätze) für ${EINSTELLUNGEN.kaufPreise.rucksackGross} Münzen und den <b>Riesen-Rucksack</b> (24 Plätze) für ${EINSTELLUNGEN.kaufPreise.rucksackRiesig} Münzen.</p>
+      <p>Alles, was drin ist, bleibt beim Wechseln im Rucksack!</p>`,
+  },
   pferd: {
     bild: '🐴',
     titel: 'Ein Wildpferd!',

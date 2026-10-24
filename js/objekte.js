@@ -269,8 +269,9 @@ export class Objekte {
     // Bei der allerersten Grabe-Aufgabe findet man genau das, was noch fehlt (bis zu 2 Sachen pro Hügel)
     const anfaenger = this.anfaengerFunde(stelle);
     if (anfaenger) return this.ausgraben(stelle, anfaenger);
-    if (!rucksack.passt(fund)) {
-      meldung('Dein Rucksack ist voll! 🎒 Wirf etwas weg oder verkauf es im Dorf.', 4);
+    const menge = EINSTELLUNGEN.fundMenge || 1; // immer doppelt so viel!
+    if (!rucksack.passt(fund, menge)) {
+      this.spiel.rucksackVoll?.();
       return;
     }
     this.beschaeftigt = true;
@@ -278,14 +279,14 @@ export class Objekte {
     musik.graben();
     this.kruemelWerfen(stelle.pos, stelle);
     setTimeout(() => {
-      rucksack.hinein(fund);
+      rucksack.hinein(fund, menge);
       stelle.da = false;
       stelle.leerSeit = this.spiel.tageszeit.tag;
       this.zeigeGrabestellen();
       this.kruemelWerfen(stelle.pos, stelle);
       musik.pling();
       const ding = DINGE[fund];
-      meldung(`Gefunden: ${ding.werkzeug ? '' : ding.bild} ${ding.name}!`, 3);
+      meldung(`Gefunden: ${menge > 1 ? `${menge}× ` : ''}${ding.werkzeug ? '' : ding.bild} ${ding.name}!`, 3);
       this.beschaeftigt = false;
     }, 900);
   }
@@ -306,8 +307,9 @@ export class Objekte {
   // Mehrere Funde auf einmal ausgraben
   ausgraben(stelle, funde) {
     const { rucksack, meldung, musik, spieler } = this.spiel;
-    if (!funde.every((f) => rucksack.passt(f))) {
-      meldung('Dein Rucksack ist voll! 🎒 Wirf etwas weg oder verkauf es im Dorf.', 4);
+    const menge = EINSTELLUNGEN.fundMenge || 1;
+    if (!funde.every((f) => rucksack.passt(f, menge))) {
+      this.spiel.rucksackVoll?.();
       return;
     }
     this.beschaeftigt = true;
@@ -315,13 +317,13 @@ export class Objekte {
     musik.graben();
     this.kruemelWerfen(stelle.pos, stelle);
     setTimeout(() => {
-      funde.forEach((f) => rucksack.hinein(f));
+      funde.forEach((f) => rucksack.hinein(f, menge));
       stelle.da = false;
       stelle.leerSeit = this.spiel.tageszeit.tag;
       this.zeigeGrabestellen();
       this.kruemelWerfen(stelle.pos, stelle);
       musik.pling();
-      meldung(`Gefunden: ${funde.map((f) => `${DINGE[f].bild} ${DINGE[f].name}`).join(' und ')}!`, 3);
+      meldung(`Gefunden: ${funde.map((f) => `${menge > 1 ? `${menge}× ` : ''}${DINGE[f].bild} ${DINGE[f].name}`).join(' und ')}!`, 3);
       this.beschaeftigt = false;
     }, 900);
   }

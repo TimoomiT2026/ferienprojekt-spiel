@@ -78,6 +78,8 @@ export const EINSTELLUNGEN = {
   // ---------- Graben ----------
   // Was findet man beim Graben, und wie oft?
   // Je größer die Zahl, desto häufiger. (Zusammen müssen es nicht 100 sein.)
+  // So viele Stück gibt es pro Fund in einem Grabehügel (2 = immer doppelt)
+  fundMenge: 2,
   fundChancen: {
     stein: 50,
     kohle: 25,

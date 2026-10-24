@@ -309,6 +309,23 @@ const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
 aufgaben.spiel.tauchen = tauchen;
 aufgaben.spiel.rallye = rallye;
+// Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
+function groessererRucksack() {
+  const n = rucksack.plaetze.length;
+  if (n < 18) return `Großen Rucksack (18 Plätze, ${EINSTELLUNGEN.kaufPreise.rucksackGross} Münzen)`;
+  if (n < 24) return `Riesen-Rucksack (24 Plätze, ${EINSTELLUNGEN.kaufPreise.rucksackRiesig} Münzen)`;
+  return null;
+}
+objekte.spiel.rucksackVoll = () => {
+  const tipp = groessererRucksack();
+  meldung(`Dein Rucksack ist voll! 🎒 Wirf etwas weg oder verkauf es im Dorf${tipp ? ` – oder kauf dir beim Händler einen ${tipp}` : ''}.`, 7);
+};
+let rucksackWarVoll = false;
+function pruefeRucksackVoll() {
+  const voll = rucksack.istVoll();
+  if (voll && !rucksackWarVoll && groessererRucksack()) aufgaben.erklaere('rucksackVoll'); // beim ersten Mal groß erklären
+  rucksackWarVoll = voll;
+}
 // Verkaufs-Schutz: Solange man noch kein Schwert gebaut hat, behält man 3 Steine + 2 Eisenerz
 const fuersSchwert = (id) => (rucksack.hat('schwert') || aufgaben.istGeschafft('Bau ein Schwert') ? 0 : (EINSTELLUNGEN.rezepte.schwert[id] || 0));
 haendler.spiel.behalten = fuersSchwert;
@@ -584,6 +601,7 @@ function spielSchleife() {
   if (!spieler.fliegt) flugStartInsel = aufWelcherInsel(spieler.figur.position.x, spieler.figur.position.z) || 'Startinsel';
   if (laeuft) {
     pruefeVorrat();
+    pruefeRucksackVoll();
     ueberleben.aktualisiere();
     zeitung.aktualisiere(dt);
     aufgaben.aktualisiere(dt);
