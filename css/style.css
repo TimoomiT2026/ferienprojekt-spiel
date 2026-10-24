@@ -696,6 +696,11 @@ b, strong { font-weight: 700; }
 #aufgabe-anzeige span { overflow: hidden; text-overflow: ellipsis; }
 #aufgaben-fenster { --band: #3f8fd6; --band-dunkel: #174f86; }
 .aufgaben-liste { list-style: none; display: flex; flex-direction: column; gap: 10px; }
+/* Hilfe-Bereich unten im Aufgabenbuch */
+.hilfe-titel { margin: 16px 0 8px; font-size: 18px; color: #8a4f1c; }
+.hilfe-liste { display: flex; flex-wrap: wrap; gap: 8px; }
+.hilfe-knopf { font: inherit; font-size: 15px; font-weight: 700; color: var(--tinte); background: #fff7d6; border: 2px solid #e0a93a; border-radius: 12px; padding: 5px 10px 3px; text-align: left; }
+.hilfe-knopf span { font-size: 18px; }
 /* Das große Ziel oben im Aufgabenbuch */
 .grosses-ziel { background: #ffe1dc; border: 3px solid #d63a2a; border-radius: 12px; padding: 8px 12px; margin: 0 0 12px; font-size: 17px; line-height: 1.35; }
 .aufgabe {

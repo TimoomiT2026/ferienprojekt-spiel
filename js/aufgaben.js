@@ -300,7 +300,7 @@ export class Aufgaben {
     this.fenster = document.createElement('div');
     this.fenster.id = 'aufgaben-fenster';
     this.fenster.className = 'spiel-fenster';
-    this.fenster.innerHTML = `<div class="fenster-kopf"><h2>📋 Aufgabenbuch</h2><button class="zu" aria-label="Schließen">✕</button></div><div class="grosses-ziel">🔴 <b>Dein großes Ziel:</b> Finde das <b>Insadorium</b>! Es liegt auf einer der Inseln hinter dem Nebel.</div><ol class="aufgaben-liste"></ol>`;
+    this.fenster.innerHTML = `<div class="fenster-kopf"><h2>📋 Aufgabenbuch</h2><button class="zu" aria-label="Schließen">✕</button></div><div class="grosses-ziel">🔴 <b>Dein großes Ziel:</b> Finde das <b>Insadorium</b>! Es liegt auf einer der Inseln hinter dem Nebel.</div><ol class="aufgaben-liste"></ol><h3 class="hilfe-titel">❓ Hilfe – alle Erklärungen noch mal lesen</h3><div class="hilfe-liste"></div>`;
     spiel.elternElement.appendChild(this.fenster);
     this.fenster.addEventListener('touchstart', (e) => e.stopPropagation());
     knopf(this.fenster.querySelector('.zu'), () => this.schliessen());
@@ -359,6 +359,12 @@ export class Aufgaben {
     this.pruefZeit -= dt;
     if (this.pruefZeit > 0 || this.nummer >= AUFGABEN.length) return;
     this.pruefZeit = 0.5;
+    // Reparatur für Spielstände, die die Rallye-Aufgabe übersprungen haben
+    if (this.rallyePruefen) {
+      this.rallyePruefen = false;
+      const rallye = AUFGABEN.findIndex((x) => x.titel === 'Gewinne die Zauberpilz-Rallye');
+      if (this.nummer === rallye + 1 && !AUFGABEN[rallye].geschafft(this.spiel)) { this.nummer = rallye; this.zeichnen(); }
+    }
     const a = AUFGABEN[this.nummer];
     if (Object.keys(this.spiel.haendler?.verkauftHeute || {}).length > 0) this.gehandelt = true;
     if (this.spiel.haendler?.holzGeschenkt) this.holzGekauft = true;
@@ -479,6 +485,17 @@ export class Aufgaben {
       const titel = zustand === 'spaeter' ? '???' : a.titel;
       return `<li class="aufgabe ${zustand}"><span class="aufgabe-zeichen">${zeichen}</span><div><b>${titel}</b>${tipp}</div>${belohnung}</li>`;
     }).join('');
+    // Hilfe: Alle großen Erklärungen, die man schon gesehen hat, kann man hier noch mal öffnen
+    const hilfe = this.fenster.querySelector('.hilfe-liste');
+    hilfe.innerHTML = '';
+    const gesehen = ['aufgabenbuch', ...this.erklaert].filter((id, i, alle) => ERKLAERUNG[id] && alle.indexOf(id) === i);
+    for (const id of gesehen) {
+      const k = document.createElement('button');
+      k.className = 'hilfe-knopf';
+      k.innerHTML = `<span>${ERKLAERUNG[id].bild}</span> ${ERKLAERUNG[id].titel}`;
+      knopf(k, () => this.zeigeErklaerung(id));
+      hilfe.appendChild(k);
+    }
   }
 
   alsDaten() {
@@ -494,7 +511,9 @@ export class Aufgaben {
     // Version 3 kannte „Kauf Holz beim Händler“ (Nummer 12) noch nicht
     if ((d.version || 1) < 4 && nummer >= 12) nummer += 1;
     // Version 4 kannte „Bau ein Fernrohr“ (jetzt Nummer 21) und „Gewinne die Rallye“ (jetzt Nummer 26) noch nicht
-    if ((d.version || 1) < 5 && nummer >= 21) nummer += nummer >= 25 ? 2 : 1;
+    // (Wer bei „Bau eine Seilkanone“ war, landet bei der Rallye – hat er den Widerhaken schon, geht es von selbst weiter)
+    if ((d.version || 1) < 5 && nummer >= 21) nummer += nummer >= 26 ? 2 : 1;
+    this.rallyePruefen = true; // einmal nachschauen, ob die Rallye übersprungen wurde (siehe aktualisiere)
     this.holzGekauft = !!d.holzGekauft || nummer > 12;
     this.brotGegessen = !!d.brotGegessen || nummer > 4;
     this.erklaert = Array.isArray(d.erklaert) ? d.erklaert : nummer > 4 ? ['essen'] : [];
