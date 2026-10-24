@@ -242,8 +242,21 @@ spieler.beiFlugSperre = (grund) => {
   flugSperreGemeldet = performance.now();
   meldung(`🌬️ Über der ${grund} weht ein viel zu starker Wind – landen kannst du da nicht! Auf andere Inseln kommst du nur mit dem Boot 🚣.`, 7);
 };
-boote.nebelSperre = (x, z, vonX, vonZ) => nebel.sperrt(x, z, vonX, vonZ);
-boote.beiNebel = () => nebel.meldeSperre(meldung, rucksack.hat('fernrohr'));
+// Die Klippeninsel lässt einen erst an Land, wenn man auf der Palmeninsel mit den Menschen gesprochen hat
+const KLIPPE = INSELN.find((I) => I.klippen);
+function klippeZuFrueh(x, z, vonX, vonZ) {
+  if (!KLIPPE || bewohner.trigger || tauchen.gefunden) return false;
+  const d = Math.hypot(x - KLIPPE.x, z - KLIPPE.z);
+  return d < KLIPPE.radius + EINSTELLUNGEN.klippeSperrAbstand && d < Math.hypot(vonX - KLIPPE.x, vonZ - KLIPPE.z);
+}
+boote.nebelSperre = (x, z, vonX, vonZ) => (nebel.sperrt(x, z, vonX, vonZ) ? 'nebel' : klippeZuFrueh(x, z, vonX, vonZ) ? 'klippe' : null);
+let klippeGemeldet = 0;
+boote.beiNebel = (grund) => {
+  if (grund !== 'klippe') return nebel.meldeSperre(meldung, rucksack.hat('fernrohr'));
+  if (performance.now() - klippeGemeldet < 8000) return;
+  klippeGemeldet = performance.now();
+  meldung('🌊 Die Brandung an der Klippeninsel ist viel zu wild! Was willst du da überhaupt? Du hast hier noch nichts verloren – sprich erst mit den Menschen auf der Palmeninsel 🌴.', 9);
+};
 karte.beiInselEntdeckt = (name) => {
   nebel.aktualisiere();
   meldung(nebel.waende.size ? `🔭 Neue Insel entdeckt: ${name}! Jetzt findest du den Weg durch den Nebel. 🌫️➡️🏝️` : `🏝️ Neue Insel entdeckt: ${name}!`, 6);

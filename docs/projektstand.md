@@ -33,6 +33,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - **Fernrohr** an der Werkbank erst, wenn man sich selbst versorgt (Fisch gegessen + großes Zelt) und ab **Tag 3** (`fernrohrAbTag`, `fernrohrNachAufgaben`)
   - Neue Aufgaben „Bau ein Fernrohr“, „Sammle alles für die Seilkanone“ (danach: „Achtung, dir fehlt der Widerhaken!“) und „Gewinne die Zauberpilz-Rallye“ – der **erste Rallye-Sieg bringt den Widerhaken** (nicht baubar, nicht kaufbar)
   - **Großes Ziel** steht oben im Aufgabenbuch; Erklär-Fenster bei Selbstversorgung, Insel entdeckt, erste Ankunft auf Palmen- und Klippeninsel
+  - **Geschichte auf der Palmeninsel**: Man fragt jeden Bewohner nach dem Insadorium. Der erste verrät: „unter Wasser suchen – jemand hier hat eine Taucherbrille“ → Aufgaben „Frag die Bewohner nach dem Insadorium“ und „Finde die Person mit der Taucherbrille“. Danach: Seilkanone (Teile → Widerhaken-Warnung → Rallye → bauen) → 3 Münzen → Taucherbrille → Insadorium. Die Klippeninsel lässt das Boot erst nach dem Gespräch an Land (`klippeSperrAbstand`).
   - **Ohnmacht**: 1 Tag mit leerem Satt-Balken → man wacht am Zelt auf, −50 Münzen (`ohnmachtNachTagen`, `ohnmachtKosten`)
   - Schwert hält 24 statt 12 Schläge; Kaffee-/Limo-Bonus wird unter der Uhr angezeigt
 - **Zauberpilze** im Wald: 1 Minute fliegen (Sprungknopf halten = höher)

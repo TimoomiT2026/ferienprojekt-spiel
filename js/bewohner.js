@@ -27,6 +27,12 @@ const MUENZE = 'wertvolleMuenze';
 
 // Das sagen ALLE, die die Taucherbrille nicht haben (Wunsch vom Game Designer)
 const ABSAGE = 'Ich habe die Taucherbrille nicht. Versuch es bei einem anderen Inselbewohner!';
+// Das fragt der Forscher jedes Mal (vor dem Tipp nach dem Insadorium, danach nach der Taucherbrille)
+const FRAGE_INSADORIUM = '<i>Du: „Hallo! Weißt du etwas über das Insadorium? 🔴“</i><br>';
+const FRAGE_BRILLE = '<i>Du: „Hallo! Hast du vielleicht eine Taucherbrille? 🤿“</i><br>';
+// Das sagt der ALLERERSTE Bewohner, den man anspricht: der große Tipp!
+const TIPP = 'Das Insadorium? Hmm … an deiner Stelle würde ich mal <b>unter Wasser</b> suchen! 🌊 ' +
+  'Aber dafür brauchst du eine <b>Taucherbrille</b> 🤿. Ich habe leider keine – aber ich weiß, dass <b>irgendwer hier auf der Insel</b> eine hat. Frag doch mal herum!';
 
 // ---------- Die 13 Bewohner (Namen vom Game Designer) ----------
 // farben: wie beim Händler (shirt, hose, haare, haut, hut, bart)
@@ -438,8 +444,14 @@ export class Bewohner {
     const p = this.spiel.spieler.figur.position;
     mensch.winkel = Math.atan2(p.x - mensch.pos.x, p.z - mensch.pos.z);
     this.spiel.musik?.pling?.();
+    if (!this.tippBekommen && !this.trigger && !mensch.hatBrille) {
+      // Der erste Bewohner verrät: Das Insadorium liegt unter Wasser – und jemand hat eine Taucherbrille
+      this.tippBekommen = true;
+      this.zeigeBlase(mensch, `${FRAGE_INSADORIUM}${mensch.hallo} ${TIPP}`, () => this.beimTipp?.());
+      return;
+    }
     if (mensch.hatBrille) this.sprichMitBrillenMensch(mensch, ersterBesuch);
-    else this.zeigeBlase(mensch, ersterBesuch ? `${mensch.hallo} ${ABSAGE}` : `${mensch.nochmal} ${ABSAGE}`);
+    else this.zeigeBlase(mensch, `${this.trigger ? '' : FRAGE_BRILLE}${ersterBesuch ? mensch.hallo : mensch.nochmal} ${ABSAGE}`);
   }
 
   // Wie viele Münzen hat man dabei / schon gefunden?
@@ -466,7 +478,7 @@ export class Bewohner {
       this.trigger = true;
       this.zeigeHuegel();
       this.beimTrigger();
-      const text = (ersterBesuch ? `${mensch.hallo} ` : '') +
+      const text = FRAGE_BRILLE + (ersterBesuch ? `${mensch.hallo} ` : '') +
         `<b>Ja, ich habe eine Taucherbrille! 🤿</b> Ich leihe sie dir – aber nur, wenn du mir ${noetig} wertvolle Münzen bringst. ` +
         `Eine von jeder Insel! Sie sind in Grabehügeln versteckt. ${glitzern}`;
       this.zeigeBlase(mensch, text, () => meldung(`🏅 Neue Aufgabe: Finde ${noetig} wertvolle Münzen – eine auf jeder Insel!`, 6));
@@ -604,6 +616,7 @@ export class Bewohner {
       brilleId: this.brilleId,
       brilleAb: this.brilleAb,
       trigger: this.trigger,
+      tippBekommen: !!this.tippBekommen,
       gefunden: this.huegel.map((h) => h.gefunden),
       abgegeben: this.abgegeben,
     };
@@ -614,6 +627,7 @@ export class Bewohner {
     d = d || {};
     this.getroffen = new Set((d.getroffen || []).filter((id) => this.leute.some((l) => l.id === id)));
     this.trigger = !!d.trigger;
+    this.tippBekommen = !!d.tippBekommen || this.trigger;
     this.abgegeben = !!d.abgegeben;
     this.brilleAb = d.brilleAb || this.wuerfleBrilleAb();
     this.brilleId = this.leute.some((l) => l.id === d.brilleId) ? d.brilleId : null;

@@ -481,7 +481,8 @@ export class Boote {
         // Unter der Mitte und vorne am Bug muss noch ein kleines bisschen Wasser sein.
         // So kann man bis ganz an den Strand fahren – auch durch flaches Wasser.
         const bx = x + (boot.tempo.x / schnell) * LAENGE * 0.9, bz = z + (boot.tempo.y / schnell) * LAENGE * 0.9;
-        if (this.nebelSperre?.(bx, bz, pos.x, pos.z)) { this.beiNebel?.(); return false; } // in den Nebel hinein: umdrehen!
+        const grund = this.nebelSperre?.(bx, bz, pos.x, pos.z); // in den Nebel hinein (oder zur Klippe zu früh): umdrehen!
+        if (grund) { this.beiNebel?.(grund); return false; }
         return istWasser(x, z, BUG_MIN_TIEFE) && istWasser(bx, bz, BUG_MIN_TIEFE);
       };
       if (ok(pos.x + tx, pos.z + tz)) {

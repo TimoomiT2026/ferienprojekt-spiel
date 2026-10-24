@@ -339,6 +339,8 @@ export const EINSTELLUNGEN = {
     hoehe: 45, // so hoch ist die Nebelwand (Meter)
     deckkraft: 0.6, // 0 = unsichtbar, 1 = ganz dicht
   },
+  // So weit vor der Küste der Klippeninsel dreht das Boot um, solange man noch nicht mit den Bewohnern gesprochen hat
+  klippeSperrAbstand: 25,
   // Ab wann kann man das Fernrohr an der Werkbank bauen?
   fernrohrAbTag: 3,
   // … und erst, wenn diese Aufgaben geschafft sind (man versorgt sich selbst):

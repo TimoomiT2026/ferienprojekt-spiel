@@ -35,7 +35,8 @@ const AUFGABEN = [
   // ---------- Etappe 3: Das große Abenteuer ----------
   { titel: 'Bau ein Fernrohr', start: 'fernrohrBauen', tipp: 'An der Werkbank 🔨: 2 Eisenerz + 1 Gold + 1 Holz. Das geht ab Tag 3 – wenn du dich selbst versorgst und eine Holzhütte hast.', geschafft: (s) => s.rucksack.hat('fernrohr') || (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
   { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Halt den Kreis auf eine Insel im Nebel, bis sie entdeckt ist.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
-  { titel: 'Sprich mit den Bewohnern der Palmeninsel', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
+  { titel: 'Frag die Bewohner nach dem Insadorium', tipp: 'Fahr mit dem Boot 🚣 auf die Palmeninsel 🌴 und sprich einen der Menschen dort an. Vielleicht weiß jemand etwas über das Insadorium!', geschafft: (s) => !!s.bewohner?.tippBekommen || !!s.bewohner?.trigger, belohnung: 5, danach: 'unterWasser' },
+  { titel: 'Finde die Person mit der Taucherbrille', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
   { titel: 'Sammle alles für die Seilkanone', start: 'seilkanone', tipp: 'Bau an der Werkbank 🔨 ein Seil (aus 3 Schnüren). Dazu brauchst du 4 Holz und 3 Eisenerz.', geschafft: (s) => genugMuenzen(s) || alleTeileAusserHaken(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5, danach: 'widerhakenFehlt' },
   { titel: 'Gewinne die Zauberpilz-Rallye', start: 'widerhakenFehlt', tipp: 'Jeden 3. Tag ist Markttag im Palmendorf 🌴 – dann startet dort die Rallye. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Bau eine Seilkanone', tipp: 'Werkbank: erst ein Seil (3 Schnüre), dann die Seilkanone (4 Holz + 3 Eisenerz + Seil + Widerhaken aus der Rallye).', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
@@ -211,10 +212,10 @@ const ERKLAERUNG = {
   },
   palmeninsel: {
     bild: '🌴',
-    titel: 'Willkommen auf der Palmeninsel!',
-    text: `<p>Hier leben <b>13 Menschen</b> im <b>Palmendorf</b>. Es gibt einen zweiten <b>Händler</b> und am <b>Markttag</b> (jeden 3. Tag) einen Wochenmarkt mit der <b>Zauberpilz-Rallye</b> 🏁.</p>
-      <p>Hier findest du auch <b>Muscheln</b> 🐚 und <b>Kokosnüsse</b> 🥥 zum Verkaufen.</p>
-      <p class="erklaer-aufgabe">Sprich mit den Bewohnern! Einer von ihnen weiß etwas, das dir auf der Suche nach dem <b>Insadorium</b> 🔴 hilft.</p>`,
+    titel: 'Herzlich willkommen auf der Palmeninsel!',
+    text: `<p>Hier leben <b>13 Menschen</b>. Im <b>Palmendorf</b> gibt es einen zweiten <b>Händler</b> – und jeden 3. Tag ist <b>Markttag</b> mit Wochenmarkt und der <b>Zauberpilz-Rallye</b> 🏁.</p>
+      <p>Beim Graben findest du hier <b>Muscheln</b> 🐚 und <b>Kokosnüsse</b> 🥥 zum Verkaufen.</p>
+      <p class="erklaer-aufgabe">Und denk an dein großes Ziel: Du suchst immer noch das <b>Insadorium</b> 🔴! <b>Sprich die Menschen hier an</b> – vielleicht weiß jemand etwas darüber.</p>`,
   },
   klippeninsel: {
     bild: '🪨',
@@ -222,6 +223,13 @@ const ERKLAERUNG = {
     text: `<p>Riesige <b>Felswände</b>! Oben auf der Klippe soll ein geheimnisvoller <b>See</b> liegen.</p>
       <p>Über der Klippe weht ein starker <b>Wind</b> – fliegen geht hier nicht. Hinauf kommst du nur mit einer <b>Seilkanone</b>.</p>
       <p class="erklaer-aufgabe">Unten am Strand kannst du graben – hier gibt es <b>Eisenerz und Gold</b>!</p>`,
+  },
+  unterWasser: {
+    bild: '🌊',
+    titel: 'Das Insadorium liegt unter Wasser!',
+    text: `<p>Jetzt weißt du es: Das <b>Insadorium</b> 🔴 liegt irgendwo <b>unter Wasser</b>!</p>
+      <p>Dafür brauchst du eine <b>Taucherbrille</b> 🤿. Du hast keine – aber <b>einer der Menschen</b> auf der Palmeninsel hat eine.</p>
+      <p class="erklaer-aufgabe">Sprich mit <b>allen Bewohnern</b> der Palmeninsel, bis du die Person mit der Taucherbrille gefunden hast. Auf der Karte 🗺️ siehst du, wo sie wohnen.</p>`,
   },
   seilkanone: {
     bild: '🪝',
@@ -529,7 +537,7 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 7 };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 8 };
   }
 
   ladeDaten(d) {
@@ -548,6 +556,8 @@ export class Aufgaben {
     // Version 6: Münzen + Brille kamen VOR der Seilkanone – jetzt erst Seilkanone, dann Münzen
     // (wer schon weiter war, rutscht über die geschafft-Prüfungen von selbst wieder nach vorn)
     if ((d.version || 1) < 7) nummer = { 24: 24, 25: 24, 26: 24, 27: 25, 28: 26 }[nummer] ?? nummer;
+    // Version 7: „Frag nach dem Insadorium“ kam neu vor „Finde die Person mit der Taucherbrille“ (jetzt 24)
+    if ((d.version || 1) < 8 && nummer >= 24) nummer += 1;
     this.rallyePruefen = true; // einmal nachschauen, ob die Rallye übersprungen wurde (siehe aktualisiere)
     this.holzGekauft = !!d.holzGekauft || nummer > 12;
     this.brotGegessen = !!d.brotGegessen || nummer > 4;
