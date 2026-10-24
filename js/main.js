@@ -336,6 +336,8 @@ base.beiAusgebaut = (stufe) => setTimeout(() => { base.schliessen?.(); aufgaben.
 aufgaben.spiel.tageszeit = tageszeit;
 // Das Fernrohr gibt es erst, wenn man sich selbst versorgt – und frühestens ab Tag 3
 werkbank.spiel.sperre = (id) => {
+  // Die Seilkanone erst, wenn man weiß, wofür: Die Münze oben auf der Klippe (das sagt einem ein Inselbewohner)
+  if (id === 'seilkanone') return bewohner.trigger || rucksack.hat('seilkanone') || tauchen.gefunden ? null : 'Wozu? Sprich erst mit den Menschen auf der Palmeninsel 🌴 – dann weißt du, wofür du sie brauchst.';
   if (id !== 'fernrohr' || rucksack.hat('fernrohr') || karte.entdeckteInseln.length > 0) return null;
   const fehlt = (EINSTELLUNGEN.fernrohrNachAufgaben || []).filter((t) => !aufgaben.istGeschafft(t));
   if (fehlt.length) return `Erst wenn du dich selbst versorgst: ${fehlt.join(' + ')}`;
