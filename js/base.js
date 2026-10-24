@@ -951,6 +951,7 @@ export class Base {
     meldung(`${s.bild} Ausgebaut! Deine Base ist jetzt: ${s.name}.${extra}`, 6);
     this.zeichneMenue();
     this.zeigeInfo(`🎉 ${s.text}${extra}`);
+    this.beiAusgebaut?.(this._stufe); // main.js zeigt dann eine große Erklärung
   }
 
   stallBauen() {

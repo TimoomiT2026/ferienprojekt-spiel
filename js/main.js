@@ -304,6 +304,8 @@ const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
 aufgaben.spiel.tauchen = tauchen;
 aufgaben.spiel.rallye = rallye;
+// Nach dem Ausbau der Base: groß erklären, was jetzt neu ist (Base-Menü vorher schließen)
+base.beiAusgebaut = (stufe) => setTimeout(() => { base.schliessen?.(); aufgaben.erklaere('baseStufe' + stufe); }, 1500);
 aufgaben.spiel.tageszeit = tageszeit;
 // Das Fernrohr gibt es erst, wenn man sich selbst versorgt – und frühestens ab Tag 3
 werkbank.spiel.sperre = (id) => {

@@ -168,6 +168,20 @@ const ERKLAERUNG = {
       <p>Denk dran: Nimm genug <b>Essen</b> mit und schau, wo du <b>schlafen</b> kannst. Mit dem großen Zelt hast du ein <b>Reisezelt</b> ⛺ für unterwegs!</p>
       <p class="erklaer-aufgabe">Dein großes Ziel bleibt: das <b>Insadorium</b> 🔴 finden. Vielleicht wissen die Menschen auf den anderen Inseln mehr …</p>`,
   },
+  baseStufe2: {
+    bild: '⛺',
+    titel: 'Großes Zelt – und ein Reisezelt!',
+    text: `<p>Dein <b>altes Zelt</b> ist jetzt ein <b>Reisezelt</b> und liegt in deinem <b>Rucksack</b> 🎒 (es braucht 3 Plätze).</p>
+      <p class="erklaer-aufgabe">So geht's: Rucksack öffnen, Reisezelt antippen, <b>„⛺ Aufstellen“</b>. Dann kannst du dort <b>schlafen</b> – auch auf anderen Inseln! Hinter dem Zelt packst du es wieder <b>ein</b>.</p>
+      <p>Und im großen Zelt schläfst du so gut, dass du nachts nur <b>halb so schnell hungrig</b> wirst. 😴</p>`,
+  },
+  baseStufe3: {
+    bild: '🛖',
+    titel: 'Deine Holzhütte!',
+    text: `<p>Neben der Hütte steht eine <b>Truhe</b> 📦 mit 20 Plätzen. Dort bewahrst du Sachen auf, wenn der Rucksack voll ist.</p>
+      <p>Deine <b>Vorratskammer</b>: Jeden 2. Morgen liegt ein <b>Brot</b> 🍞 in der Truhe.</p>
+      <p class="erklaer-aufgabe">Jetzt kannst du (ab Tag 3) auch ein <b>Fernrohr</b> 🔭 an der Werkbank bauen – damit findest du die Inseln hinter dem Nebel! Ab Tag 3 gibt es auch einen <b>Pferdestall</b> 🐴.</p>`,
+  },
   pferd: {
     bild: '🐴',
     titel: 'Ein Wildpferd!',
