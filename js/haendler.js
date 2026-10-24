@@ -228,7 +228,14 @@ export class Haendler {
   verkaufen(id, anzahl) {
     const { rucksack, musik } = this.spiel;
     this.neuerTagPruefen();
-    anzahl = Math.min(anzahl, rucksack.anzahl(id), this.kauftProTag - this.heuteGekauft);
+    // Schutz: Was man noch fürs erste Schwert braucht, kauft der Händler nicht an
+    const behalten = this.spiel.behalten?.(id) || 0;
+    if (behalten > 0 && rucksack.anzahl(id) - behalten <= 0) {
+      musik.gehtNicht();
+      this.info(`„Halt! ${DINGE[id].bild} Das brauchst du noch für dein Schwert (3 Steine + 2 Eisenerz). Bau es erst an der Werkbank!“`);
+      return;
+    }
+    anzahl = Math.min(anzahl, rucksack.anzahl(id) - behalten, this.kauftProTag - this.heuteGekauft);
     if (anzahl <= 0) {
       musik.gehtNicht();
       this.info('„Für heute habe ich genug gekauft! Komm morgen wieder.“');

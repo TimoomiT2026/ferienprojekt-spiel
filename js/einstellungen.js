@@ -177,6 +177,8 @@ export const EINSTELLUNGEN = {
   },
   kaufPreise: {
     koeder: 10, // für die ganze 10er-Schachtel
+    stein: 6, // Notfall: 3× so teuer wie beim Verkaufen
+    eisenerz: 18, // Notfall: 3× so teuer wie beim Verkaufen
     holz: 12,
     brot: 25,
     apfel: 4, // Pferdefutter

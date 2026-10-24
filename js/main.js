@@ -309,6 +309,10 @@ const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
 aufgaben.spiel.tauchen = tauchen;
 aufgaben.spiel.rallye = rallye;
+// Verkaufs-Schutz: Solange man noch kein Schwert gebaut hat, behält man 3 Steine + 2 Eisenerz
+const fuersSchwert = (id) => (rucksack.hat('schwert') || aufgaben.istGeschafft('Bau ein Schwert') ? 0 : (EINSTELLUNGEN.rezepte.schwert[id] || 0));
+haendler.spiel.behalten = fuersSchwert;
+palmendorf.haendler.spiel.behalten = fuersSchwert;
 // Nach dem Ausbau der Base: groß erklären, was jetzt neu ist (Base-Menü vorher schließen)
 base.beiAusgebaut = (stufe) => setTimeout(() => { base.schliessen?.(); aufgaben.erklaere('baseStufe' + stufe); }, 1500);
 aufgaben.spiel.tageszeit = tageszeit;
