@@ -102,6 +102,8 @@ export const EINSTELLUNGEN = {
     },
   },
   // So viele Angelstellen gibt es auf jeder neuen Insel
+  // So viele Angelstellen gibt es auf der Startinsel (1 = nur bei der Base, 2 = Base + Dorf, 0 = alte Verteilung mit 10)
+  angelstellenStartinsel: 2,
   inselAngelstellen: 2,
 
   // ---------- Werkbank ----------

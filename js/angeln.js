@@ -231,6 +231,19 @@ function sucheKandidaten(mx = 0, mz = 0, R = 265, zuf = zufall, insel = null) {
 function waehleStellen(kandidaten) {
   const gewaehlt = [];
   const abstand = (k) => Math.min(Infinity, ...gewaehlt.map((g) => Math.hypot(g.x - k.x, g.z - k.z)));
+  // Wenige Stellen (Entscheidung Game Designer: 2 reichen, sonst ist die Karte zu voll):
+  // eine nah an der Base, eine nah am Dorf
+  const wenige = EINSTELLUNGEN.angelstellenStartinsel;
+  if (wenige && wenige <= 2 && kandidaten.length) {
+    const nachStart = [...kandidaten].sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z));
+    gewaehlt.push(nachStart[0]);
+    if (wenige === 2) {
+      const nachDorf = [...kandidaten].sort((a, b) => Math.hypot(a.x - DORF.x, a.z - DORF.z) - Math.hypot(b.x - DORF.x, b.z - DORF.z));
+      const zweite = nachDorf.find((k) => abstand(k) >= MIN_ABSTAND);
+      if (zweite) gewaehlt.push(zweite);
+    }
+    return gewaehlt;
+  }
   // 1) Die Stellen, die dem Start am nächsten sind
   const nachStart = [...kandidaten].sort((a, b) => Math.hypot(a.x, a.z) - Math.hypot(b.x, b.z));
   for (const k of nachStart) {
