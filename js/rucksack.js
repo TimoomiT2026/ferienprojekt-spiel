@@ -299,6 +299,11 @@ export class Rucksack {
   zeichneInfo() {
     if (!this.info) return;
     this.knoepfe.innerHTML = '';
+    // Ist ein mitbelegter Platz (vom Reisezelt) ausgewählt? Dann das Reisezelt selbst zeigen
+    if (this.plaetze[this.gewaehlt]?.block) {
+      const block = this.plaetze[this.gewaehlt].block;
+      this.gewaehlt = this.plaetze.findIndex((p) => p && p.id === block);
+    }
     const platz = this.plaetze[this.gewaehlt];
     if (!platz) {
       this.info.textContent = this.gewaehlt >= 0 ? 'Dieser Platz ist noch leer.' : 'Tippe etwas an!';
