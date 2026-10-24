@@ -1157,6 +1157,10 @@ export class Base {
     } else {
       erw.appendChild(this.bauZeile(BILDER.pferd, 'Pferdestall', 'Ein Zuhause für ein gezähmtes Pferd.', EINSTELLUNGEN.stallKosten, 'Bauen', () => this.stallBauen()));
     }
+    // Steht das Reisezelt gerade irgendwo draußen? Dann sagen, wo man es findet
+    if (this._stufe >= 2 && this.reisezelt) {
+      erw.insertAdjacentHTML('beforeend', `<div class="rezept"><div class="rezept-bild">${BILDER.reisezelt}</div><div class="rezept-mitte"><b>Reisezelt</b><div class="base-klein">Dein Reisezelt steht gerade draußen. Auf der Karte 🗺️ siehst du es als ⛺. Hinter dem Zelt kannst du es wieder einpacken.</div></div></div>`);
+    }
     if (this.reisezeltAbholbar()) {
       const zeile = document.createElement('div');
       zeile.className = 'rezept';

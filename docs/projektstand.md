@@ -61,4 +61,4 @@ Was der Game Designer als Nächstes will – Ideen stehen in `docs/warteliste.md
 
 ## Bekannte Schwächen
 - Auf dem iPad Air (2025) läuft es flüssig; am MacBook ruckelte es kurz am Anfang (Shader werden jetzt vorab vorbereitet)
-- Pferde können nicht schwimmen; Reisezelt steht nicht auf der Karte; Truhe verschiebt immer ganze Stapel
+- Pferde können nicht schwimmen; Truhe verschiebt immer ganze Stapel

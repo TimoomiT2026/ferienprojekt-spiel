@@ -642,6 +642,8 @@ function spielSchleife() {
     inselUhr = 1;
     const palmendorf = ballon.ziele.find((z) => z.id === 'palmendorf');
     if (palmendorf && !palmendorf.freigeschaltet && aufWelcherInsel(pos.x, pos.z) === 'Palmeninsel') ballon.freischalten('palmendorf');
+    // Das aufgestellte Reisezelt auf der Karte zeigen
+    karte.punkt('reisezelt', { name: 'Reisezelt', bild: '⛺', x: base.reisezelt?.x ?? 0, z: base.reisezelt?.z ?? 0, sichtbar: !!base.reisezelt });
     // Zum ersten Mal an Land auf einer neuen Insel: groß erklären, was es dort gibt
     const insel = aufWelcherInsel(pos.x, pos.z);
     if (!boote.faehrt && !spieler.fliegt && !ballon.faehrt) {
