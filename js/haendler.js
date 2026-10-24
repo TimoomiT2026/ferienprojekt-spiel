@@ -202,7 +202,17 @@ export class Haendler {
     rucksack.hinein(id);
     musik.muenzen(Math.ceil(preis / 10)); // Münzen auf den Tisch legen …
     musik.kasse(); // … Ka-tsching!
-    this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}!“`);
+    this.gekauftJemals = true;
+    // Beim allerersten Brot schenkt der Händler im Dorf 2 dazu (Idee vom Game Designer):
+    // so hält man durch, bis man selbst angeln und grillen kann.
+    const geschenk = EINSTELLUNGEN.brotGeschenk ?? 2;
+    if (id === 'brot' && !this.brotGeschenkt && this.fenster.id === 'haendler-fenster' && geschenk > 0) {
+      this.brotGeschenkt = true;
+      let dazu = 0;
+      for (let i = 0; i < geschenk && rucksack.passt('brot'); i++) { rucksack.hinein('brot'); dazu++; }
+      this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}! Und weil du neu hier bist, schenke ich dir noch ${dazu} dazu. 🎁“`);
+      this.spiel.meldung?.(`🎁 Geschenk vom Händler: ${dazu} Brote extra!`, 5);
+    } else this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}!“`);
     this.zeichnen();
   }
 
@@ -227,12 +237,14 @@ export class Haendler {
   }
 
   alsDaten() {
-    return { tag: this.tag, verkauftHeute: this.verkauftHeute, heuteGekauft: this.heuteGekauft };
+    return { tag: this.tag, verkauftHeute: this.verkauftHeute, heuteGekauft: this.heuteGekauft, gekauftJemals: !!this.gekauftJemals, brotGeschenkt: !!this.brotGeschenkt };
   }
 
   ladeDaten(d) {
     this.tag = d.tag;
     this.verkauftHeute = d.verkauftHeute || {};
     this.heuteGekauft = d.heuteGekauft || 0;
+    this.gekauftJemals = !!d.gekauftJemals;
+    this.brotGeschenkt = !!d.brotGeschenkt;
   }
 }

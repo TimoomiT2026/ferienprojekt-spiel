@@ -139,7 +139,6 @@ objekte.interaktionen.push(lagerfeuer.interaktion);
 const ueberleben = new Ueberleben({ rucksack, spieler, meldung, tageszeit });
 rucksack.beimEssen = (id) => {
   ueberleben.gegessen(id);
-  tutorial.neu('essen');
   aufgaben.gegessen(id);
 };
 
@@ -164,7 +163,7 @@ objekte.interaktionen.push(...ballon.interaktionen);
 const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || base.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || aufgaben.erklaerOffen || base.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);

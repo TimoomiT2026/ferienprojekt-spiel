@@ -972,3 +972,17 @@ b, strong { font-weight: 700; }
   100% { transform: rotate(0deg); }
 }
 @media (prefers-reduced-motion: reduce) { .dreh-handy { animation: none; transform: rotate(-90deg); } }
+
+/* ---------- Große Erklärung (Aufgabenbuch) ---------- */
+#erklaer-fenster { width: min(560px, 92vw); text-align: center; z-index: 45; }
+#erklaer-fenster .erklaer-bild { font-size: 72px; line-height: 1; margin: 6px 0 4px; }
+#erklaer-fenster h2 { margin: 6px 0 10px; font-size: 28px; }
+#erklaer-fenster .erklaer-text { font-size: 20px; line-height: 1.45; text-align: left; }
+#erklaer-fenster .erklaer-text p { margin: 0 0 10px; }
+#erklaer-fenster .knopf-reihe { display: flex; justify-content: center; margin-top: 12px; }
+@media (max-height: 500px) {
+  #erklaer-fenster .erklaer-bild { font-size: 44px; }
+  #erklaer-fenster h2 { font-size: 21px; margin: 2px 0 6px; }
+  #erklaer-fenster .erklaer-text { font-size: 15px; line-height: 1.35; }
+  #erklaer-fenster .erklaer-text p { margin: 0 0 6px; }
+}
