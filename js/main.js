@@ -605,6 +605,7 @@ function spielSchleife() {
   if (laeuft) {
     pruefeVorrat();
     pruefeRucksackVoll();
+    rallye.widerhakenNachliefern();
     ueberleben.aktualisiere();
     zeitung.aktualisiere(dt);
     aufgaben.aktualisiere(dt);

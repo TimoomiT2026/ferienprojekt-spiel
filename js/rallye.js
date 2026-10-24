@@ -977,13 +977,15 @@ export class Rallye {
       if (!this.widerhakenGewonnen) {
         this.widerhakenGewonnen = true;
         widerhaken = true;
-        if (!rucksack.hinein('widerhaken')) this.widerhakenGewonnen = false; // Rucksack voll – beim nächsten Sieg
+        // Rucksack voll? Dann wartet der Preis – sobald ein Platz frei ist, kommt er (siehe widerhakenNachliefern)
+        if (!rucksack.hinein('widerhaken')) this.widerhakenWartet = true;
       }
       this.jubel();
     } else this.trostKlang();
     this.meldeErgebnis(zeit);
     this.zeigeErgebnis({ gewinn, neueBestzeit, widerhaken });
-    if (widerhaken) meldung('🏆 Gewonnen! Dein Preis: der WIDERHAKEN für die Seilkanone! 🪝', 7);
+    if (widerhaken && this.widerhakenWartet) meldung('🏆 Gewonnen! Dein Preis ist der WIDERHAKEN 🪝 – aber dein Rucksack ist voll! Mach einen Platz frei, dann kommt er von selbst zu dir.', 9);
+    else if (widerhaken) meldung('🏆 Gewonnen! Dein Preis: der WIDERHAKEN für die Seilkanone! 🪝', 7);
     else if (this.spielerPlatz === 1) {
       meldung(gewinn ? `🏆 Du hast die Zauberpilz-Rallye gewonnen! +${gewinn} Münzen!` : '🏆 Wieder Erster! (Den Gewinn gab es heute schon.)', 5);
     } else meldung(`🏁 Platz ${this.spielerPlatz}! Nächstes Mal schaffst du es!`, 5);
@@ -1363,6 +1365,16 @@ export class Rallye {
   // =============================================================
   //  SPEICHERN & LADEN
   // =============================================================
+  // Wartet der Widerhaken noch (Rucksack war voll)? Dann kommt er, sobald Platz ist
+  widerhakenNachliefern() {
+    const { rucksack, meldung } = this.spiel;
+    if (!this.widerhakenWartet) return;
+    if (rucksack.hat('widerhaken') || rucksack.hat('seilkanone')) { this.widerhakenWartet = false; return; }
+    if (!rucksack.passt('widerhaken') || !rucksack.hinein('widerhaken')) return;
+    this.widerhakenWartet = false;
+    meldung('🪝 Da ist er: Dein Rallye-Preis, der WIDERHAKEN, ist jetzt in deinem Rucksack!', 7);
+  }
+
   alsDaten() {
     return {
       gewinnTag: this.gewinnTag,
@@ -1371,6 +1383,7 @@ export class Rallye {
       teilnahmen: this.teilnahmen,
       letztesErgebnis: this.letztesErgebnis,
       widerhakenGewonnen: !!this.widerhakenGewonnen,
+      widerhakenWartet: !!this.widerhakenWartet,
     };
   }
 
@@ -1381,6 +1394,12 @@ export class Rallye {
     this.teilnahmen = d.teilnahmen ?? 0;
     this.letztesErgebnis = d.letztesErgebnis ?? null;
     this.widerhakenGewonnen = !!d.widerhakenGewonnen;
+    this.widerhakenWartet = !!d.widerhakenWartet;
+    // Früher ging der Preis bei vollem Rucksack verloren: Wer schon gewonnen hat, bekommt ihn nachgeliefert
+    if (!this.widerhakenGewonnen && this.siege > 0) {
+      this.widerhakenGewonnen = true;
+      this.widerhakenWartet = true;
+    }
     this.schildTag = -1;
   }
 }
