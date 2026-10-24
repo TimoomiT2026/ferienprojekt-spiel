@@ -266,6 +266,9 @@ export class Objekte {
       return;
     }
     const fund = this.zufallsFund(stelle.insel);
+    // Bei der allerersten Grabe-Aufgabe findet man genau das, was noch fehlt (bis zu 2 Sachen pro Hügel)
+    const anfaenger = this.anfaengerFunde(stelle);
+    if (anfaenger) return this.ausgraben(stelle, anfaenger);
     if (!rucksack.passt(fund)) {
       meldung('Dein Rucksack ist voll! 🎒 Wirf etwas weg oder verkauf es im Dorf.', 4);
       return;
@@ -283,6 +286,39 @@ export class Objekte {
       musik.pling();
       const ding = DINGE[fund];
       meldung(`Gefunden: ${ding.werkzeug ? '' : ding.bild} ${ding.name}!`, 3);
+      this.beschaeftigt = false;
+    }, 900);
+  }
+
+  // Was fehlt noch für „Grab 3 Steine und 2 Eisenerz“? (Nur auf der Startinsel, nur bei dieser Aufgabe)
+  anfaengerFunde(stelle) {
+    const { rucksack, aufgaben } = this.spiel;
+    if (!aufgaben || aufgaben.nummer !== 2 || stelle.insel) return null;
+    const funde = [];
+    if (rucksack.anzahl('eisenerz') < 2) funde.push('eisenerz');
+    if (rucksack.anzahl('stein') < 3) funde.push('stein');
+    return funde.length ? funde : null; // höchstens 2: ein Eisenerz und ein Stein
+  }
+
+  // Mehrere Funde auf einmal ausgraben
+  ausgraben(stelle, funde) {
+    const { rucksack, meldung, musik, spieler } = this.spiel;
+    if (!funde.every((f) => rucksack.passt(f))) {
+      meldung('Dein Rucksack ist voll! 🎒 Wirf etwas weg oder verkauf es im Dorf.', 4);
+      return;
+    }
+    this.beschaeftigt = true;
+    spieler.graben();
+    musik.graben();
+    this.kruemelWerfen(stelle.pos, stelle);
+    setTimeout(() => {
+      funde.forEach((f) => rucksack.hinein(f));
+      stelle.da = false;
+      stelle.leerSeit = this.spiel.tageszeit.tag;
+      this.zeigeGrabestellen();
+      this.kruemelWerfen(stelle.pos, stelle);
+      musik.pling();
+      meldung(`Gefunden: ${funde.map((f) => `${DINGE[f].bild} ${DINGE[f].name}`).join(' und ')}!`, 3);
       this.beschaeftigt = false;
     }, 900);
   }

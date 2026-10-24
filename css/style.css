@@ -980,6 +980,14 @@ b, strong { font-weight: 700; }
 #erklaer-fenster .erklaer-text { font-size: 20px; line-height: 1.45; text-align: left; }
 #erklaer-fenster .erklaer-text p { margin: 0 0 10px; }
 #erklaer-fenster .knopf-reihe { display: flex; justify-content: center; margin-top: 12px; }
+/* Der Kasten „Deine Aufgabe“ im Erklär-Fenster */
+#erklaer-fenster .erklaer-text p.erklaer-aufgabe { background: #fff2b8; border: 3px solid #e0a93a; border-radius: 12px; padding: 8px 12px; }
+/* Die Aufgaben-Anzeige oben links blinkt kurz, damit man sie findet */
+/* Die Uhr wird rot, wenn der Tag fast um ist */
+#uhr.knapp { color: #fff; background: #d63a2a; animation: uhr-pochen 1s ease-in-out infinite; }
+@keyframes uhr-pochen { 50% { transform: translateX(-50%) scale(1.08); } }
+#aufgabe-anzeige.leuchtet { animation: aufgabe-leuchten 0.9s ease-in-out 6; }
+@keyframes aufgabe-leuchten { 0%, 100% { box-shadow: 0 0 0 0 rgba(255, 216, 74, 0); transform: scale(1); } 50% { box-shadow: 0 0 0 8px rgba(255, 216, 74, 0.9); transform: scale(1.06); } }
 @media (max-height: 500px) {
   #erklaer-fenster .erklaer-bild { font-size: 44px; }
   #erklaer-fenster h2 { font-size: 21px; margin: 2px 0 6px; }

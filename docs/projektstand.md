@@ -27,6 +27,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - Aufgaben „Kauf dir ein Brot“ (beim ersten Brot schenkt der Händler 2 dazu) und „Iss ein Brot“ vor dem Verkaufen; nach dem Angeln „Kauf Holz beim Händler“ (erstes Holz: 3 für 1)
   - Große Erklär-Fenster über den ganzen Bildschirm (js/aufgaben.js, `ERKLAERUNG`): erster Fund, erster Händler-Besuch, Essen, Werkbank, erster Fisch („Selbst versorgen spart Geld!“), Holz, erstes Öffnen der Base
   - Nur noch 2 Angelstellen auf der Startinsel (`angelstellenStartinsel`)
+  - Jede der ersten 6 Aufgaben wird beim Start einmal groß erklärt (`start:` in AUFGABEN): Aufgabenbuch (die Anzeige oben links blinkt danach), Schaufel in die Hand, Hügel suchen, „Grab weiter bis 3 Steine + 2 Eisenerz“, ab ins Dorf, Brot essen, verkaufen
 - **Zauberpilze** im Wald: 1 Minute fliegen (Sprungknopf halten = höher)
 - **Fernrohr:** zoomen, Boote entdecken (später andere Inseln). Durch Berge sieht man nicht.
 - **Karte & Navigation**, Tag/Nacht (5 + 3 Minuten), Wellen, Musik, automatisches Speichern

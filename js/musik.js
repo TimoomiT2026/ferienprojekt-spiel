@@ -583,6 +583,13 @@ export class Musik {
     this.rauschStoss(t + 0.12, 0.35, l * 0.08, 'highpass', 7000, 7000, 0.7, 0.003);
   }
 
+  // Warnung: Der Tag ist bald um – drei kurze, helle Pieptöne
+  warnPiep() {
+    if (!this.ctx) return;
+    const t = this.ctx.currentTime;
+    for (let i = 0; i < 3; i++) this.ton(t + i * 0.22, 1760, 1760, 0.12, 0.18, 'square', 0.004);
+  }
+
   // "Geht nicht" – freundlich, nicht schimpfend: dö-döm (nach unten)
   gehtNicht() {
     if (!this.ctx) return;

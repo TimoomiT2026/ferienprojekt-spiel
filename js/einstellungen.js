@@ -152,12 +152,25 @@ export const EINSTELLUNGEN = {
   // Angebot & Nachfrage: Jedes weitere Stück vom Gleichen bringt weniger.
   // 0.8 heißt: 2. Stück = 80 %, 3. Stück = 64 %, … (am nächsten Morgen wieder voll)
   preisNachlass: 0.8,
+  // ---------- Leitplanken für neue Spieler (Aufgabenbuch) ----------
+  // Nach so vielen Sekunden ohne Fortschritt erinnert ein großes Fenster an die Aufgabe
+  erinnerungNachSekunden: 90,
+  // So oft höchstens pro Aufgabe erinnern
+  erinnerungenProAufgabe: 2,
+  // Bis zu dieser Aufgaben-Nummer wird erinnert (danach kennt man das Spiel)
+  erinnerungBisAufgabe: 17,
+  // Am ersten Tag: so viele Sekunden vor der Nacht kommt die Schlaf-Erklärung
+  nachtErklaerungSekunden: 120,
+  // So viele Sekunden vor der Nacht piept es und die Uhr wird rot
+  tagWarnungSekunden: 45,
+
   // Wie viele Sachen kauft der Händler höchstens an einem Tag?
   haendlerKauftProTag: 10,
   // So viele Münzen kostet es, etwas zu KAUFEN
   // (Eine Angel gibt es beim Händler nicht – die baust du selbst!)
   // Beim allerersten Brot (und beim ersten Holz) schenkt der Händler im Dorf so viele dazu
   brotGeschenk: 2,
+
   kaufPreise: {
     koeder: 3,
     holz: 12,

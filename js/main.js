@@ -235,6 +235,8 @@ objekte.interaktionen.push(...tauchen.interaktionen);
 const finale = new Finale({ elternElement: spielfeld, musik });
 tauchen.beimGefunden = () => finale.starten(); // 🎉 Ziel erreicht!
 aufgaben.spiel.tauchen = tauchen;
+aufgaben.spiel.tageszeit = tageszeit;
+objekte.spiel.aufgaben = aufgaben; // für die Anfänger-Funde beim ersten Graben
 rucksack.beimBenutzen = (id) => {
   if (id !== 'zauberpilz') return;
   if (boote.faehrt || pferde.reitet || seilkanone.beschaeftigt) {
@@ -329,8 +331,18 @@ knopf(musikKnopf, () => {
   musikKnopf.classList.toggle('aus', !musik.umschalten());
 });
 
+let tagWarnungGepiept = false;
 function zeigeUhr() {
   const rest = Math.ceil(tageszeit.restSekunden());
+  // Kurz vor der Nacht: Uhr wird rot und es piept einmal
+  const knapp = !tageszeit.istNacht() && rest <= EINSTELLUNGEN.tagWarnungSekunden;
+  uhrFeld.classList.toggle('knapp', knapp);
+  if (knapp && !tagWarnungGepiept && laeuft) {
+    tagWarnungGepiept = true;
+    musik.warnPiep();
+    meldung(`⏰ Achtung! Der Tag hat nur noch ${rest} Sekunden. Ab ins Zelt! ⛺`, 5);
+  }
+  if (!knapp) tagWarnungGepiept = false;
   const zeit = `${Math.floor(rest / 60)}:${String(rest % 60).padStart(2, '0')}`;
   uhrFeld.textContent = tageszeit.istNacht()
     ? `🌙 Nacht ${tageszeit.tag} · noch ${zeit}`
