@@ -39,7 +39,7 @@ const AUFGABEN = [
   { titel: 'Finde die Person mit der Taucherbrille', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
   { titel: 'Finde die Münzen auf der Palmeninsel und deiner Heimatinsel', start: 'muenzenSuche', tipp: 'Such die golden glitzernden Hügel ✨ – einer liegt auf der Palmeninsel, einer auf deiner Heimatinsel. Auf der Karte 🗺️ sind sie mit ❓ markiert. Schaufel nicht vergessen!', geschafft: (s) => zweiMuenzen(s) || genugMuenzen(s), belohnung: 5 },
   { titel: 'Fahr zur Klippeninsel', tipp: 'Die dritte Münze liegt auf der Klippeninsel im Osten. Fahr mit dem Boot 🚣 hin! (Liegt sie noch im Nebel? Dann erst mit dem Fernrohr 🔭 entdecken.)', geschafft: (s) => !!s.aufgaben.klippeBesucht || s.rucksack.hat('seilkanone') || s.rucksack.hat('widerhaken') || genugMuenzen(s), belohnung: 5 },
-  { titel: 'Bau eine Seilkanone an der Werkbank', tipp: 'An der Werkbank 🔨: Für die Seilkanone brauchst du ein Seil (aus 3 Schnüren), 4 Holz und 3 Eisenerz – und noch ein besonderes Teil …', geschafft: (s) => genugMuenzen(s) || alleTeileAusserHaken(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5, danach: 'widerhakenFehlt' },
+  { titel: 'Bau eine Seilkanone an der Werkbank', tipp: 'Geh zu deiner Werkbank 🔨 und schau dir die Seilkanone an: Sie braucht ein Seil (aus 3 Schnüren), 4 Holz und 3 Eisenerz – und noch ein besonderes Teil …', geschafft: (s) => genugMuenzen(s) || s.aufgaben.erklaert.includes('widerhakenFehlt') || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5 },
   { titel: 'Gewinne die Zauberpilz-Rallye', start: 'widerhakenFehlt', tipp: 'Die Rallye startet am Strand vor dem Palmendorf 🌴 – jeden Tag für 50 Münzen, am Markttag (jeden 3. Tag) für nur 10. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Bau die Seilkanone fertig', tipp: 'Jetzt hast du den Widerhaken! An der Werkbank: 4 Holz + 3 Eisenerz + Seil + Widerhaken.', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Hol die dritte Münze oben auf der Klippe', tipp: 'Schieß mit der Seilkanone 🪝 ein Seil an die Felswand der Klippeninsel und kletter hoch. Oben glitzert der goldene Hügel ✨ (Karte ❓).', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
@@ -258,7 +258,7 @@ const ERKLAERUNG = {
   widerhakenFehlt: {
     bild: '⚠️',
     titel: 'Achtung: Dir fehlt das wichtigste Teil!',
-    text: `<p>Seil, Holz und Eisenerz hast du – aber die Seilkanone braucht noch einen <b>Widerhaken</b> 🪝. Der krallt sich oben an der Klippe fest.</p>
+    text: `<p>Für die Seilkanone brauchst du ein Seil, 4 Holz und 3 Eisenerz – und einen <b>Widerhaken</b> 🪝. Der krallt sich oben an der Klippe fest.</p>
       <p>Einen Widerhaken kann man <b>nicht bauen</b> und <b>nicht kaufen</b>. Es gibt ihn nur als <b>Siegerpreis</b> bei der <b>Zauberpilz-Rallye</b> 🏁!</p>
       <p class="erklaer-aufgabe">Die Rallye startet am Strand vor dem <b>Palmendorf</b> 🌴 – <b>jeden Tag</b> für 50 Münzen, am <b>Markttag</b> (jeden 3. Tag) für nur 10. Gewinne sie – und der Widerhaken gehört dir!</p>
       <p>Tipp: Fahr durch die <b>Zauberpilze</b> 🍄 – die geben dir einen Turbo. Und vor engen Kurven bremsen!</p>`,
@@ -434,8 +434,8 @@ export class Aufgaben {
     if (this.nummer === 2) this.grabeFortschritt();
     // Fernrohr zum ersten Mal im Rucksack (und noch eine Insel im Nebel): erklären, wie man entdeckt
     if (!this.erklaert.includes('nebel') && this.spiel.rucksack.hat('fernrohr') && (this.spiel.karte?.entdeckteInseln || []).length < 2) this.erklaere('nebel');
-    // An der Werkbank alles für die Seilkanone – nur der Widerhaken fehlt? Dann groß warnen
-    if (!this.erklaert.includes('widerhakenFehlt') && this.spiel.bewohner?.trigger && this.spiel.werkbank?.offen && alleTeileAusserHaken(this.spiel) && !this.spiel.rucksack.hat('widerhaken')) this.erklaere('widerhakenFehlt');
+    // An der Werkbank (nach dem Besuch auf der Klippeninsel): Der Widerhaken fehlt noch? Dann groß warnen
+    if (!this.erklaert.includes('widerhakenFehlt') && this.spiel.bewohner?.trigger && this.spiel.werkbank?.offen && (this.klippeBesucht || alleTeileAusserHaken(this.spiel)) && !this.spiel.rucksack.hat('widerhaken') && !this.spiel.rucksack.hat('seilkanone')) this.erklaere('widerhakenFehlt');
     // Zauberpilz zum ersten Mal im Rucksack
     if (!this.erklaert.includes('zauberpilz') && this.spiel.rucksack.hat('zauberpilz')) this.erklaere('zauberpilz');
     // Am ersten Tag kurz vor der Nacht: erklären, wie Schlafen geht
