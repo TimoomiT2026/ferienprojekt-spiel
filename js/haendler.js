@@ -212,6 +212,13 @@ export class Haendler {
       for (let i = 0; i < geschenk && rucksack.passt('brot'); i++) { rucksack.hinein('brot'); dazu++; }
       this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}! Und weil du neu hier bist, schenke ich dir noch ${dazu} dazu. 🎁“`);
       this.spiel.meldung?.(`🎁 Geschenk vom Händler: ${dazu} Brote extra!`, 5);
+    } else if (id === 'holz' && !this.holzGeschenkt && this.fenster.id === 'haendler-fenster' && geschenk > 0) {
+      // Beim ersten Holz genauso: 3 für 1
+      this.holzGeschenkt = true;
+      let dazu = 0;
+      for (let i = 0; i < geschenk && rucksack.passt('holz'); i++) { rucksack.hinein('holz'); dazu++; }
+      this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}! Beim ersten Mal gibt es ${dazu} dazu. 🎁 Tipp: Mit einem Schwert fällst du selbst Bäume!“`);
+      this.spiel.meldung?.(`🎁 Geschenk vom Händler: ${dazu} Holz extra!`, 5);
     } else this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}!“`);
     this.zeichnen();
   }
@@ -237,7 +244,7 @@ export class Haendler {
   }
 
   alsDaten() {
-    return { tag: this.tag, verkauftHeute: this.verkauftHeute, heuteGekauft: this.heuteGekauft, gekauftJemals: !!this.gekauftJemals, brotGeschenkt: !!this.brotGeschenkt };
+    return { tag: this.tag, verkauftHeute: this.verkauftHeute, heuteGekauft: this.heuteGekauft, gekauftJemals: !!this.gekauftJemals, brotGeschenkt: !!this.brotGeschenkt, holzGeschenkt: !!this.holzGeschenkt };
   }
 
   ladeDaten(d) {
@@ -246,5 +253,6 @@ export class Haendler {
     this.heuteGekauft = d.heuteGekauft || 0;
     this.gekauftJemals = !!d.gekauftJemals;
     this.brotGeschenkt = !!d.brotGeschenkt;
+    this.holzGeschenkt = !!d.holzGeschenkt;
   }
 }

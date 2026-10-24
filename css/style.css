@@ -974,7 +974,7 @@ b, strong { font-weight: 700; }
 @media (prefers-reduced-motion: reduce) { .dreh-handy { animation: none; transform: rotate(-90deg); } }
 
 /* ---------- Große Erklärung (Aufgabenbuch) ---------- */
-#erklaer-fenster { width: min(560px, 92vw); text-align: center; z-index: 45; }
+#erklaer-fenster { width: min(560px, 92vw); text-align: center; z-index: 60; }
 #erklaer-fenster .erklaer-bild { font-size: 72px; line-height: 1; margin: 6px 0 4px; }
 #erklaer-fenster h2 { margin: 6px 0 10px; font-size: 28px; }
 #erklaer-fenster .erklaer-text { font-size: 20px; line-height: 1.45; text-align: left; }

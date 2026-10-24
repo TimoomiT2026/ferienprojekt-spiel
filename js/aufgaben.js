@@ -15,13 +15,14 @@ const AUFGABEN = [
   { titel: 'Grab 3 Steine und 2 Eisenerz', tipp: 'An den glitzernden Erdhügeln graben. Am nächsten Morgen sind sie wieder voll.', geschafft: (s) => s.rucksack.anzahl('stein') >= 3 && s.rucksack.anzahl('eisenerz') >= 2, belohnung: 3 },
   { titel: 'Kauf dir ein Brot beim Händler', tipp: 'Das Dorf 🏘️ ist auf der Karte 🗺️. Beim Händler „Handeln“ drücken, dann bei Brot „Kaufen“. (Nachts schläft er!)', geschafft: (s) => !!s.haendler?.gekauftJemals || s.rucksack.hat('brot') || s.aufgaben.brotGegessen, belohnung: 2 },
   { titel: 'Iss ein Brot', tipp: 'Rucksack 🎒 öffnen, Brot antippen, „Essen“ drücken.', geschafft: (s) => s.aufgaben.brotGegessen, belohnung: 3, danach: 'essen' },
-  { titel: 'Verkauf etwas beim Händler', tipp: 'Das Dorf 🏘️ ist auf der Karte 🗺️. Beim Händler „Handeln“ drücken, dann „💰 Verkaufen“. (Nachts schläft er!)', geschafft: (s) => s.aufgaben.gehandelt || Object.keys(s.haendler?.verkauftHeute || {}).length > 0, belohnung: 5 },
+  { titel: 'Verkauf etwas beim Händler', tipp: 'Das Dorf 🏘️ ist auf der Karte 🗺️. Beim Händler „Handeln“ drücken, dann „💰 Verkaufen“. (Nachts schläft er!)', geschafft: (s) => s.aufgaben.gehandelt || Object.keys(s.haendler?.verkauftHeute || {}).length > 0, belohnung: 5, danach: 'werkbank' },
   { titel: 'Bau ein Schwert', tipp: 'An der Werkbank 🔨 neben dem Zelt: 2 Eisenerz + 3 Steine.', geschafft: (s) => s.rucksack.hat('schwert'), belohnung: 5 },
   { titel: 'Hack 4 Holz', tipp: 'Schwert in die Hand, vor einen Baum stellen und „Fällen“ drücken.', geschafft: (s) => s.rucksack.anzahl('holz') >= 4, belohnung: 3 },
   { titel: 'Bau eine Schnur', tipp: 'An der Werkbank: 2 Holz werden zu einer dünnen Schnur.', geschafft: (s) => s.rucksack.hat('schnur') || s.rucksack.hat('angel'), belohnung: 2 },
   { titel: 'Bau eine Angel', tipp: 'An der Werkbank: 2 Holz + 1 Schnur.', geschafft: (s) => s.rucksack.hat('angel'), belohnung: 5 },
   { titel: 'Besorg Würmer', tipp: 'Würmer findet man manchmal beim Graben – oder man kauft sie im Dorf.', geschafft: (s) => s.rucksack.hat('koeder'), belohnung: 2 },
   { titel: 'Angle einen Tofu-Fisch', tipp: 'Angel in die Hand und an eine Angelstelle 🎣 (auf der Karte 🗺️).', geschafft: (s) => s.rucksack.hat('tofufisch') || s.rucksack.hat('gegrillterFisch'), belohnung: 5, danach: 'fisch' },
+  { titel: 'Kauf Holz beim Händler', tipp: 'Fürs Lagerfeuer brauchst du Holz. Beim Händler im Dorf „Kaufen“ drücken – beim ersten Mal gibt es 3 für 1!', geschafft: (s) => !!s.haendler?.holzGeschenkt || s.aufgaben.holzGekauft, belohnung: 2, danach: 'holz' },
   { titel: 'Bau ein Feuerzeug', tipp: 'An der Werkbank: 2 Steine + 1 Eisenerz + 1 Kohle.', geschafft: (s) => s.rucksack.hat('feuerzeug') || s.lagerfeuer.brennt > 0, belohnung: 5 },
   { titel: 'Zünde das Lagerfeuer an', tipp: 'Am Lagerfeuer neben dem Zelt: 1 Holz + Feuerzeug.', geschafft: (s) => s.lagerfeuer.brennt > 0, belohnung: 3 },
   { titel: 'Grill den Tofu-Fisch', tipp: 'Wenn das Feuer brennt: „Fisch grillen“ drücken.', geschafft: (s) => s.rucksack.hat('gegrillterFisch') || s.aufgaben.fischGegessen, belohnung: 3 },
@@ -41,6 +42,42 @@ const AUFGABEN = [
 
 // ---------- Die großen Erklärungen (kommen einmal, nach bestimmten Aufgaben) ----------
 const ERKLAERUNG = {
+  graben: {
+    bild: '⛏️',
+    titel: 'Dein erster Fund!',
+    text: `<p>In den <b>Grabehügeln</b> findest du <b>Steine, Kohle, Eisenerz</b> – manchmal sogar <b>Gold</b> oder einen <b>Edelstein</b>. Und manchmal Würmer! 🪱</p>
+      <p>Ein leerer Hügel <b>wächst in 2 Tagen nach</b>. Es gibt viele davon auf der Insel – schau auf die Karte 🗺️.</p>
+      <p>Deine Funde kannst du beim <b>Händler verkaufen</b> (dann hast du Münzen) oder an der <b>Werkbank verbauen</b>.</p>`,
+  },
+  haendler: {
+    bild: '🧑‍🌾',
+    titel: 'Der Händler',
+    text: `<p><b>🛒 Kaufen:</b> Hier gibt es Brot, Holz, Würmer, Äpfel und größere Rucksäcke.</p>
+      <p><b>💰 Verkaufen:</b> Alles, was du ausgräbst oder angelst, kauft er dir ab. So kommst du an <b>Münzen</b>!</p>
+      <p>Aber Achtung: Je öfter du <b>dasselbe</b> verkaufst, desto weniger zahlt er. Und pro Tag kauft er höchstens 10 Sachen.</p>
+      <p>Nachts schläft er 💤 – dann musst du bis morgen warten.</p>`,
+  },
+  werkbank: {
+    bild: '🔨',
+    titel: 'Selbst bauen an der Werkbank',
+    text: `<p>Neben deinem Zelt steht die <b>Werkbank</b>. Dort baust du aus deinen Funden eigene Werkzeuge.</p>
+      <p>Zuerst ein <b>Schwert</b> (2 Eisenerz + 3 Steine). Damit fällst du Bäume und bekommst <b>Holz</b> – gratis!</p>
+      <p>Aus Holz baust du eine <b>Schnur</b> und eine <b>Angel</b>. Grün markiert = du hast genug dafür.</p>`,
+  },
+  base: {
+    bild: '🏠',
+    titel: 'Deine Base',
+    text: `<p>Hier ist dein Zuhause. Nachts schläfst du hier – dann bist du sicher und verlierst keine Münzen. 😴</p>
+      <p>Du kannst deine Base <b>in 5 Stufen ausbauen</b>: Zelt → großes Zelt → Hütte mit <b>Truhe</b> 📦 → Garten mit <b>Karotten</b> 🥕 → Haus mit <b>Fischteich</b> 🎣. Ab der Hütte gibt es auch einen <b>Pferdestall</b>.</p>
+      <p><b>Ab Stufe 2</b> wird dein altes Zelt zum <b>Reisezelt</b> ⛺. Das packst du in den Rucksack und stellst es <b>überall</b> auf – auch auf anderen Inseln! Dann musst du zum Schlafen nicht zurückkommen.</p>`,
+  },
+  holz: {
+    bild: '🪵',
+    titel: 'Holz kaufen – oder selbst fällen?',
+    text: `<p>Beim Händler kostet Holz <b>12 Münzen</b>. Diesmal hat er dir 2 geschenkt!</p>
+      <p>Mit deinem <b>eigenen Schwert</b> bekommst du Holz <b>gratis</b>: vor einen Baum stellen, „Fällen“ drücken. Ein Baum gibt 3 Holz.</p>
+      <p>Aber Achtung: Das Schwert nutzt sich ab. Ein neues baust du an der Werkbank.</p>`,
+  },
   essen: {
     bild: '🍞',
     titel: 'So funktioniert Essen',
@@ -55,7 +92,7 @@ const ERKLAERUNG = {
     text: `<p>Ein Brot kostet beim Händler <b>25 Münzen</b> – und du brauchst jeden Tag eins.</p>
       <p>Einen Fisch fängst du <b>gratis</b>! Grill ihn am <b>Lagerfeuer</b>, dann macht er dich genauso satt wie ein Brot.</p>
       <p>Wer selbst angelt, spart seine Münzen für die Base, den Ballon und das große Abenteuer. 🎉</p>
-      <p><b>Als Nächstes:</b> Bau ein Feuerzeug, zünde das Feuer an und grill deinen Fisch.</p>`,
+      <p><b>Als Nächstes:</b> Fürs Lagerfeuer brauchst du Holz und ein Feuerzeug. Dann grillst du deinen Fisch.</p>`,
   },
 };
 
@@ -95,9 +132,12 @@ export class Aufgaben {
     spiel.elternElement.appendChild(this.erklaerFenster);
     this.erklaerFenster.addEventListener('touchstart', (e) => e.stopPropagation());
     this.erklaerOffen = false;
+    this.erklaerWarte = [];
     knopf(this.erklaerFenster.querySelector('.erklaer-ok'), () => {
       this.erklaerOffen = false;
       this.erklaerFenster.classList.remove('offen');
+      const naechste = this.erklaerWarte.shift();
+      if (naechste) setTimeout(() => this.zeigeErklaerung(naechste), 400);
     });
     this.zeichnen();
   }
@@ -125,6 +165,11 @@ export class Aufgaben {
     this.pruefZeit = 0.5;
     const a = AUFGABEN[this.nummer];
     if (Object.keys(this.spiel.haendler?.verkauftHeute || {}).length > 0) this.gehandelt = true;
+    if (this.spiel.haendler?.holzGeschenkt) this.holzGekauft = true;
+    // Erklärungen beim ersten Mal: erster Fund beim Graben, erster Besuch beim Händler
+    if (!this.erklaert.includes('graben') && this.nummer <= 2 && ['stein', 'kohle', 'eisenerz', 'gold', 'edelstein'].some((id) => this.spiel.rucksack.hat(id))) this.erklaere('graben');
+    if (!this.erklaert.includes('haendler') && this.spiel.haendler?.offen) this.erklaere('haendler');
+    if (!this.erklaert.includes('base') && this.spiel.base?.offen) this.erklaere('base');
     if (!a.geschafft(this.spiel)) return;
     this.nummer++;
     if (a.belohnung) this.spiel.rucksack.aendereMuenzen(a.belohnung);
@@ -145,6 +190,13 @@ export class Aufgaben {
     const e = ERKLAERUNG[welche];
     if (!e || this.erklaert.includes(welche)) return;
     this.erklaert.push(welche);
+    // Ist gerade schon eine Erklärung offen? Dann kommt diese danach dran
+    if (this.erklaerOffen) { this.erklaerWarte.push(welche); return; }
+    this.zeigeErklaerung(welche);
+  }
+
+  zeigeErklaerung(welche) {
+    const e = ERKLAERUNG[welche];
     this.erklaerFenster.querySelector('.erklaer-bild').innerHTML = e.bild;
     this.erklaerFenster.querySelector('h2').textContent = e.titel;
     this.erklaerFenster.querySelector('.erklaer-text').innerHTML = e.text;
@@ -168,7 +220,7 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, erklaert: this.erklaert, version: 3 };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 4 };
   }
 
   ladeDaten(d) {
@@ -177,9 +229,14 @@ export class Aufgaben {
     if (!d.version && nummer >= 3) nummer++;
     // Version 2 kannte die zwei Brot-Aufgaben (Nummer 4 und 5) noch nicht – wer weiter war, hat sie übersprungen
     if ((d.version || 1) < 3 && nummer >= 3) nummer += 2;
+    // Version 3 kannte „Kauf Holz beim Händler“ (Nummer 12) noch nicht
+    if ((d.version || 1) < 4 && nummer >= 12) nummer += 1;
+    this.holzGekauft = !!d.holzGekauft || nummer > 12;
     this.brotGegessen = !!d.brotGegessen || nummer > 4;
     this.erklaert = Array.isArray(d.erklaert) ? d.erklaert : nummer > 4 ? ['essen'] : [];
     if (nummer > 11 && !this.erklaert.includes('fisch')) this.erklaert.push('fisch');
+    // Wer schon weiter ist, braucht die Anfangs-Erklärungen nicht mehr
+    for (const [id, ab] of [['graben', 2], ['haendler', 3], ['werkbank', 5], ['holz', 12]]) if (nummer > ab && !this.erklaert.includes(id)) this.erklaert.push(id);
     this.nummer = Math.min(nummer, AUFGABEN.length);
     this.fischGegessen = !!d.fischGegessen;
     this.gehandelt = !!d.gehandelt || (!d.version && nummer > 3);

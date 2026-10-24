@@ -156,7 +156,7 @@ export const EINSTELLUNGEN = {
   haendlerKauftProTag: 10,
   // So viele Münzen kostet es, etwas zu KAUFEN
   // (Eine Angel gibt es beim Händler nicht – die baust du selbst!)
-  // Beim allerersten Brot schenkt der Händler im Dorf so viele Brote dazu
+  // Beim allerersten Brot (und beim ersten Holz) schenkt der Händler im Dorf so viele dazu
   brotGeschenk: 2,
   kaufPreise: {
     koeder: 3,
