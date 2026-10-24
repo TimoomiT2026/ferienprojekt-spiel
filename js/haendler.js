@@ -108,7 +108,8 @@ export class Haendler {
         if (ding.upgradePlaetze && rucksack.plaetze.length >= ding.upgradePlaetze) continue;
         // Sonder-Käufe (z. B. der Ballon): nur zeigen, wenn es sie gibt und man sie noch nicht hat
         if (ding.sonderKauf && (!this.sonderKauf?.[id] || this.sonderKauf[id].gekauft())) continue;
-        zeile(id, `${preis} ${muenzeKlein()}`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
+        const menge = EINSTELLUNGEN.kaufMenge?.[id] || 1;
+        zeile(id, `${menge > 1 ? `${menge}er-Schachtel · ` : ''}${preis} ${muenzeKlein()}`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
       }
     } else {
       const rest = this.kauftProTag - this.heuteGekauft;
@@ -193,13 +194,14 @@ export class Haendler {
       this.zeichnen();
       return;
     }
-    if (!rucksack.passt(id)) {
+    const menge = EINSTELLUNGEN.kaufMenge?.[id] || 1; // z. B. Würmer: eine ganze Schachtel
+    if (!rucksack.passt(id, menge)) {
       musik.gehtNicht();
       this.info('„Dein Rucksack ist voll! Wirf etwas weg oder verkauf mir was.“');
       return;
     }
     rucksack.aendereMuenzen(-preis);
-    rucksack.hinein(id);
+    rucksack.hinein(id, menge);
     musik.muenzen(Math.ceil(preis / 10)); // Münzen auf den Tisch legen …
     musik.kasse(); // … Ka-tsching!
     this.gekauftJemals = true;
@@ -219,7 +221,7 @@ export class Haendler {
       for (let i = 0; i < geschenk && rucksack.passt('holz'); i++) { rucksack.hinein('holz'); dazu++; }
       this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}! Beim ersten Mal gibt es ${dazu} dazu. 🎁 Tipp: Mit einem Schwert fällst du selbst Bäume!“`);
       this.spiel.meldung?.(`🎁 Geschenk vom Händler: ${dazu} Holz extra!`, 5);
-    } else this.info(`„Bitte schön: ${DINGE[id].bild} ${DINGE[id].name}!“`);
+    } else this.info(`„Bitte schön: ${menge > 1 ? `${menge} ` : ''}${DINGE[id].bild} ${DINGE[id].name}!“`);
     this.zeichnen();
   }
 

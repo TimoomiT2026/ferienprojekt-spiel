@@ -97,7 +97,7 @@ const ERKLAERUNG = {
     bild: '🪱',
     titel: 'Fische mögen Würmer',
     text: `<p>Ohne Würmer beißt kein Fisch an.</p>
-      <p class="erklaer-aufgabe">Würmer findest du manchmal beim <b>Graben</b> – oder du kaufst sie beim <b>Händler</b> (3 Münzen).</p>`,
+      <p class="erklaer-aufgabe">Würmer findest du manchmal beim <b>Graben</b> – oder du kaufst beim <b>Händler</b> eine <b>10er-Schachtel</b> für 10 Münzen.</p>`,
   },
   angeln: {
     bild: '🐟',

@@ -171,8 +171,12 @@ export const EINSTELLUNGEN = {
   // Beim allerersten Brot (und beim ersten Holz) schenkt der Händler im Dorf so viele dazu
   brotGeschenk: 2,
 
+  // Manches gibt es beim Händler nur als Packung: so viele Stück bekommt man für EINEN Preis
+  kaufMenge: {
+    koeder: 10, // eine Schachtel mit 10 Würmern 🪱
+  },
   kaufPreise: {
-    koeder: 3,
+    koeder: 10, // für die ganze 10er-Schachtel
     holz: 12,
     brot: 25,
     apfel: 4, // Pferdefutter
@@ -443,7 +447,7 @@ export const EINSTELLUNGEN = {
     kaufPreise: {
       brot: 25,
       apfel: 4, // Pferdefutter
-      koeder: 3, // Würmer
+      koeder: 10, // Würmer (10er-Schachtel, siehe kaufMenge)
       holz: 12,
     },
     // So viele Sachen kauft er dir höchstens an einem Tag ab (er zählt selbst, nicht zusammen mit dem ersten Händler)
