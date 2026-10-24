@@ -6,6 +6,19 @@ Link zum Spiel: **https://timoomit2026.github.io/ferienprojekt-spiel/**
 
 ---
 
+## 0. Erste Nachricht an die Tester (zuerst schicken!)
+
+> Hallo! 🏝️ Wir haben in den Ferien ein eigenes 3D-Spiel gebaut – das **Inselspiel**. Wollt ihr es testen?
+>
+> **Schritt 1 – bitte zuerst:** Holt euch das Spiel als Icon auf den Home-Bildschirm. Hier steht für jedes Gerät, wie es geht (iPhone, iPad, Android, auch mit Chrome):
+> 👉 https://timoomit2026.github.io/ferienprojekt-spiel/anleitung.html
+>
+> **Schritt 2:** Schreibt uns kurz „Geschafft ✅“ (gern mit Screenshot vom Icon).
+>
+> **Schritt 3:** Erst dann über das Icon starten, Handy/Tablet quer halten – und los! Danach schicken wir euch 6 kurze Fragen.
+
+---
+
 ## 1. Einladung (passt zum Video)
 
 **🏝️ Das Inselspiel – unser Ferienprojekt!**
@@ -36,6 +49,8 @@ In den Ferien haben wir zusammen ein eigenes 3D-Spiel gebaut: Mein Sohn war der 
 1. Link in **Chrome** öffnen
 2. Oben rechts auf die **drei Punkte ⋮**
 3. **„Zum Startbildschirm hinzufügen“**
+
+**🌐 Chrome auf iPad/iPhone:** Nicht die drei Punkte, sondern das **Teilen-Symbol rechts in der Adressleiste** → „Zum Home-Bildschirm“ → „Hinzufügen“
 
 **💻 Computer:** Link im Browser öffnen.
 Laufen = **W A S D** oder **Pfeiltasten** · Umschauen = **Maus gedrückt ziehen** · Springen = **Leertaste** · Aktion = **E** · Rucksack = **R**

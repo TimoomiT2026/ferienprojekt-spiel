@@ -26,6 +26,7 @@
   }
   header p { margin: 6px 0 16px; font-weight: 600; text-shadow: 0 2px 3px rgba(0,0,0,.4); }
   .karte { background: var(--papier); border: 4px solid var(--holz-rand); border-radius: 18px; padding: 14px 16px; margin: 0 0 14px; box-shadow: 0 5px 0 var(--holz-rand); }
+.karte.schritt1 { border-color: #c0392b; box-shadow: 0 5px 0 #7a1f15; }
   .link { display: block; text-align: center; font-weight: 800; font-size: 20px; color: var(--blau); word-break: break-all; text-decoration: none; }
   .knopf { display: block; margin: 10px auto 0; max-width: 320px; text-align: center; background: #5cc23a; color: #fff; font-weight: 800; font-size: 22px;
            padding: 8px 18px 5px; border-radius: 14px; border: 3px solid #2f6a1a; box-shadow: 0 4px 0 #2f6a1a; text-decoration: none; }
@@ -63,9 +64,19 @@
     <p>So kommt das Spiel auf deinen Home-Bildschirm – dann startet es im Vollbild wie eine App.</p>
   </header>
 
+  <div class="karte schritt1">
+    <h2>☝️ Schritt 1 – bevor du spielst!</h2>
+    <ol>
+      <li>Hol dir das Spiel auf den <b>Home-Bildschirm</b> – unten dein Gerät antippen und den Schritten folgen.</li>
+      <li>Schick uns eine kurze Nachricht: <b>„Geschafft! ✅“</b> (gern mit Screenshot vom Icon).</li>
+      <li><b>Erst dann</b> das Spiel über das neue Icon starten und den Test beginnen.</li>
+    </ol>
+    <div class="tipp">Warum? Nur über das Icon läuft das Spiel im Vollbild und speichert zuverlässig. Im normalen Browser-Fenster ist der Test nicht derselbe.</div>
+  </div>
+
   <div class="karte">
     <a class="link" href="./">timoomit2026.github.io/ferienprojekt-spiel</a>
-    <a class="knopf" href="./">▶ Zum Spiel</a>
+    <a class="knopf" href="./">▶ Link öffnen (für Schritt 1)</a>
   </div>
 
   <!-- iPhone, neues Safari -->
@@ -116,6 +127,22 @@
     </div>
   </details>
 
+  <!-- Chrome auf iPhone/iPad -->
+  <details>
+    <summary>🌐 <span>Chrome auf iPhone / iPad<small>wenn du dort Chrome statt Safari benutzt</small></span><span class="pfeil">▶</span></summary>
+    <div class="inhalt">
+      <ol>
+        <li>Den Link in <b>Chrome</b> öffnen.</li>
+        <li><b>Nicht</b> die drei Punkte <b>•••</b> – sondern das <b>Teilen-Symbol</b>
+          <span class="symbol"><svg viewBox="0 0 20 20"><path d="M10 2v11M6 6l4-4 4 4M5 9H4v9h12V9h-1" fill="none" stroke="#1a73e8" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>
+          <b>rechts in der Adressleiste</b> antippen (iPhone: manchmal unten).</li>
+        <li>Nach unten wischen → <b>„Zum Home-Bildschirm“</b>.</li>
+        <li><b>„Hinzufügen“</b> antippen.</li>
+      </ol>
+      <div class="tipp">Kein „Zum Home-Bildschirm“ in der Liste? Ganz unten auf <b>„Aktionen bearbeiten …“</b> und es mit dem grünen Plus dazuholen – oder den Link einfach in <b>Safari</b> öffnen.</div>
+    </div>
+  </details>
+
   <!-- Android -->
   <details>
     <summary>🤖 <span>Android<small>Chrome (Samsung, Pixel, …)</small></span><span class="pfeil">▶</span></summary>
@@ -154,7 +181,7 @@
     </ul>
   </div>
 
-  <footer>Ein Ferienprojekt von Vater &amp; Sohn 💛</footer>
+  <footer>Ein Ferienprojekt von Jori 💛</footer>
 </div>
 </body>
 </html>

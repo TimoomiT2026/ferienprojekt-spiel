@@ -26,4 +26,4 @@ Vater-Sohn-Ferienprojekt (Sohn fast 9). Ziel: in ~6 Tagen à 1 Stunde ein fertig
 ## Sprache & Datenschutz
 - Mit dem Kind: einfache Sätze, Fachwörter erklären und ins `docs/lexikon.md` eintragen.
 - Repo ist öffentlich (GitHub Pages): **keine Fotos von Personen, keine Nachnamen, keine Wohnorte** ins Repo.
-- Ausnahme, vom Produzenten (Papa) entschieden: Die **Vornamen/Spitznamen der Inselbewohner** (js/bewohner.js) dürfen echte Vornamen sein – die Eltern sind gefragt. Den Vornamen des Game Designers selbst trotzdem nicht ins Repo. Andere echte Namen nur nach Rückfrage beim Produzenten.
+- Ausnahme, vom Produzenten (Papa) entschieden: Die **Vornamen/Spitznamen der Inselbewohner** (js/bewohner.js) dürfen echte Vornamen sein – die Eltern sind gefragt. Den Vornamen des Game Designers nur an den vom Produzenten freigegebenen Stellen: „Ein Ferienprojekt von Jori“ (Startbildschirm, Finale, Anleitung) – sonst nirgends. Andere echte Namen nur nach Rückfrage beim Produzenten.

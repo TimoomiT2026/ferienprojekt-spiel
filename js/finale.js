@@ -8,7 +8,7 @@ import { knopf } from './steuerung.js';
 import { MATERIAL } from './vorgeschichte.js';
 
 // Diese Zeile steht unten im Dankeschön-Fenster (keine echten Namen!)
-export const DANKE_TEXT = 'Danke fürs Spielen! Ein Ferienprojekt von Vater & Sohn 💛';
+export const DANKE_TEXT = 'Danke fürs Spielen! Ein Ferienprojekt von Jori 💛';
 
 // Zahlen fürs Konfetti – hier darf man drehen
 const KONFETTI = {
