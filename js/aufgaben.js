@@ -30,7 +30,7 @@ const AUFGABEN = [
   { titel: 'Iss deinen selbst gefangenen Fisch', tipp: 'Rucksack öffnen, Fisch antippen, „Essen“. Jetzt versorgst du dich selbst! 🎉', geschafft: (s) => s.aufgaben.fischGegessen, belohnung: 10, danach: 'selbstversorger' },
   { titel: 'Bau das große Zelt', tipp: 'Am Schild „BASE“ neben dem Zelt das Base-Menü öffnen und ausbauen.', geschafft: (s) => (s.base?.stufe || 1) >= 2, belohnung: 10 },
   { titel: 'Bau eine Holzhütte', tipp: 'Wieder im Base-Menü. In der Hütte steht eine Truhe 📦 – dort kannst du Sachen aufbewahren, wenn dein Rucksack voll ist!', geschafft: (s) => (s.base?.stufe || 1) >= 3, belohnung: 15 },
-  { titel: 'Zähme ein Wildpferd', tipp: 'Kauf Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
+  { titel: 'Zähme ein Wildpferd', tipp: 'Kauf einen 3er-Pack Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
   { titel: 'Spar 150 Münzen', tipp: 'Verkauf, was du findest. Bald brauchst du viel Geld für das große Abenteuer …', geschafft: (s) => s.rucksack.muenzen >= 150, belohnung: 25 },
   // ---------- Etappe 3: Das große Abenteuer ----------
   { titel: 'Bau ein Fernrohr', start: 'fernrohrBauen', tipp: 'An der Werkbank 🔨: 2 Eisenerz + 1 Gold + 1 Holz. Das geht ab Tag 3 – wenn du dich selbst versorgst und eine Holzhütte hast.', geschafft: (s) => s.rucksack.hat('fernrohr') || (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
@@ -193,7 +193,7 @@ const ERKLAERUNG = {
     bild: '🐴',
     titel: 'Ein Wildpferd!',
     text: `<p>Auf der Insel leben <b>Wildpferde</b>. Wenn du eins zähmst, kannst du darauf <b>reiten</b> – viel schneller als laufen!</p>
-      <p class="erklaer-aufgabe">So geht's: Kauf <b>Äpfel</b> 🍎 beim Händler, nimm einen <b>in die Hand</b> und geh langsam zum Pferd. Füttere es <b>3 Mal</b> – dann gehört es dir!</p>
+      <p class="erklaer-aufgabe">So geht's: Kauf beim Händler einen <b>3er-Pack Äpfel</b> 🍎, nimm einen <b>in die Hand</b> und geh langsam zum Pferd. Füttere es <b>3 Mal</b> – dann gehört es dir!</p>
       <p>Mit einer <b>Leine</b> (alter Schuh + Schnur) bindest du es am <b>Pferdestall</b> an deiner Base an. Füttere es alle 2 Tage, sonst läuft es weg.</p>`,
   },
   palmeninsel: {

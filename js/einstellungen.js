@@ -176,6 +176,7 @@ export const EINSTELLUNGEN = {
   // Manches gibt es beim Händler nur als Packung: so viele Stück bekommt man für EINEN Preis
   kaufMenge: {
     koeder: 10, // eine Schachtel mit 10 Würmern 🪱
+    apfel: 3, // ein 3er-Pack – genau richtig, um ein Wildpferd zu zähmen 🐴
   },
   kaufPreise: {
     koeder: 10, // für die ganze 10er-Schachtel
@@ -183,7 +184,7 @@ export const EINSTELLUNGEN = {
     eisenerz: 18, // Notfall: 3× so teuer wie beim Verkaufen
     holz: 12,
     brot: 25,
-    apfel: 4, // Pferdefutter
+    apfel: 12, // Pferdefutter – für den 3er-Pack (siehe kaufMenge)
     rucksackGross: 60, // Rucksack mit 18 Plätzen
     rucksackRiesig: 120, // Rucksack mit 24 Plätzen
     ballon: 150, // Heißluftballon – steht dann an der Base (nur einmal zu kaufen)
@@ -450,7 +451,7 @@ export const EINSTELLUNGEN = {
     // Das verkauft der Palmen-Händler (Münzen). Ballon und Rucksack gibt es nur im ersten Dorf!
     kaufPreise: {
       brot: 25,
-      apfel: 4, // Pferdefutter
+      apfel: 12, // Pferdefutter (3er-Pack, siehe kaufMenge)
       koeder: 10, // Würmer (10er-Schachtel, siehe kaufMenge)
       holz: 12,
     },
