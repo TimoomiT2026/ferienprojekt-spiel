@@ -237,13 +237,13 @@ spieler.flugSperre = (x, z, nx, nz) => {
 };
 let flugSperreGemeldet = 0;
 spieler.beiFlugSperre = (grund) => {
-  if (grund === 'nebel') return nebel.meldeSperre(meldung);
+  if (grund === 'nebel') return nebel.meldeSperre(meldung, rucksack.hat('fernrohr'));
   if (performance.now() - flugSperreGemeldet < 8000) return;
   flugSperreGemeldet = performance.now();
   meldung(`🌬️ Über der ${grund} weht ein viel zu starker Wind – landen kannst du da nicht! Auf andere Inseln kommst du nur mit dem Boot 🚣.`, 7);
 };
 boote.nebelSperre = (x, z, vonX, vonZ) => nebel.sperrt(x, z, vonX, vonZ);
-boote.beiNebel = () => nebel.meldeSperre(meldung);
+boote.beiNebel = () => nebel.meldeSperre(meldung, rucksack.hat('fernrohr'));
 karte.beiInselEntdeckt = (name) => {
   nebel.aktualisiere();
   meldung(nebel.waende.size ? `🔭 Neue Insel entdeckt: ${name}! Jetzt findest du den Weg durch den Nebel. 🌫️➡️🏝️` : `🏝️ Neue Insel entdeckt: ${name}!`, 6);

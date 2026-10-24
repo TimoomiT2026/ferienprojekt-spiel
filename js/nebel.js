@@ -79,11 +79,13 @@ export class Nebel {
   }
 
   // Einmal melden, wenn man gegen den Nebel fährt oder fliegt (nicht dauernd)
-  meldeSperre(meldung) {
+  meldeSperre(meldung, hatFernrohr = false) {
     const jetzt = performance.now();
     if (jetzt - this.gemeldet < 8000) return;
     this.gemeldet = jetzt;
-    meldung('🌫️ Dichter Nebel! Du siehst nichts mehr und drehst lieber um. Mit einem Fernrohr 🔭 könntest du durch den Dunst schauen …', 7);
+    meldung(hatFernrohr
+      ? '🌫️ Dichter Nebel! So findest du den Weg: Geh zurück an die Küste, nimm dein Fernrohr 🔭 in die Hand, drück „Durchschauen“ und halt den Kreis auf die Nebelbank, bis er voll ist.'
+      : '🌫️ Dichter Nebel! Du siehst nichts mehr und drehst lieber um. Mit einem Fernrohr 🔭 könntest du durch den Dunst schauen …', 9);
   }
 
   // Nebel über entdeckten Inseln verschwinden lassen

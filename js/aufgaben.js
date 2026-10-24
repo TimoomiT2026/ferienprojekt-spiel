@@ -157,7 +157,8 @@ const ERKLAERUNG = {
   nebel: {
     bild: '🌫️',
     titel: 'Schau durch den Nebel!',
-    text: `<p>Nimm das <b>Fernrohr</b> in die Hand und geh an die <b>Küste</b> – am besten auf einen Hügel. Drück <b>„Durchschauen“</b>.</p>
+    text: `<p>Das Fernrohr allein reicht nicht – du musst damit die Insel <b>finden</b>! Erst dann verschwindet der Nebel und du kommst mit dem Boot hin.</p>
+      <p>Nimm das <b>Fernrohr</b> in die Hand und geh an die <b>Küste</b> – am besten auf einen Hügel. Drück <b>„Durchschauen“</b>.</p>
       <p class="erklaer-aufgabe">Halt den Kreis auf eine <b>Nebelbank</b> über dem Meer, bis er voll ist. Dann hast du die Insel entdeckt!</p>
       <p>Auf der Karte 🗺️ sind die Inseln mit <b>❓</b> markiert. Eine liegt im <b>Westen</b>, eine im <b>Osten</b>.</p>`,
   },
@@ -365,6 +366,8 @@ export class Aufgaben {
     if (!this.erklaert.includes('graben') && this.nummer <= 2 && ['stein', 'kohle', 'eisenerz', 'gold', 'edelstein'].some((id) => this.spiel.rucksack.hat(id))) this.erklaere('graben');
     // Bei der ersten Grabe-Aufgabe: nach jedem Fund zeigen, was noch fehlt
     if (this.nummer === 2) this.grabeFortschritt();
+    // Fernrohr zum ersten Mal im Rucksack (und noch eine Insel im Nebel): erklären, wie man entdeckt
+    if (!this.erklaert.includes('nebel') && this.spiel.rucksack.hat('fernrohr') && (this.spiel.karte?.entdeckteInseln || []).length < 2) this.erklaere('nebel');
     // Zauberpilz zum ersten Mal im Rucksack
     if (!this.erklaert.includes('zauberpilz') && this.spiel.rucksack.hat('zauberpilz')) this.erklaere('zauberpilz');
     // Am ersten Tag kurz vor der Nacht: erklären, wie Schlafen geht
