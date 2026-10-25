@@ -4,7 +4,7 @@
 //  Der Haken fliegt hoch und hakt sich oben an der Kante ein.
 //  Dann klettert die Figur am Seil hoch. Das Seil bleibt hängen –
 //  so kannst du später wieder runter- und hochklettern.
-//  Jeder Schuss braucht 1 Seil (➰) aus dem Rucksack. Die Kanone bleibt.
+//  Das Seil geht nie leer: Die Kanone hat ihr eigenes Seil (man baut es einmal mit ein).
 // =============================================================
 import * as THREE from 'three';
 import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
@@ -265,18 +265,12 @@ export class Seilkanone {
       musik.gehtNicht?.();
       return false;
     }
-    if (rucksack.anzahl('seil') < 1) {
-      meldung('Du brauchst ein Seil ➰ im Rucksack! Bau es an der Werkbank (3 Schnur).', 5);
-      musik.gehtNicht?.();
-      return false;
-    }
-    // Schon zu viele Seile? Dann holen wir das älteste zurück
+    // Das Seil geht nie leer – die Kanone hat ihr eigenes Seil (Entscheidung Game Designer).
+    // Schon zu viele Seile an den Wänden? Dann holen wir das älteste ein.
     if (this.seile.length >= E().maxSeile) {
       this.entferneSeil(this.seile[0]);
-      rucksack.hinein('seil');
-      meldung(`Mehr als ${E().maxSeile} Seile gehen nicht – dein ältestes Seil ist wieder im Rucksack.`, 5);
+      meldung(`Mehr als ${E().maxSeile} Seile gehen nicht – dein ältestes Seil hast du wieder eingeholt.`, 5);
     }
-    rucksack.nehmen('seil', 1);
 
     const seil = this.baueSeil(wand);
     this.spieler.figur.rotation.y = Math.atan2(wand.richtung.x, wand.richtung.z); // zur Wand drehen

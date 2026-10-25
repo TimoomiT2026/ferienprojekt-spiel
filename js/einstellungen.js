@@ -477,7 +477,7 @@ export const EINSTELLUNGEN = {
 
   // ---------- Seilkanone ----------
   // Kanone in die Hand, vor eine hohe Wand stellen, Hochschießen!
-  // Jeder Schuss braucht 1 Seil aus dem Rucksack, die Kanone bleibt.
+  // Das Seil geht nie leer – die Kanone hat ihr eigenes Seil.
   seilkanone: {
     // So viele Seile können höchstens gleichzeitig hängen
     maxSeile: 3,
