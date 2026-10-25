@@ -32,7 +32,7 @@ import { Base } from './base.js';
 import { Angeln, baueAngel } from './angeln.js';
 import { Lagerfeuer } from './feuer.js';
 import { Ueberleben } from './ueberleben.js';
-import { ladeSpielstand, speichereSpielstand, loescheSpielstand } from './speicher.js';
+import { ladeSpielstand, speichereSpielstand, loescheSpielstand, setzeSpeicherplatz, ladeFreiesSpiel } from './speicher.js';
 import { zeigeVorgeschichte } from './vorgeschichte.js';
 import { Nebel } from './nebel.js';
 import { Tutorial } from './tutorial.js';
@@ -383,6 +383,71 @@ werkbank.spiel.sperre = (id) => {
   return null;
 };
 objekte.spiel.aufgaben = aufgaben; // für die Anfänger-Funde beim ersten Graben
+
+// ---------- Freies Spiel 🌴 ----------
+// Alles ist da, alles ist frei, unendlich Münzen – und nur eine Aufgabe:
+// Das Insadorium steckt in einem zufälligen Erdloch auf irgendeiner Insel.
+let frei = false; // läuft gerade das Freie Spiel?
+let freiErdloch = -1; // in welchem Erdloch (Nummer) liegt das Insadorium?
+let freiGefunden = false;
+objekte.spiel.geheimesErdloch = (nummer) => frei && !freiGefunden && nummer === freiErdloch;
+objekte.spiel.beiInsadorium = () => {
+  freiGefunden = true;
+  aufgaben.freiGefunden = true;
+  aufgaben.zeichnen();
+  speichern();
+  setTimeout(() => finale.starten(), 2500); // 🎉 Konfetti!
+};
+const werkbankSperreAbenteuer = werkbank.spiel.sperre;
+werkbank.spiel.sperre = (id) => (frei ? null : werkbankSperreAbenteuer(id)); // im Freien Spiel ist nichts gesperrt
+
+// Die Schalter umlegen: keine Aufgaben, keine Erklärungen, unendlich Geld, eigener Speicherplatz
+function schalteFreiesSpielEin() {
+  frei = true;
+  setzeSpeicherplatz(true);
+  rucksack.unendlich = true;
+  aufgaben.frei = true;
+  tutorial.aus = true;
+  bewohner.frei = true;
+}
+
+// Ein ganz neues Freies Spiel: Base auf Stufe 5, alle Inseln, voller Rucksack und volle Truhe
+function neuesFreiesSpiel() {
+  wendeSpielstandAn({
+    rucksack: { plaetze: new Array(24).fill(null), muenzen: EINSTELLUNGEN.freiesSpielMuenzen }, // der größte Rucksack
+    base: { stufe: 5, stall: true, karotten: EINSTELLUNGEN.karottenMax },
+    inseln: INSELN.slice(1).map((I) => I.name),
+    aufgaben: { nummer: 999, version: 12, erklaert: [] },
+    tauchen: { gefunden: true }, // im Klippen-See liegt diesmal nichts – das Insadorium ist vergraben!
+    objekte: { schaufelGefunden: true },
+  });
+  for (const [id, n] of Object.entries(EINSTELLUNGEN.freiesSpielRucksack)) rucksack.hinein(id, n);
+  for (const [id, n] of Object.entries(EINSTELLUNGEN.freiesSpielTruhe)) base.truheLegen(id, n);
+  rucksack.handUmschalten('schaufel');
+  freiErdloch = Math.floor(Math.random() * objekte.grabestellen.length);
+  freiGefunden = false;
+}
+
+function starteFreiesSpiel() {
+  if (laeuft || neuAnfangen) return;
+  musik.start();
+  startBildschirm.classList.add('weg');
+  schalteFreiesSpielEin();
+  const vorhanden = ladeFreiesSpiel();
+  if (vorhanden) {
+    wendeSpielstandAn(vorhanden);
+    freiErdloch = vorhanden.frei?.erdloch ?? Math.floor(Math.random() * objekte.grabestellen.length);
+    freiGefunden = !!vorhanden.frei?.gefunden;
+  } else neuesFreiesSpiel();
+  aufgaben.freiGefunden = freiGefunden;
+  nebel.aktualisiere();
+  ballon.freischalten('palmendorf');
+  aufgaben.zeichnen();
+  laeuft = true;
+  document.getElementById('hud').classList.add('sichtbar');
+  meldung(vorhanden ? '🌴 Willkommen zurück im Freien Spiel!' : '🌴 Freies Spiel! Du hast alles – mach, worauf du Lust hast. Und irgendwo ist das Insadorium vergraben … ⛏️', 8);
+  speichern();
+}
 rucksack.beimBenutzen = (id) => {
   if (id !== 'zauberpilz') return;
   if (boote.faehrt || pferde.reitet || seilkanone.beschaeftigt) {
@@ -791,6 +856,7 @@ function sammleSpielstand() {
     feuer: lagerfeuer.brennt,
     boote: boote.liste.map((b) => ({ x: b.gruppe.position.x, z: b.gruppe.position.z, w: b.gruppe.rotation.y, entdeckt: b.entdeckt })),
     vorgeschichteGesehen: true,
+    frei: frei ? { erdloch: freiErdloch, gefunden: freiGefunden } : undefined,
   };
 }
 
@@ -857,7 +923,7 @@ document.addEventListener('visibilitychange', () => !document.hidden && tonWiede
 window.addEventListener('touchend', tonWiederAn, true);
 window.addEventListener('click', tonWiederAn, true);
 
-const gespeichert = ladeSpielstand();
+let gespeichert = ladeSpielstand();
 if (!gespeichert) tutorial.zuruecksetzen(); // neues Spiel = alle Erklärungen wieder von vorn
 
 // ---------- Startbildschirm ----------
@@ -877,6 +943,16 @@ if (gespeichert) {
       location.reload();
     } else neuAnfangen = false;
   });
+}
+// Zweiter Weg ins Spiel: das Freie Spiel (eigener Speicherplatz)
+{
+  const freiKnopf = document.createElement('button');
+  freiKnopf.className = 'freies-spiel';
+  freiKnopf.textContent = ladeFreiesSpiel() ? '🌴 Freies Spiel weiterspielen' : '🌴 Freies Spiel';
+  startBildschirm.appendChild(freiKnopf);
+  freiKnopf.addEventListener('touchend', (e) => e.stopPropagation()); // nicht auch noch das Abenteuer starten
+  freiKnopf.addEventListener('click', (e) => e.stopPropagation());
+  knopf(freiKnopf, starteFreiesSpiel);
 }
 
 function starte() {

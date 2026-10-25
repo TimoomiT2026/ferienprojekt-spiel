@@ -452,6 +452,7 @@ export class Aufgaben {
   }
 
   aktualisiere(dt) {
+    if (this.frei) return; // Freies Spiel: keine Aufgaben, keine Leitplanken
     // Sprechblase zu? Dann kommen die Erklärungen, die so lange gewartet haben
     if (this.nachGespraech.length && !this.spiel.bewohner?.offen) {
       for (const w of this.nachGespraech.splice(0)) {
@@ -560,6 +561,7 @@ export class Aufgaben {
 
   // ---------- Große Erklärung (über den ganzen Bildschirm) ----------
   erklaere(welche) {
+    if (this.frei) return; // Freies Spiel: keine Erklär-Fenster
     const e = ERKLAERUNG[welche];
     if (!e || this.erklaert.includes(welche)) return;
     this.erklaert.push(welche);
@@ -581,6 +583,7 @@ export class Aufgaben {
   }
 
   zeichnen() {
+    if (this.frei) return this.zeichneFrei();
     const jetzt = AUFGABEN[this.nummer];
     // Das Buch-Bild kommt aus ui-bilder.js, der Text steht daneben
     this.anzeige.innerHTML = `${uiBild('buch')}<span>${jetzt ? jetzt.titel : '🏆 Alle Aufgaben geschafft!'}</span>`;
@@ -604,6 +607,15 @@ export class Aufgaben {
       knopf(k, () => this.zeigeErklaerung(id));
       hilfe.appendChild(k);
     }
+  }
+
+  // Freies Spiel: nur EINE Aufgabe – das Insadorium finden. Es steckt in irgendeinem Erdloch auf irgendeiner Insel.
+  zeichneFrei() {
+    const geschafft = this.spiel.rucksack.hat('insadorium') || !!this.freiGefunden;
+    this.anzeige.innerHTML = `${uiBild('buch')}<span>${geschafft ? '🏆 Insadorium gefunden!' : 'Finde das versteckte Insadorium'}</span>`;
+    this.fenster.querySelector('.aufgaben-liste').innerHTML = `<li class="aufgabe ${geschafft ? 'fertig' : 'jetzt'}"><span class="aufgabe-zeichen">${uiBild(geschafft ? 'haken' : 'pfeil')}</span><div><b>Finde das Insadorium</b><div class="aufgabe-tipp">🌴 <b>Freies Spiel:</b> Du hast alles, was es gibt – mach, worauf du Lust hast! Das Insadorium ist in <b>irgendeinem Erdloch</b> auf <b>irgendeiner Insel</b> vergraben. Von außen sieht man nichts – du musst graben! ⛏️</div></div></li>`;
+    this.fenster.querySelector('.hilfe-liste').innerHTML = '';
+    this.fenster.querySelector('.hilfe-titel').style.display = 'none';
   }
 
   alsDaten() {

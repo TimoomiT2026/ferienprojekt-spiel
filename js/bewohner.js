@@ -444,6 +444,11 @@ export class Bewohner {
     const p = this.spiel.spieler.figur.position;
     mensch.winkel = Math.atan2(p.x - mensch.pos.x, p.z - mensch.pos.z);
     this.spiel.musik?.pling?.();
+    // Freies Spiel: keine Geschichte mit Taucherbrille und Münzen – die Leute sagen einfach Hallo
+    if (this.frei) {
+      this.zeigeBlase(mensch, ersterBesuch ? mensch.hallo : mensch.nochmal);
+      return;
+    }
     if (!this.tippBekommen && !this.trigger && !mensch.hatBrille) {
       // Der erste Bewohner verrät: Das Insadorium liegt unter Wasser – und jemand hat eine Taucherbrille
       this.tippBekommen = true;

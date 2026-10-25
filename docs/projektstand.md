@@ -16,6 +16,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - **Klippeninsel** (Osten, hohe Felswände, oben ein See) und **Palmeninsel** (Westen, Palmendorf mit zweitem Händler) – mit dem Boot ca. 20 s
   - **Palmeninsel:** 13 Bewohner (js/bewohner.js). Wer die Taucherbrille hat, ist Zufall: der 6. bis 13. Bewohner, den man anspricht (die ersten 5 nie; `bewohner.brilleFruehestens/brilleSpaetestens`) und will dafür **3 wertvolle Münzen** (eine pro Insel). Erst ab ihrem Satz gibt es die 3 golden glitzernden Münz-Hügel (❓ auf der Karte).
   - **Seilkanone** (js/seilkanone.js): Seil + Widerhaken + Holz + Eisenerz; schießt ein Seil an hohe Wände, das Seil bleibt hängen
+  - **Freies Spiel** (Startbildschirm, eigener Speicherplatz `inselspiel-frei-v1`): unendlich Münzen, größter Rucksack + volle Truhe mit allem, Base Stufe 5 mit Ballon, alle Inseln entdeckt, keine Aufgaben und Sperren. Einzige Aufgabe: das Insadorium – zufällig in einem Erdloch irgendwo vergraben, von außen unsichtbar (Inhalte in `einstellungen.js` unter „Freies Spiel“)
   - **Notfallboote** an der Klippeninsel: in jeder Bucht liegt eins (fahren jeden Morgen heim in ihre Bucht)
   - **Klippenzaun** (js/klippenzaun.js): Holzzaun oben rund um die Klippe – man kann nicht mehr runterfallen; wer im tiefen Wasser feststeckt, wird gerettet (an der Klippe: nach oben aufs Plateau, sonst zum nächsten Strand)
   - **Fernrohr:** Insel in die Mitte → grüner Knopf „Insel entdecken!“ antippen (statt Ring vollhalten)

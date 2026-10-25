@@ -376,6 +376,13 @@ export const EINSTELLUNGEN = {
   // Festgeklemmt? Wer so viele Sekunden in 3 Richtungen schiebt und nicht vom Fleck kommt, wird gerettet
   klemmSekunden: 4,
 
+  // ---------- Freies Spiel 🌴 ----------
+  // So viele Münzen hat man im Freien Spiel – und es werden nie weniger (Anzeige: ∞)
+  freiesSpielMuenzen: 999999,
+  // Was liegt am Anfang im Rucksack (24 Plätze) und in der Truhe? (Ding: Anzahl)
+  freiesSpielRucksack: { schaufel: 1, schwert: 1, angel: 1, feuerzeug: 1, fernrohr: 1, seilkanone: 1, taucherbrille: 1, leine: 1, koeder: 10, brot: 10, apfel: 10, gegrillterFisch: 5, zauberpilz: 5, kaffee: 3, nachtLimo: 3, holz: 20, karotte: 5 },
+  freiesSpielTruhe: { stein: 20, kohle: 20, eisenerz: 20, gold: 20, edelstein: 10, schnur: 10, seil: 5, widerhaken: 1, tofufisch: 5, schuh: 2, dose: 1, alge: 1, muschel: 10, kokosnuss: 10, reisezelt: 1 },
+
   // ---------- Heißluftballon 🎈 ----------
   // Beim wievielten Weg ins Dorf (noch ohne Ballon) kommt der Tipp: „Es gibt einen Ballon!“
   ballonTippNachDorfBesuchen: 3,

@@ -265,6 +265,8 @@ export class Objekte {
         : 'Zum Graben brauchst du eine Schaufel! Vielleicht liegt eine beim Zelt? ✨', 5);
       return;
     }
+    // Freies Spiel: In genau einem Erdloch liegt das Insadorium versteckt (von außen sieht man nichts)
+    if (this.spiel.geheimesErdloch?.(this.grabestellen.indexOf(stelle))) return this.insadoriumAusgraben(stelle);
     const fund = this.zufallsFund(stelle.insel);
     // Bei der allerersten Grabe-Aufgabe findet man genau das, was noch fehlt (bis zu 2 Sachen pro Hügel)
     const anfaenger = this.anfaengerFunde(stelle);
@@ -325,6 +327,30 @@ export class Objekte {
       musik.pling();
       meldung(`Gefunden: ${funde.map((f) => `${menge > 1 ? `${menge}× ` : ''}${DINGE[f].bild} ${DINGE[f].name}`).join(' und ')}!`, 3);
       this.beschaeftigt = false;
+    }, 900);
+  }
+
+  // Freies Spiel: das Insadorium aus dem geheimen Erdloch holen
+  insadoriumAusgraben(stelle) {
+    const { rucksack, meldung, musik, spieler } = this.spiel;
+    if (!rucksack.passt('insadorium')) {
+      this.spiel.rucksackVoll?.();
+      return;
+    }
+    this.beschaeftigt = true;
+    spieler.graben();
+    musik.graben();
+    this.kruemelWerfen(stelle.pos, stelle);
+    setTimeout(() => {
+      rucksack.hinein('insadorium');
+      stelle.da = false;
+      stelle.leerSeit = this.spiel.tageszeit.tag;
+      this.zeigeGrabestellen();
+      this.kruemelWerfen(stelle.pos, stelle);
+      musik.pling();
+      meldung('🔴✨ DU HAST DAS INSADORIUM GEFUNDEN!!! ✨🔴', 6);
+      this.beschaeftigt = false;
+      this.spiel.beiInsadorium?.();
     }, 900);
   }
 

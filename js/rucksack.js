@@ -91,8 +91,9 @@ export class Rucksack {
   // ---------- Münzen ----------
   aendereMuenzen(betrag) {
     this.muenzen = Math.max(0, this.muenzen + betrag);
+    if (this.unendlich) this.muenzen = EINSTELLUNGEN.freiesSpielMuenzen; // Freies Spiel: der Beutel wird nie leer
     if (this.muenzAnzeige) {
-      this.muenzAnzeige.textContent = this.muenzen;
+      this.muenzAnzeige.textContent = this.unendlich ? '∞' : this.muenzen;
       this.muenzAnzeige.parentElement.classList.remove('wackeln');
       void this.muenzAnzeige.offsetWidth; // Trick: Animation neu starten
       this.muenzAnzeige.parentElement.classList.add('wackeln');
@@ -344,7 +345,8 @@ export class Rucksack {
     });
     this.inDerHand = d.inDerHand && this.hat(d.inDerHand) ? d.inDerHand : null;
     this.muenzen = d.muenzen ?? EINSTELLUNGEN.startGeld;
-    if (this.muenzAnzeige) this.muenzAnzeige.textContent = this.muenzen;
+    if (this.unendlich) this.muenzen = EINSTELLUNGEN.freiesSpielMuenzen;
+    if (this.muenzAnzeige) this.muenzAnzeige.textContent = this.unendlich ? '∞' : this.muenzen;
     this.beiAenderung();
     this.zeichnen();
   }

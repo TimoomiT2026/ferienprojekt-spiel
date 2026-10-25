@@ -128,6 +128,7 @@ export class Tutorial {
 
   // ---------- Etwas Neues! (beim ersten Mal kommt die Erklärung) ----------
   neu(id) {
+    if (this.aus) return false; // Freies Spiel: keine Erklär-Blasen
     if (this.gesehen.has(id) || !ERKLAERUNGEN[id]) return false;
     this.gesehen.add(id);
     this.speichern();
