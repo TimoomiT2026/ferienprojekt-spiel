@@ -41,7 +41,7 @@ export const DINGE = {
   apfel: { name: 'Apfel', bild: BILDER.apfel, werkzeug: true, text: 'Pferde lieben Äpfel! Nimm einen in die Hand und geh zu einem Wildpferd.' },
   leine: { name: 'Pferdeleine', bild: BILDER.leine, werkzeug: true, artikel: 'eine', text: 'Aus dem Leder vom alten Schuh. In die Hand nehmen, dann kannst du dein Pferd führen und am Stall anbinden.' },
   zauberpilz: { name: 'Zauberpilz', bild: BILDER.zauberpilz, zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
-  fernrohr: { name: 'Fernrohr', bild: BILDER.fernrohr, werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
+  fernrohr: { name: 'Fernrohr', bild: BILDER.fernrohr, werkzeug: true, wichtig: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
   seil: { name: 'Seil', bild: BILDER.seil, artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Das brauchst du, um die Seilkanone zu bauen.' },
   widerhaken: { name: 'Widerhaken', bild: BILDER.widerhaken, artikel: 'einen', wichtig: true, text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone. Den gibt es nur als Preis bei der Zauberpilz-Rallye! 🏁' },
   seilkanone: { name: 'Seilkanone', bild: BILDER.seilkanone, werkzeug: true, artikel: 'eine', wichtig: true, text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Das Seil geht nie leer.' },
@@ -49,7 +49,7 @@ export const DINGE = {
   wertvolleMuenze: { name: 'Wertvolle Münze', bild: BILDER.wertvolleMuenze, artikel: 'eine', wichtig: true, text: 'Eine uralte, goldene Münze! Bring 3 davon zum Inselbewohner mit der Taucherbrille auf der Palmeninsel.' },
   taucherbrille: { name: 'Taucherbrille', bild: BILDER.taucherbrille, artikel: 'eine', wichtig: true, text: 'Damit kannst du tauchen! Geh an tiefes Wasser. Die Luft reicht aber nicht lange.' },
   insadorium: { name: 'Insadorium', bild: BILDER.insadorium, wichtig: true, text: 'DAS INSADORIUM! Der geheime rote Stein. Er leuchtet so grell, dass man fast nicht hinschauen kann.' },
-  reisezelt: { name: 'Reisezelt', bild: BILDER.reisezelt, plaetze: 3, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
+  reisezelt: { name: 'Reisezelt', bild: BILDER.reisezelt, plaetze: 3, wichtig: true, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
   // Diese beiden kommen nicht IN den Rucksack – sie ERSETZEN ihn
   rucksackGross: { name: 'Großer Rucksack', bild: BILDER.rucksackGross, upgradePlaetze: 18, text: '18 Plätze statt 12.' },
   rucksackRiesig: { name: 'Riesen-Rucksack', bild: BILDER.rucksackRiesig, upgradePlaetze: 24, text: '24 Plätze!' },

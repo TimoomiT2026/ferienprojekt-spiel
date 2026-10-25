@@ -212,6 +212,7 @@ const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElem
 
 // Fenster, die das Spiel anhalten
 const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || aufgaben.erklaerOffen || base.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
+aufgaben.spiel.fensterOffen = () => fensterOffen() && !aufgaben.erklaerOffen; // andere Fenster offen? Dann warten Erklärungen
 
 // ---------- Boote & Tiere ----------
 const boote = new Boote(szene, spieler);

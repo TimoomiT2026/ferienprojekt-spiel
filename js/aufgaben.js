@@ -6,7 +6,7 @@
 // =============================================================
 import { knopf } from './steuerung.js';
 import { uiBild } from './ui-bilder.js';
-import { muenzeKlein } from './bilder.js';
+import { muenzeKlein, BILDER } from './bilder.js';
 import { EINSTELLUNGEN } from './einstellungen.js';
 
 // tipp = was man tun muss, geschafft = wann es erledigt ist
@@ -75,7 +75,7 @@ const ERKLAERUNG = {
       <p class="erklaer-aufgabe">Deine erste Aufgabe: <b>Finde die Schaufel!</b> Sie liegt glitzernd ✨ neben deinem Zelt.</p>`,
   },
   schaufel: {
-    bild: '🪏',
+    bild: `<span class="erklaer-svg">${BILDER.schaufel}</span>`, // gemalt (das 🪏-Emoji fehlt auf älteren iPads)
     titel: 'Deine Schaufel!',
     text: `<p>Mit der Schaufel <b>gräbst du in den Erdhügeln</b> auf der Insel. Darin findest du Steine, Erze und mehr.</p>
       <p>Aber zuerst musst du sie <b>in die Hand nehmen</b>.</p>
@@ -399,10 +399,20 @@ export class Aufgaben {
         this.anzeige.classList.add('leuchtet');
         setTimeout(() => this.anzeige.classList.remove('leuchtet'), 6000);
       }
-      const naechste = this.erklaerWarte.shift();
-      if (naechste) setTimeout(() => this.zeigeErklaerung(naechste), 400);
+      this.naechsteErklaerung();
     });
     this.zeichnen();
+  }
+
+  // Die nächste wartende Erklärung zeigen – aber erst, wenn kein anderes Fenster (Karte, Händler …) offen ist
+  naechsteErklaerung() {
+    if (!this.erklaerWarte.length) return;
+    setTimeout(() => {
+      if (this.erklaerOffen) return;
+      if (this.spiel.fensterOffen?.()) return this.naechsteErklaerung(); // später noch mal schauen
+      const naechste = this.erklaerWarte.shift();
+      if (naechste) this.zeigeErklaerung(naechste);
+    }, 400);
   }
 
   // Für Ereignisse, die man nicht im Rucksack sieht
@@ -432,6 +442,8 @@ export class Aufgaben {
     this.offen = true;
     this.zeichnen();
     this.fenster.classList.add('offen');
+    // Gleich zur Aufgabe springen, die gerade dran ist (sonst sieht man nur grüne Haken)
+    requestAnimationFrame(() => this.fenster.querySelector('.aufgabe.jetzt')?.scrollIntoView({ block: 'center' }));
   }
 
   schliessen() {

@@ -189,6 +189,7 @@ export class Fernrohr {
   starten(spielerPos, blickWinkel) {
     if (this._aktiv) return;
     this._aktiv = true;
+    document.body.classList.add('fernrohr-aktiv'); // Uhr & Co. ausblenden (siehe style.css)
     this.kamera.position.set(spielerPos.x, spielerPos.y + KOPF_HOEHE, spielerPos.z);
     this.drehung = blickWinkel;
     this.neigung = 0; // erst mal geradeaus zum Horizont
@@ -247,6 +248,7 @@ export class Fernrohr {
   beenden() {
     if (!this._aktiv) return;
     this._aktiv = false;
+    document.body.classList.remove('fernrohr-aktiv');
     this.overlay.classList.remove('offen');
     this.finger.clear();
     this.fernsichtAus();
