@@ -199,16 +199,16 @@ const ERKLAERUNG = {
   },
   baseStufe4: {
     bild: '🎈',
-    titel: 'Hütte mit Garten – und ein Ballonplatz!',
+    titel: 'Hütte mit Garten – und ein Heißluftballon!',
     text: `<p>Im <b>Garten</b> wachsen jetzt jeden Tag <b>Karotten</b> 🥕 – für dich und für Pferde.</p>
-      <p class="erklaer-aufgabe">Neben deiner Hütte ist jetzt Platz für einen <b>Heißluftballon</b> 🎈! Du bekommst ihn beim <b>Händler im Dorf</b> für <b>${EINSTELLUNGEN.kaufPreise.ballon} Münzen</b>.</p>
-      <p>Mit dem Ballon fliegst du ganz schnell zum Dorf, nach Hause und zu den Inseln, die du schon kennst.</p>`,
+      <p class="erklaer-aufgabe">Und neben deiner Hütte steht jetzt dein eigener <b>Heißluftballon</b> 🎈! Damit fliegst du ganz unkompliziert von Ort zu Ort – zum Dorf, nach Hause und über die Inseln, die du schon kennst.</p>
+      <p>Geh zum Ballon und tipp auf „🎈 Ballon“: Dann kannst du aussuchen, wohin es geht.</p>`,
   },
   ballonTipp: {
     bild: '🎈',
     titel: 'Immer so weit laufen?',
-    text: `<p>Du läufst ganz schön oft hin und her! Wusstest du, dass es einen <b>Heißluftballon</b> 🎈 gibt? Mit dem fliegst du ganz schnell zum Dorf, nach Hause und zu anderen Inseln.</p>
-      <p class="erklaer-aufgabe">Bau deine Base auf <b>Stufe 4</b> aus (<b>Hütte mit Garten</b>) – dann ist Platz für einen Ballon, und der Händler verkauft ihn dir für <b>${EINSTELLUNGEN.kaufPreise.ballon} Münzen</b>.</p>`,
+    text: `<p>Du läufst ganz schön oft hin und her! Kennst du schon den <b>Heißluftballon</b> 🎈? Mit dem fliegst du ganz unkompliziert von Ort zu Ort – zum Dorf, nach Hause und über die Inseln.</p>
+      <p class="erklaer-aufgabe">Bau deine Base auf <b>Stufe 4</b> aus (<b>Hütte mit Garten</b>) – dann bekommst du den Ballon dazu!</p>`,
   },
   baseStufe3: {
     bild: '🛖',

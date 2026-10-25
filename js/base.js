@@ -33,7 +33,7 @@ const STUFEN = [
   { name: 'Zelt', bild: BILDER.zelt, text: 'Ein kleines Zelt. Hier kannst du nachts schlafen.', radius: 1.9, tuer: 2.2 },
   { name: 'Großes Zelt', bild: BILDER.zeltGross, text: 'Viel Platz und ein Vordach gegen Regen.', radius: 2.5, tuer: 3.4 },
   { name: 'Holzhütte', bild: BILDER.huette, text: 'Eine echte Hütte! Mit Truhe 📦 für deine Schätze.', radius: 2.7, tuer: 2.6 },
-  { name: 'Hütte mit Garten', bild: BILDER.huetteGarten, text: 'Mit Kamin – und im Garten wachsen Karotten 🥕.', radius: 2.8, tuer: 2.7 },
+  { name: 'Hütte mit Garten', bild: BILDER.huetteGarten, text: 'Mit Kamin, Garten mit Karotten 🥕 – und einem Heißluftballon 🎈!', radius: 2.8, tuer: 2.7 },
   { name: 'Haus mit Fischteich', bild: BILDER.haus, text: 'Ein richtiges Haus! In deinem eigenen Teich beißen nur Fische an 🎣 – kein Müll!', radius: 3.2, tuer: 3.25 },
 ];
 

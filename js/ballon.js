@@ -287,6 +287,14 @@ export class Ballon {
     this.hindernis = this.hindernisse.hinzufuegen(p.x, p.z, 1.0);
   }
 
+  // ---------- Geschenkt: Der Ballon gehört zu Base-Stufe 4 (Hütte mit Garten) ----------
+  schenken() {
+    if (this.gekauft) return;
+    this.gekauft = true;
+    this.ort = 'base';
+    this.platzieren();
+  }
+
   // ---------- Beim Händler kaufen ----------
   anmeldenBeimHaendler() {
     const h = this.spiel.haendler;
@@ -294,7 +302,6 @@ export class Ballon {
     h.sonderKauf = h.sonderKauf || {};
     h.sonderKauf.ballon = {
       gekauft: () => this.gekauft, // schon gekauft? → nicht mehr im Angebot
-      verfuegbar: () => (this.spiel.baseStufe?.() || 1) >= 4, // erst ab Base-Stufe 4 (Hütte mit Garten)
       kaufen: () => {
         this.gekauft = true;
         this.ort = 'base';

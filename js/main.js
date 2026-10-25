@@ -333,7 +333,6 @@ rallye.inDieTruhe = (id, nurPruefen = false) => {
 };
 aufgaben.spiel.werkbank = werkbank;
 aufgaben.spiel.seilkanone = seilkanone;
-ballon.spiel.baseStufe = () => base.stufe; // den Ballon gibt es erst ab Base-Stufe 4
 werkbank.spiel.inDieTruhe = rallye.inDieTruhe; // Werkbank: Rucksack voll? Dann in die Truhe
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
 function groessererRucksack() {
@@ -357,7 +356,9 @@ const fuersSchwert = (id) => (rucksack.hat('schwert') || aufgaben.istGeschafft('
 haendler.spiel.behalten = fuersSchwert;
 palmendorf.haendler.spiel.behalten = fuersSchwert;
 // Nach dem Ausbau der Base: groß erklären, was jetzt neu ist (Base-Menü vorher schließen)
-base.beiAusgebaut = (stufe) => setTimeout(() => { base.schliessen?.(); aufgaben.erklaere('baseStufe' + stufe); }, 1500);
+base.beiAusgebaut = (stufe) => setTimeout(() => {
+  if (stufe >= 4) ballon.schenken(); // zur Hütte mit Garten gehört der Heißluftballon 🎈
+  base.schliessen?.(); aufgaben.erklaere('baseStufe' + stufe); }, 1500);
 aufgaben.spiel.tageszeit = tageszeit;
 // Das Fernrohr gibt es erst, wenn man sich selbst versorgt – und frühestens ab Tag 3
 werkbank.spiel.sperre = (id) => {
@@ -798,6 +799,7 @@ function wendeSpielstandAn(s) {
     seilkanone.ladeDaten(s.seilkanone || {});
     tauchen.ladeDaten(s.tauchen || {});
     ballon.ladeDaten(s.ballon || {});
+    if (base.stufe >= 4) ballon.schenken(); // ältere Spielstände: Stufe 4 ohne Ballon? Jetzt gibt's ihn dazu
     karte.ladeEntdeckteInseln(s.inseln);
     bewohner.ladeDaten(s.bewohner);
     palmendorf.ladeDaten(s.palmendorf || {});

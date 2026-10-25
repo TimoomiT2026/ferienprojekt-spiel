@@ -107,7 +107,7 @@ export class Haendler {
         // Rucksack-Upgrades nur zeigen, wenn sie noch etwas bringen
         if (ding.upgradePlaetze && rucksack.plaetze.length >= ding.upgradePlaetze) continue;
         // Sonder-Käufe (z. B. der Ballon): nur zeigen, wenn es sie gibt und man sie noch nicht hat
-        if (ding.sonderKauf && (!this.sonderKauf?.[id] || this.sonderKauf[id].gekauft() || this.sonderKauf[id].verfuegbar?.() === false)) continue;
+        if (ding.sonderKauf && (!this.sonderKauf?.[id] || this.sonderKauf[id].gekauft())) continue;
         const menge = EINSTELLUNGEN.kaufMenge?.[id] || 1;
         zeile(id, `${menge > 1 ? `${menge}er-Pack · ` : ''}${preis} ${muenzeKlein()}`, [['Kaufen', rucksack.muenzen >= preis, () => this.kaufen(id, preis)]]);
       }

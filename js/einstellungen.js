@@ -187,7 +187,6 @@ export const EINSTELLUNGEN = {
     apfel: 12, // Pferdefutter – für den 3er-Pack (siehe kaufMenge)
     rucksackGross: 60, // Rucksack mit 18 Plätzen
     rucksackRiesig: 120, // Rucksack mit 24 Plätzen
-    ballon: 50, // Heißluftballon – erst ab Base-Stufe 4, steht dann an der Base (nur einmal zu kaufen)
     // (Die Taucherbrille gibt es NICHT mehr beim Händler! Entscheidung des Game Designers:
     //  Man bekommt sie von einem Inselbewohner auf der Palmeninsel – siehe "Inselbewohner" unten.)
   },

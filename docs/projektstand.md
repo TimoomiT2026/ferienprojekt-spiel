@@ -17,7 +17,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - **Palmeninsel:** 13 Bewohner (js/bewohner.js). Wer die Taucherbrille hat, ist Zufall: der 6. bis 13. Bewohner, den man anspricht (die ersten 5 nie; `bewohner.brilleFruehestens/brilleSpaetestens`) und will dafür **3 wertvolle Münzen** (eine pro Insel). Erst ab ihrem Satz gibt es die 3 golden glitzernden Münz-Hügel (❓ auf der Karte).
   - **Seilkanone** (js/seilkanone.js): Seil + Widerhaken + Holz + Eisenerz; schießt ein Seil an hohe Wände, das Seil bleibt hängen
   - **Tauchen** (js/tauchen.js) mit Luft-Anzeige; im See oben auf der Klippe liegt das **Insadorium** (roter, grell leuchtender Stein) → **Finale** mit Konfetti + Dankeschön (js/finale.js), danach frei weiterspielen
-  - **Heißluftballon** (js/ballon.js, 50 Münzen, erst ab Base-Stufe 4; Tipp beim 3. Fußweg ins Dorf): Ziel aussuchen (Dorf, Palmendorf, Base), fliegt jeden Morgen von selbst heim
+  - **Heißluftballon** (js/ballon.js, gehört zu Base-Stufe 4 – kostenlos dabei; Tipp beim 3. Fußweg ins Dorf): Ziel aussuchen (Dorf, Palmendorf, Base), fliegt jeden Morgen von selbst heim
   - Wind über der Klippe (Zauberpilz bringt einen nicht hoch), neue Funde (Muscheln, Kokosnüsse; Eisen & Gold oben auf der Klippe), Angelstellen auf allen Inseln, Fernrohr sieht durch den Dunst
 - **Etappe 4 · Wochenmarkt & Inselzeitung** (alle 3 Spieltage = Markttag, js/markttag.js):
   - **Wochenmarkt** im Palmendorf (js/markt.js): Obst & Gemüse (billiger), Kaffee ☕ 35 (eine Nacht ohne Schlaf zählt nicht), Nacht-Limo 🍋 40 (die Nacht wird taghell, zählt nicht als wach), Steine & Erze
