@@ -538,6 +538,43 @@ export class Spieler {
     return null;
   }
 
+  // ---------- Rettung: im tiefen Wasser festgesteckt? ----------
+  // Wer z. B. von der Klippe ins tiefe Meer fällt, kann keinen Schritt mehr machen
+  // (jeder Schritt wäre „ins tiefe Wasser“). Dann schwimmt die Figur zum nächsten Strand.
+  pruefeFestgesteckt(dt) {
+    if (!this.amBoden) return;
+    const pos = this.figur.position;
+    const imTiefenWasser = !this.plattformBei(pos.x, pos.z) && bodenHoehe(pos.x, pos.z) <= wasserHoeheBei(pos.x, pos.z) - 0.5;
+    if (!imTiefenWasser) {
+      this.festZeit = 0;
+      return;
+    }
+    this.festZeit = (this.festZeit || 0) + dt;
+    if (this.festZeit < (EINSTELLUNGEN.rettungNachSekunden ?? 2)) return;
+    this.festZeit = 0;
+    const ort = this.suchLandOrt(pos.x, pos.z);
+    if (!ort) return;
+    pos.set(ort.x, bodenHoehe(ort.x, ort.z), ort.z);
+    this.geschwindigkeitY = 0;
+    this.beiRettung?.();
+  }
+
+  // Der nächste Ort an Land – am liebsten ein flacher Strand (nicht oben auf der Klippe)
+  suchLandOrt(x, z) {
+    let notfalls = null;
+    for (let r = 2; r <= 300; r += 3) {
+      const schritte = Math.max(16, Math.round(r * 0.8));
+      for (let i = 0; i < schritte; i++) {
+        const w = (i / schritte) * Math.PI * 2;
+        const px = x + Math.cos(w) * r, pz = z + Math.sin(w) * r;
+        if (!this.kannStehen(px, pz) || istKlippenWand(px, pz)) continue;
+        if (bodenHoehe(px, pz) > wasserHoeheBei(px, pz) + 0.2 && bodenHoehe(px, pz) < WASSER_HOEHE + 6) return { x: px, z: pz };
+        if (!notfalls) notfalls = { x: px, z: pz };
+      }
+    }
+    return notfalls;
+  }
+
   kannStehen(x, z) {
     if (this.plattformBei(x, z)) return !this.hindernisse.trifft(x, z, 0.4, true); // auf dem Steg darf man immer stehen
     // Nicht ins tiefe Wasser (Meer oder Lagune) – am flachen Rand darf man waten
@@ -638,6 +675,7 @@ export class Spieler {
       this.geschwindigkeitY = 0;
       this.amBoden = true;
     }
+    this.pruefeFestgesteckt(dt);
 
     this.animiere(dt, tempoZiel);
     this.aktualisiereSpur(dt); // Funken nach der Landung noch verglühen lassen

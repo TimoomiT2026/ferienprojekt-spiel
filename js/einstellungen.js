@@ -369,6 +369,9 @@ export const EINSTELLUNGEN = {
     inselSichtweite: 900,
   },
 
+  // Im tiefen Wasser festgesteckt? Nach so vielen Sekunden schwimmt man zum nächsten Strand
+  rettungNachSekunden: 2,
+
   // ---------- Heißluftballon 🎈 ----------
   // Beim wievielten Weg ins Dorf (noch ohne Ballon) kommt der Tipp: „Es gibt einen Ballon!“
   ballonTippNachDorfBesuchen: 3,
