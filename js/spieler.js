@@ -570,7 +570,10 @@ export class Spieler {
   // sonst zum nächsten Strand
   retten() {
     const pos = this.figur.position;
-    const ort = (nahAnDerKlippe(pos.x, pos.z) && platzInnenAmZaun(pos.x, pos.z)) || this.suchLandOrt(pos.x, pos.z);
+    // Aufs Plateau nur, wenn man von oben kam (runtergefallen) oder noch oben in der Wand hängt –
+    // wer mit dem Boot unten am Strand ist, kommt zum nächsten Strand (sonst säße er oben ohne Seil fest)
+    const nachOben = nahAnDerKlippe(pos.x, pos.z) && (this.warOben || aufKlippenPlateau(pos.x, pos.z));
+    const ort = (nachOben && platzInnenAmZaun(pos.x, pos.z)) || this.suchLandOrt(pos.x, pos.z);
     if (!ort) return;
     pos.set(ort.x, bodenHoehe(ort.x, ort.z), ort.z);
     this.geschwindigkeitY = 0;
@@ -746,6 +749,8 @@ export class Spieler {
       this.amBoden = true;
     }
     this.pruefeFestgesteckt(dt);
+    // Merken, ob man oben auf der Klippe war (für die Rettung). Wer ins Boot steigt, ist wieder „unten“ (main.js).
+    if (this.amBoden && aufKlippenPlateau(pos.x, pos.z) && !hinterDemZaun(pos.x, pos.z)) this.warOben = true;
 
     this.animiere(dt, tempoZiel);
     this.aktualisiereSpur(dt); // Funken nach der Landung noch verglühen lassen

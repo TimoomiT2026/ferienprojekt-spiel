@@ -335,6 +335,8 @@ rallye.inDieTruhe = (id, nurPruefen = false) => {
 };
 aufgaben.spiel.werkbank = werkbank;
 aufgaben.spiel.seilkanone = seilkanone;
+// Rallye: Widerhaken verloren (alte Spielstände – früher konnte man ihn wegwerfen)? Dann bringt der nächste Sieg einen neuen
+rallye.widerhakenFehlt = () => !tauchen.gefunden && !['widerhaken', 'seilkanone'].some((id) => rucksack.hat(id) || base.truhe.some((p) => p && p.id === id));
 // Im tiefen Wasser festgesteckt (z. B. von der Klippe gefallen)? Dann zum nächsten Strand
 spieler.bootInDerNaehe = (x, z) => boote.positionen.some((b) => Math.hypot(b.x - x, b.z - z) < 4); // nah genug zum Einsteigen
 spieler.beiRettung = () => meldung('🌊 Platsch! Du warst im tiefen Wasser – jetzt bist du wieder in Sicherheit.', 6);
@@ -593,7 +595,7 @@ function spielSchleife() {
       if (ballon.faehrt) { /* der Ballon bewegt die Figur selbst */ }
       else if (rallye.laeuft) rallye.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (tauchen.taucht) tauchen.steuern(dt, eingabe.richtung, eingabe.springenGehalten, kameraWinkel);
-      else if (boote.faehrt) boote.steuern(dt, eingabe.richtung, kameraWinkel);
+      else if (boote.faehrt) { boote.steuern(dt, eingabe.richtung, kameraWinkel); spieler.warOben = false; }
       else if (pferde.reitet) pferde.steuern(dt, eingabe.richtung, kameraWinkel);
       else if (seilkanone.beschaeftigt) { /* die Seilkanone bewegt die Figur selbst */ }
       else if (angeln.beschaeftigt) spieler.aktualisiere(dt, { x: 0, y: 0 }, false, kameraWinkel);
@@ -846,6 +848,11 @@ setInterval(() => {
 }, 2000);
 window.addEventListener('pagehide', speichern);
 document.addEventListener('visibilitychange', () => document.hidden && speichern());
+// Nach einem App-Wechsel (oder Anruf) schaltet das iPad den Ton ab – beim Zurückkommen und beim nächsten Tippen wieder an
+const tonWiederAn = () => { if (musik.ctx && musik.ctx.state !== 'running') musik.ctx.resume().catch(() => {}); };
+document.addEventListener('visibilitychange', () => !document.hidden && tonWiederAn());
+window.addEventListener('touchend', tonWiederAn, true);
+window.addEventListener('click', tonWiederAn, true);
 
 const gespeichert = ladeSpielstand();
 if (!gespeichert) tutorial.zuruecksetzen(); // neues Spiel = alle Erklärungen wieder von vorn

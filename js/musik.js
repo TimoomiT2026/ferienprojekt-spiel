@@ -280,6 +280,7 @@ export class Musik {
   // ---------- Die Instrumente ----------
   // Ein Klavierton: Grundton + Obertöne, laut anschlagen, langsam verklingen
   klavier(note, zeit, dauer, laut, ziel = this.bus) {
+    laut = Math.max(laut, 0.0001); // Lautstärke 0 = aus (exponentielle Rampen vertragen keine 0)
     const ctx = this.ctx;
     const f = hertz(note);
     const huelle = ctx.createGain();
@@ -330,6 +331,7 @@ export class Musik {
 
   // Spieluhr: ein heller, glockiger Ton, der mit Echo verklingt
   spieluhr(note, zeit, laut) {
+    laut = Math.max(laut, 0.0001); // Lautstärke 0 = aus (exponentielle Rampen vertragen keine 0)
     const ctx = this.ctx;
     const f = hertz(note);
     const huelle = ctx.createGain();
@@ -406,6 +408,7 @@ export class Musik {
 
   // Ein Stück Rauschen durch einen Filter, mit einer Lautstärke-Kurve
   rauschStoss(zeit, dauer, laut, filterTyp, freq, freqEnde = freq, q = 1, angriff = 0.005) {
+    laut = Math.max(laut, 0.0001); // Lautstärke 0 = aus (exponentielle Rampen vertragen keine 0)
     const ctx = this.ctx;
     const quelle = ctx.createBufferSource();
     quelle.buffer = this.rauschen;
@@ -425,6 +428,7 @@ export class Musik {
 
   // Ein einfacher Ton, der von einer Tonhöhe zur anderen rutschen kann
   ton(zeit, f, fEnde, dauer, laut, typ = 'sine', angriff = 0.005) {
+    laut = Math.max(laut, 0.0001); // Lautstärke 0 = aus (exponentielle Rampen vertragen keine 0)
     const ctx = this.ctx;
     const osz = ctx.createOscillator();
     osz.type = typ;
@@ -505,7 +509,7 @@ export class Musik {
     if (!this.ctx) return;
     const ctx = this.ctx;
     const t = ctx.currentTime + 0.25; // passt zum Schwung nach vorne
-    const l = EINSTELLUNGEN.angelLautstaerke;
+    const l = Math.max(EINSTELLUNGEN.angelLautstaerke, 0.0001);
     this.rauschStoss(t, 0.4, l * 0.5, 'bandpass', 700, 2600, 1.5, 0.12);
     // Surren: ein Ton, der schnell an- und abschwillt (wie eine Rolle mit Zähnchen)
     const osz = ctx.createOscillator();

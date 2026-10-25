@@ -16,7 +16,7 @@ export const WERTVOLLE_MUENZE_BILD = BILDER.wertvolleMuenze;
 //   werkzeug: kann man in die Hand nehmen
 //   essen:    kann man essen (zählt als Mahlzeit)
 export const DINGE = {
-  schaufel: { name: 'Schaufel', bild: BILDER.schaufel, werkzeug: true, text: 'Damit kannst du an Grabestellen graben.' },
+  schaufel: { name: 'Schaufel', bild: BILDER.schaufel, werkzeug: true, wichtig: true, text: 'Damit kannst du an Grabestellen graben.' },
   schwert: { name: 'Schwert', bild: BILDER.schwert, werkzeug: true, text: 'Damit kannst du Bäume und Büsche fällen. Nutzt sich ab!' },
   angel: { name: 'Angel', bild: BILDER.angel, werkzeug: true, text: 'Stell dich an eine Angelstelle. Du brauchst Würmer als Köder.' },
   feuerzeug: { name: 'Feuerzeug', bild: BILDER.feuerzeug, text: 'Damit zündest du das Lagerfeuer an. Hält 3 Mal.' },
@@ -43,12 +43,12 @@ export const DINGE = {
   zauberpilz: { name: 'Zauberpilz', bild: BILDER.zauberpilz, zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
   fernrohr: { name: 'Fernrohr', bild: BILDER.fernrohr, werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
   seil: { name: 'Seil', bild: BILDER.seil, artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Jeder Schuss mit der Seilkanone braucht eins.' },
-  widerhaken: { name: 'Widerhaken', bild: BILDER.widerhaken, artikel: 'einen', text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone. Den gibt es nur als Preis bei der Zauberpilz-Rallye! 🏁' },
-  seilkanone: { name: 'Seilkanone', bild: BILDER.seilkanone, werkzeug: true, artikel: 'eine', text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Jeder Schuss braucht 1 Seil.' },
-  // wichtig: kann man nicht wegwerfen. Nicht verkaufbar (steht nicht in den verkaufsPreisen).
+  widerhaken: { name: 'Widerhaken', bild: BILDER.widerhaken, artikel: 'einen', wichtig: true, text: 'Ein Haken aus Eisen, der sich überall festkrallt. Für die Seilkanone. Den gibt es nur als Preis bei der Zauberpilz-Rallye! 🏁' },
+  seilkanone: { name: 'Seilkanone', bild: BILDER.seilkanone, werkzeug: true, artikel: 'eine', wichtig: true, text: 'In die Hand nehmen, vor eine hohe Wand stellen und hochschießen! Jeder Schuss braucht 1 Seil.' },
+  // wichtig: kann man nicht wegwerfen (Schaufel, Widerhaken, Seilkanone, Taucherbrille, Insadorium, wertvolle Münze). Nicht verkaufbar (steht nicht in den verkaufsPreisen).
   wertvolleMuenze: { name: 'Wertvolle Münze', bild: BILDER.wertvolleMuenze, artikel: 'eine', wichtig: true, text: 'Eine uralte, goldene Münze! Bring 3 davon zum Inselbewohner mit der Taucherbrille auf der Palmeninsel.' },
-  taucherbrille: { name: 'Taucherbrille', bild: BILDER.taucherbrille, artikel: 'eine', text: 'Damit kannst du tauchen! Geh an tiefes Wasser. Die Luft reicht aber nicht lange.' },
-  insadorium: { name: 'Insadorium', bild: BILDER.insadorium, text: 'DAS INSADORIUM! Der geheime rote Stein. Er leuchtet so grell, dass man fast nicht hinschauen kann.' },
+  taucherbrille: { name: 'Taucherbrille', bild: BILDER.taucherbrille, artikel: 'eine', wichtig: true, text: 'Damit kannst du tauchen! Geh an tiefes Wasser. Die Luft reicht aber nicht lange.' },
+  insadorium: { name: 'Insadorium', bild: BILDER.insadorium, wichtig: true, text: 'DAS INSADORIUM! Der geheime rote Stein. Er leuchtet so grell, dass man fast nicht hinschauen kann.' },
   reisezelt: { name: 'Reisezelt', bild: BILDER.reisezelt, plaetze: 3, text: 'Dein Zelt zum Mitnehmen. Stell es irgendwo auf und schlaf dort. Braucht 3 Plätze!' },
   // Diese beiden kommen nicht IN den Rucksack – sie ERSETZEN ihn
   rucksackGross: { name: 'Großer Rucksack', bild: BILDER.rucksackGross, upgradePlaetze: 18, text: '18 Plätze statt 12.' },
@@ -261,7 +261,7 @@ export class Rucksack {
     if (!p) return;
     const ding = DINGE[p.id];
     if (ding.wichtig) {
-      this.meldung(`${ding.bild} Die ist viel zu wertvoll zum Wegwerfen!`, 3);
+      this.meldung(`${ding.bild} ${ding.name}: Das brauchst du noch – viel zu wichtig zum Wegwerfen!`, 3);
       return;
     }
     this.nehmen(p.id, alle ? p.anzahl : 1);

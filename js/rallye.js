@@ -979,7 +979,8 @@ export class Rallye {
         musik?.muenzen?.(8);
       }
       // Der allererste Sieg bringt den Widerhaken für die Seilkanone 🪝
-      if (!this.widerhakenGewonnen) {
+      // (Ist er verloren gegangen – kein Widerhaken und keine Seilkanone mehr da? Dann gibt's einen neuen.)
+      if (!this.widerhakenGewonnen || (!this.widerhakenWartet && this.widerhakenFehlt?.())) {
         this.widerhakenGewonnen = true;
         widerhaken = true;
         // Rucksack voll? Dann in die Truhe an der Base – und ist die auch voll, wartet der Preis (siehe widerhakenNachliefern)
