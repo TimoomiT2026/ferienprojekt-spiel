@@ -7,6 +7,7 @@
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { bodenHoehe, WASSER_HOEHE, zuSteilBergauf, istKlippenWand, wasserHoeheBei, INSELN } from './gelaende.js';
+import { hinterDemZaun, platzInnenAmZaun, nahAnDerKlippe } from './klippenzaun.js';
 import { baueSchaufel, baueSchwert } from './figur.js';
 import { baueJunge, BEIN_LAENGE } from './junge.js';
 
@@ -552,7 +553,8 @@ export class Spieler {
     this.festZeit = (this.festZeit || 0) + dt;
     if (this.festZeit < (EINSTELLUNGEN.rettungNachSekunden ?? 2)) return;
     this.festZeit = 0;
-    const ort = this.suchLandOrt(pos.x, pos.z);
+    // Unten an der Klippeninsel? Dann wieder nach oben aufs Plateau (innen am Zaun) – sonst zum nächsten Strand
+    const ort = (nahAnDerKlippe(pos.x, pos.z) && platzInnenAmZaun(pos.x, pos.z)) || this.suchLandOrt(pos.x, pos.z);
     if (!ort) return;
     pos.set(ort.x, bodenHoehe(ort.x, ort.z), ort.z);
     this.geschwindigkeitY = 0;
@@ -641,7 +643,9 @@ export class Spieler {
       const altX = pos.x, altZ = pos.z;
 
       // Nicht ins tiefe Wasser, nicht durch Bäume/Felsen und keine Klippe hoch – sonst entlangrutschen
-      const geht = (x, z) => this.kannStehen(x, z) && !zuSteilBergauf(pos.x, pos.z, x, z);
+      // Oben auf der Klippe steht ein Zaun: von dort nicht über die Kante hinaus
+      const amZaun = (x, z) => aufKlippenPlateau(pos.x, pos.z) && hinterDemZaun(x, z);
+      const geht = (x, z) => this.kannStehen(x, z) && !zuSteilBergauf(pos.x, pos.z, x, z) && !amZaun(x, z);
       if (geht(neuX, neuZ)) {
         pos.x = neuX;
         pos.z = neuZ;

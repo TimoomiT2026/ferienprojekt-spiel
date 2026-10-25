@@ -16,6 +16,8 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - **Klippeninsel** (Osten, hohe Felswände, oben ein See) und **Palmeninsel** (Westen, Palmendorf mit zweitem Händler) – mit dem Boot ca. 20 s
   - **Palmeninsel:** 13 Bewohner (js/bewohner.js). Wer die Taucherbrille hat, ist Zufall: der 6. bis 13. Bewohner, den man anspricht (die ersten 5 nie; `bewohner.brilleFruehestens/brilleSpaetestens`) und will dafür **3 wertvolle Münzen** (eine pro Insel). Erst ab ihrem Satz gibt es die 3 golden glitzernden Münz-Hügel (❓ auf der Karte).
   - **Seilkanone** (js/seilkanone.js): Seil + Widerhaken + Holz + Eisenerz; schießt ein Seil an hohe Wände, das Seil bleibt hängen
+  - **Klippenzaun** (js/klippenzaun.js): Holzzaun oben rund um die Klippe – man kann nicht mehr runterfallen; wer im tiefen Wasser feststeckt, wird gerettet (an der Klippe: nach oben aufs Plateau, sonst zum nächsten Strand)
+  - **Fernrohr:** Insel in die Mitte → grüner Knopf „Insel entdecken!“ antippen (statt Ring vollhalten)
   - **Tauchen** (js/tauchen.js) mit Luft-Anzeige; im See oben auf der Klippe liegt das **Insadorium** (roter, grell leuchtender Stein) → **Finale** mit Konfetti + Dankeschön (js/finale.js), danach frei weiterspielen
   - **Heißluftballon** (js/ballon.js, gehört zu Base-Stufe 4 – kostenlos dabei; Tipp beim 3. Fußweg ins Dorf): Ziel aussuchen (Dorf, Palmendorf, Base), fliegt jeden Morgen von selbst heim
   - Wind über der Klippe (Zauberpilz bringt einen nicht hoch), neue Funde (Muscheln, Kokosnüsse; Eisen & Gold oben auf der Klippe), Angelstellen auf allen Inseln, Fernrohr sieht durch den Dunst

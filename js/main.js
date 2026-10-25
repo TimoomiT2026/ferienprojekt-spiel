@@ -40,6 +40,7 @@ import { Seilkanone } from './seilkanone.js';
 import { Tauchen } from './tauchen.js';
 import { Finale } from './finale.js';
 import { Ballon } from './ballon.js';
+import { baueKlippenZaun } from './klippenzaun.js';
 import { Bewohner } from './bewohner.js';
 import { Palmendorf } from './palmendorf.js';
 import { Markt } from './markt.js';
@@ -70,6 +71,7 @@ const nach = new Nachbearbeitung(renderer, szene, kamera);
 // ---------- Die Welt bauen ----------
 const hindernisse = new Hindernisse();
 szene.add(baueGelaende());
+baueKlippenZaun(szene); // Zaun oben auf der Klippe – damit niemand runterfällt
 baueNatur(szene, hindernisse);
 const wasser = new Wasser(szene);
 const himmel = new Himmel(szene, renderer);
@@ -334,7 +336,7 @@ rallye.inDieTruhe = (id, nurPruefen = false) => {
 aufgaben.spiel.werkbank = werkbank;
 aufgaben.spiel.seilkanone = seilkanone;
 // Im tiefen Wasser festgesteckt (z. B. von der Klippe gefallen)? Dann zum nächsten Strand
-spieler.beiRettung = () => meldung('🌊 Platsch! Du bist ins tiefe Wasser gefallen und zum nächsten Strand geschwommen.', 6);
+spieler.beiRettung = () => meldung('🌊 Platsch! Du warst im tiefen Wasser – jetzt bist du wieder in Sicherheit.', 6);
 werkbank.spiel.inDieTruhe = rallye.inDieTruhe; // Werkbank: Rucksack voll? Dann in die Truhe
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
 function groessererRucksack() {

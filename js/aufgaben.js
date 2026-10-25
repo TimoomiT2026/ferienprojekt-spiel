@@ -33,7 +33,7 @@ const AUFGABEN = [
   { titel: 'Zähme ein Wildpferd', tipp: 'Kauf einen 3er-Pack Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
   // ---------- Etappe 3: Das große Abenteuer ----------
   { titel: 'Bau ein Fernrohr', start: 'fernrohrBauen', tipp: 'An der Werkbank 🔨: 2 Eisenerz + 1 Gold + 1 Holz. Das geht ab Tag 3 – wenn du dich selbst versorgst und eine Holzhütte hast.', geschafft: (s) => s.rucksack.hat('fernrohr') || (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
-  { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Halt den Kreis auf eine Insel im Nebel, bis sie entdeckt ist.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
+  { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Dreh das Bild, bis eine Nebelbank in der Mitte ist – dann den grünen Knopf „Insel entdecken!“ antippen.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
   { titel: 'Frag die Bewohner nach dem Insadorium', tipp: 'Fahr mit dem Boot 🚣 auf die Palmeninsel 🌴 und sprich einen der Menschen dort an. Vielleicht weiß jemand etwas über das Insadorium!', geschafft: (s) => !!s.bewohner?.tippBekommen || !!s.bewohner?.trigger, belohnung: 5, danach: 'unterWasser' },
   { titel: 'Finde die Person mit der Taucherbrille', tipp: 'Auf der Palmeninsel 🌴 leben 13 Menschen. Einer von ihnen hat eine Taucherbrille 🤿!', geschafft: (s) => !!s.bewohner?.trigger, belohnung: 5 },
   { titel: 'Finde die Münzen auf der Palmeninsel und deiner Heimatinsel', start: 'muenzenSuche', tipp: 'Such die golden glitzernden Hügel ✨ – einer liegt auf der Palmeninsel, einer auf deiner Heimatinsel. Auf der Karte 🗺️ sind sie mit ❓ markiert. Schaufel nicht vergessen!', geschafft: (s) => zweiMuenzen(s) || genugMuenzen(s), belohnung: 5 },
@@ -180,7 +180,7 @@ const ERKLAERUNG = {
     titel: 'Schau durch den Nebel!',
     text: `<p>Das Fernrohr allein reicht nicht – du musst damit die Insel <b>finden</b>! Erst dann verschwindet der Nebel und du kommst mit dem Boot hin.</p>
       <p>Nimm das <b>Fernrohr</b> in die Hand und geh an die <b>Küste</b> – am besten auf einen Hügel. Drück <b>„Durchschauen“</b>.</p>
-      <p class="erklaer-aufgabe">Halt den Kreis auf eine <b>Nebelbank</b> über dem Meer, bis er voll ist. Dann hast du die Insel entdeckt!</p>
+      <p class="erklaer-aufgabe">Wisch übers Bild, bis eine <b>Nebelbank</b> über dem Meer genau in der <b>Mitte</b> ist. Dann erscheint unten ein grüner Knopf <b>„🔭 Insel entdecken!“</b> – antippen, fertig!</p>
       <p>Auf der Karte 🗺️ sind die Inseln mit <b>❓</b> markiert. Eine liegt im <b>Westen</b>, eine im <b>Osten</b>.</p>`,
   },
   inselEntdeckt: {

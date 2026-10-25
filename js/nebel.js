@@ -84,7 +84,7 @@ export class Nebel {
     if (jetzt - this.gemeldet < 8000) return;
     this.gemeldet = jetzt;
     meldung(hatFernrohr
-      ? '🌫️ Dichter Nebel! So findest du den Weg: Geh zurück an die Küste, nimm dein Fernrohr 🔭 in die Hand, drück „Durchschauen“ und halt den Kreis auf die Nebelbank, bis er voll ist.'
+      ? '🌫️ Dichter Nebel! So findest du den Weg: Geh zurück an die Küste, nimm dein Fernrohr 🔭 in die Hand, drück „Durchschauen“, dreh die Nebelbank in die Mitte und tipp auf „Insel entdecken!“.'
       : '🌫️ Dichter Nebel! Du siehst nichts mehr und drehst lieber um. Mit einem Fernrohr 🔭 könntest du durch den Dunst schauen …', 9);
   }
 

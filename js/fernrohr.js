@@ -27,7 +27,7 @@ const NEIGUNG_UNTEN = -35; // so weit kann man nach unten gucken (Grad)
 const NEIGUNG_OBEN = 25; // so weit nach oben (Grad)
 const ZIEL_WINKEL = 3; // so nah (Grad) muss ein Ziel an der Mitte sein
 const ZIEL_WEITE = 600; // weiter weg (Meter) sieht man nichts mehr genau
-const ANVISIER_ZEIT = 1; // so viele Sekunden muss man draufhalten
+const ANVISIER_ZEIT = 0.4; // so kurz muss man draufhalten, dann kommt der Knopf „entdecken“
 const WISCH_TEMPO = 0.003; // wie stark Wischen dreht (bei 1-fach Zoom)
 const JOYSTICK_TEMPO = 1.4; // wie schnell der Joystick / die Pfeiltasten drehen
 
@@ -79,8 +79,9 @@ export class Fernrohr {
         </svg>
         <div class="fr-fund"></div>
       </div>
+      <button class="fr-entdecken">🔭 Insel entdecken!</button>
       <div class="fr-zoom-anzeige">4×</div>
-      <div class="fr-hinweis">☝️ Wischen = umschauen · ✌️ Zwei Finger = zoomen</div>
+      <div class="fr-hinweis">☝️ Wischen = umschauen · Insel in die Mitte → Knopf „entdecken“</div>
       <button class="fr-zu" aria-label="Fernrohr weglegen">✕</button>
       <div class="fr-zoom-knoepfe">
         <button class="fr-mehr" aria-label="Näher heran">➕</button>
@@ -93,6 +94,9 @@ export class Fernrohr {
     this.fundFeld = o.querySelector('.fr-fund');
     this.hinweis = o.querySelector('.fr-hinweis');
 
+    // Ist eine Insel in der Mitte? Dann erscheint dieser Knopf – antippen = entdeckt!
+    this.entdeckKnopf = o.querySelector('.fr-entdecken');
+    knopf(this.entdeckKnopf, () => { if (this.anvisiert) this.entdecke(this.anvisiert); });
     knopf(o.querySelector('.fr-zu'), () => this.beenden());
     knopf(o.querySelector('.fr-mehr'), () => this.zoomStufe(+1));
     knopf(o.querySelector('.fr-weniger'), () => this.zoomStufe(-1));
@@ -330,10 +334,7 @@ export class Fernrohr {
       this.anvisiert = bestes;
       this.anvisierZeit = 0;
     }
-    if (bestes) {
-      this.anvisierZeit += dt;
-      if (this.anvisierZeit >= ANVISIER_ZEIT) this.entdecke(bestes);
-    }
+    if (bestes) this.anvisierZeit += dt;
     this.zeigeRing();
   }
 
@@ -352,9 +353,13 @@ export class Fernrohr {
   }
 
   zeigeRing() {
+    // Der Ring füllt sich kurz – dann ist das Ziel „eingefangen“ und der Knopf erscheint
     const anteil = this.anvisiert ? Math.min(1, this.anvisierZeit / ANVISIER_ZEIT) : 0;
     this.ring.style.strokeDashoffset = String(100 - anteil * 100);
     this.overlay.classList.toggle('zielt', !!this.anvisiert);
+    const bereit = !!this.anvisiert && anteil >= 1;
+    if (bereit) this.entdeckKnopf.textContent = `🔭 ${this.anvisiert.name} entdecken!`;
+    this.entdeckKnopf.classList.toggle('sichtbar', bereit);
   }
 
   entdecke(ziel) {
