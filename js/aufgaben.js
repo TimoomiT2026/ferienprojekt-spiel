@@ -42,6 +42,7 @@ const AUFGABEN = [
   { titel: 'Bau eine Seilkanone an der Werkbank', tipp: 'Geh zu deiner Werkbank 🔨 und schau dir die Seilkanone an: Sie braucht ein Seil (aus 3 Schnüren), 4 Holz und 3 Eisenerz – und noch ein besonderes Teil …', geschafft: (s) => genugMuenzen(s) || s.aufgaben.erklaert.includes('widerhakenFehlt') || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 5 },
   { titel: 'Gewinne die Zauberpilz-Rallye', start: 'widerhakenFehlt', tipp: 'Die Rallye startet am Strand vor dem Palmendorf 🌴 – jeden Tag für 50 Münzen, am Markttag (jeden 3. Tag) für nur 10. Der erste Sieg bringt dir den Widerhaken für die Seilkanone! 🏁', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('widerhaken') || s.rucksack.hat('seilkanone') || !!s.rallye?.widerhakenGewonnen || !!s.tauchen?.gefunden, belohnung: 10 },
   { titel: 'Bau die Seilkanone fertig', tipp: 'Jetzt hast du den Widerhaken! An der Werkbank: 4 Holz + 3 Eisenerz + Seil + Widerhaken.', geschafft: (s) => genugMuenzen(s) || s.rucksack.hat('seilkanone') || !!s.tauchen?.gefunden, belohnung: 10 },
+  { titel: 'Bau ein Seil zum Hochschießen', tipp: 'Die Seilkanone schießt bei jedem Schuss 1 Seil ➰ ab. Bau an der Werkbank 🔨 ein neues Seil (aus 3 Schnüren) – am besten gleich zwei!', geschafft: (s) => genugMuenzen(s) || s.rucksack.anzahl('seil') >= 1 || (s.seilkanone?.seile?.length || 0) > 0 || !!s.tauchen?.gefunden, belohnung: 5, danach: 'klippeBereit' },
   { titel: 'Hol die dritte Münze oben auf der Klippe', tipp: 'Schieß mit der Seilkanone 🪝 ein Seil an die Felswand der Klippeninsel und kletter hoch. Oben glitzert der goldene Hügel ✨ (Karte ❓).', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.anzahl('wertvolleMuenze') >= 3, belohnung: 10 },
   { titel: 'Hol dir die Taucherbrille', tipp: 'Bring die 3 Münzen zurück zur Person mit der Taucherbrille.', geschafft: (s) => !!s.bewohner?.abgegeben || s.rucksack.hat('taucherbrille'), belohnung: 5 },
   { titel: 'Finde das Insadorium', tipp: 'Kletter auf die Klippeninsel und tauch in den geheimnisvollen See. Es leuchtet rot! 🔴', geschafft: (s) => !!s.tauchen?.gefunden || s.rucksack.hat('insadorium'), belohnung: 0 },
@@ -239,6 +240,14 @@ const ERKLAERUNG = {
     text: `<p>Jetzt weißt du es: Das <b>Insadorium</b> 🔴 liegt irgendwo <b>unter Wasser</b>!</p>
       <p>Dafür brauchst du eine <b>Taucherbrille</b> 🤿. Du hast keine – aber <b>einer der Menschen</b> auf der Palmeninsel hat eine.</p>
       <p class="erklaer-aufgabe">Sprich mit <b>allen Bewohnern</b> der Palmeninsel, bis du die Person mit der Taucherbrille gefunden hast. Auf der Karte 🗺️ siehst du, wo sie wohnen.</p>`,
+  },
+  klippeBereit: {
+    bild: '🎉',
+    titel: 'Super, du hast alles!',
+    text: `<p>Du hast jetzt alles, um auf die <b>Klippeninsel</b> zu kommen: die <b>Seilkanone</b> 🪝 und ein <b>Seil</b> ➰.</p>
+      <p class="erklaer-aufgabe">So geht's: Fahr zur Klippeninsel, nimm die Seilkanone in die Hand, stell dich vor die <b>Felswand</b> und drück <b>„Hochschießen“</b>. Dann kletterst du am Seil hoch!</p>
+      <p>Jeder Schuss braucht 1 Seil – nimm lieber ein paar mehr mit. Oben wartet die dritte Münze ✨.</p>
+      <p><b>Viel Spaß beim Entdecken!</b></p>`,
   },
   muenzenSuche: {
     bild: '🏅',
@@ -564,7 +573,7 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 9, klippeBesucht: !!this.klippeBesucht };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 10, klippeBesucht: !!this.klippeBesucht };
   }
 
   ladeDaten(d) {
@@ -587,6 +596,8 @@ export class Aufgaben {
     if ((d.version || 1) < 8 && nummer >= 24) nummer += 1;
     // Version 8: Erst Münzen auf Palmen- und Heimatinsel, dann zur Klippe, dann Seilkanone (geschafft-Prüfungen schieben weiter)
     if ((d.version || 1) < 9) nummer = { 25: 25, 26: 28, 27: 29, 28: 25, 29: 31, 30: 32 }[nummer] ?? nummer;
+    // Version 9 kannte „Bau ein Seil zum Hochschießen“ (jetzt 30) noch nicht
+    if ((d.version || 1) < 10 && nummer >= 30) nummer += 1;
     this.klippeBesucht = !!d.klippeBesucht;
     this.rallyePruefen = true; // einmal nachschauen, ob die Rallye übersprungen wurde (siehe aktualisiere)
     this.holzGekauft = !!d.holzGekauft || nummer > 12;
