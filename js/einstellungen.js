@@ -213,6 +213,8 @@ export const EINSTELLUNGEN = {
   ohnmachtKosten: 20,
   // … und diese Funde fallen dir aus dem Rucksack (alle davon!)
   ohnmachtVerliert: ['stein', 'eisenerz', 'gold', 'edelstein'],
+  // Wie viel davon ist weg? 0.5 = die Hälfte (abgerundet – wer nur 1 hat, behält es). 1 = alles. (Game Designer: die Hälfte)
+  ohnmachtVerlustAnteil: 0.5,
   // Ab so viel Satt-Balken kommt die Warnung "Du bekommst Hunger"
   hungerWarnung: 25,
   // Wie viele Nächte darf man durchmachen, bevor es Ärger gibt?
@@ -557,6 +559,10 @@ export const EINSTELLUNGEN = {
     teilnahmeSonst: 50, // an allen anderen Tagen kann man auch fahren – aber teurer (Wunsch eines Testers)
     gewinn: 50, // so viel bekommt der Sieger – aber nur 1× pro Tag
     runden: 1, // wie viele Runden ein Rennen hat
+    // Hilfe beim Verlieren (Game Designer): Nach so vielen Niederlagen hintereinander werden die Gegner langsamer …
+    hilfeNachNiederlagen: 3,
+    // … und zwar so viel (0.9 = 10 % langsamer). Wer gewinnt, fährt danach wieder gegen die normalen Gegner.
+    hilfeTempo: 0.9,
     // Die Strecke: Punkte auf dem Meer vor der Palmeninsel (x, z). Eine weiche Kurve geht durch alle durch.
     // Der erste Punkt ist die Start- und Ziellinie. (Reihenfolge = Fahrtrichtung)
     punkte: [

@@ -660,6 +660,10 @@ export class Rallye {
     const plaetze = [...Array(anzahl).keys()].map((k) => (k - (anzahl - 1) / 2) * abstand);
     const mitte = plaetze.splice(Math.floor(anzahl / 2), 1)[0];
     plaetze.sort(() => Math.random() - 0.5);
+    // Nach mehreren Niederlagen hintereinander fahren die Gegner etwas langsamer (Hilfe vom Game Designer)
+    const hilfe = (this.niederlagen || 0) >= (e.hilfeNachNiederlagen ?? 3);
+    this.boote.forEach((b) => { if (b.ki) b.tempoFaktor = (b.ki.tempo ?? 1) * (hilfe ? e.hilfeTempo ?? 0.9 : 1); });
+    if (hilfe) this.spiel.meldung?.('🍀 Die anderen Boote sind heute etwas müde – deine Chance!', 5);
     this.boote.forEach((b, k) => {
       const seite = k === 0 ? mitte : plaetze.pop();
       const p = S.punkt(startI, seite, V());
@@ -970,6 +974,8 @@ export class Rallye {
     if (neueBestzeit) this.bestzeit = zeit;
     let gewinn = 0;
     let widerhaken = false;
+    // Niederlagen hintereinander zählen (für die Hilfe in starteRennen) – ein Sieg setzt sie zurück
+    this.niederlagen = this.spielerPlatz === 1 ? 0 : (this.niederlagen || 0) + 1;
     if (this.spielerPlatz === 1) {
       this.siege++;
       if (this.gewinnTag !== tageszeit.tag) {
@@ -1398,6 +1404,7 @@ export class Rallye {
       letztesErgebnis: this.letztesErgebnis,
       widerhakenGewonnen: !!this.widerhakenGewonnen,
       widerhakenWartet: !!this.widerhakenWartet,
+      niederlagen: this.niederlagen || 0,
     };
   }
 
@@ -1409,6 +1416,7 @@ export class Rallye {
     this.letztesErgebnis = d.letztesErgebnis ?? null;
     this.widerhakenGewonnen = !!d.widerhakenGewonnen;
     this.widerhakenWartet = !!d.widerhakenWartet;
+    this.niederlagen = d.niederlagen ?? 0;
     // Früher ging der Preis bei vollem Rucksack verloren: Wer schon gewonnen hat, bekommt ihn nachgeliefert
     if (!this.widerhakenGewonnen && this.siege > 0) {
       this.widerhakenGewonnen = true;

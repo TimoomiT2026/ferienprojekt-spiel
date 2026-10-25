@@ -24,7 +24,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - Wind über der Klippe (Zauberpilz bringt einen nicht hoch), neue Funde (Muscheln, Kokosnüsse; Eisen & Gold oben auf der Klippe), Angelstellen auf allen Inseln, Fernrohr sieht durch den Dunst
 - **Etappe 4 · Wochenmarkt & Inselzeitung** (alle 3 Spieltage = Markttag, js/markttag.js):
   - **Wochenmarkt** im Palmendorf (js/markt.js): Obst & Gemüse (billiger), Kaffee ☕ 35 (eine Nacht ohne Schlaf zählt nicht), Nacht-Limo 🍋 40 (die Nacht wird taghell, zählt nicht als wach), Steine & Erze
-  - **Zauberpilz-Rallye** (js/rallye.js): jeden Tag (außer nachts), 50 Münzen Startgeld, am Markttag nur 10; Bootsrennen gegen 4 KI-Gegner, Pilze = Turbo, zu schnell in der Kurve = rausrutschen; der erste Sieg bringt den Widerhaken
+  - **Zauberpilz-Rallye** (js/rallye.js): jeden Tag (außer nachts), 50 Münzen Startgeld, am Markttag nur 10; Bootsrennen gegen 4 KI-Gegner, Pilze = Turbo, zu schnell in der Kurve = rausrutschen; der erste Sieg bringt den Widerhaken; nach 3 Niederlagen hintereinander fahren die Gegner 10 % langsamer (`hilfeNachNiederlagen`, `hilfeTempo`)
   - **Briefkasten & Inselzeitung** (js/zeitung.js, js/ereignisse.js): am Morgen jedes Markttags; gezeichnete Bilder von Dingen, die wirklich passiert sind, Marktpreise, Rallye-Ergebnis
 - **Geführter Einstieg** (Wunsch nach einer Testrunde): graben → verpflegen → selbst herstellen
   - Aufgaben „Kauf dir ein Brot“ (beim ersten Brot schenkt der Händler 2 dazu) und „Iss ein Brot“ vor dem Verkaufen; nach dem Angeln „Kauf Holz beim Händler“ (erstes Holz: 3 für 1)
@@ -37,7 +37,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - Neue Aufgaben „Bau ein Fernrohr“, „Sammle alles für die Seilkanone“ (danach: „Achtung, dir fehlt der Widerhaken!“) und „Gewinne die Zauberpilz-Rallye“ – der **erste Rallye-Sieg bringt den Widerhaken** (nicht baubar, nicht kaufbar)
   - **Großes Ziel** steht oben im Aufgabenbuch; Erklär-Fenster bei Selbstversorgung, Insel entdeckt, erste Ankunft auf Palmen- und Klippeninsel
   - **Geschichte auf der Palmeninsel**: Man fragt jeden Bewohner nach dem Insadorium. Der erste verrät: „unter Wasser suchen – jemand hier hat eine Taucherbrille“ → Aufgaben „Frag die Bewohner nach dem Insadorium“ und „Finde die Person mit der Taucherbrille“. Danach: Seilkanone (Teile → Widerhaken-Warnung → Rallye → bauen) → 3 Münzen → Taucherbrille → Insadorium. Die Klippeninsel lässt das Boot erst nach dem Gespräch an Land (`klippeSperrAbstand`).
-  - **Ohnmacht**: 1 Tag mit leerem Satt-Balken → man wacht am Zelt auf, −20 Münzen und Steine, Erze, Gold sind weg (`ohnmachtNachTagen`, `ohnmachtKosten`)
+  - **Ohnmacht**: 1 Tag mit leerem Satt-Balken → man wacht am Zelt auf, −20 Münzen und die Hälfte der Steine, Erze, Gold und Edelsteine ist weg (`ohnmachtVerlustAnteil`) (`ohnmachtNachTagen`, `ohnmachtKosten`)
   - Schwert hält 24 statt 12 Schläge; Kaffee-/Limo-Bonus wird unter der Uhr angezeigt
 - **Zauberpilze** im Wald: 1 Minute fliegen (Sprungknopf halten = höher)
 - **Fernrohr:** zoomen, Boote entdecken (später andere Inseln). Durch Berge sieht man nicht.

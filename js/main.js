@@ -160,17 +160,19 @@ ueberleben.beiOhnmacht = () => {
   if (schlaeft || boote.faehrt || spieler.fliegt || ballon.faehrt || tauchen.taucht || rallye.laeuft || pferde.reitet) return false; // erst später
   const kosten = Math.min(rucksack.muenzen, EINSTELLUNGEN.ohnmachtKosten);
   rucksack.aendereMuenzen(-kosten);
-  // Beim Umkippen fallen alle Steine, Erze, Gold und Edelsteine aus dem Rucksack
-  const verloren = (EINSTELLUNGEN.ohnmachtVerliert || []).filter((id) => rucksack.anzahl(id) > 0);
-  const verlorenText = verloren.map((id) => `${rucksack.anzahl(id)} ${DINGE[id].name}`).join(', ');
-  verloren.forEach((id) => rucksack.nehmen(id, rucksack.anzahl(id)));
+  // Beim Umkippen fällt die Hälfte der Steine, Erze, Gold und Edelsteine aus dem Rucksack
+  const anteil = EINSTELLUNGEN.ohnmachtVerlustAnteil ?? 1;
+  const wieViel = (id) => Math.floor(rucksack.anzahl(id) * anteil);
+  const verloren = (EINSTELLUNGEN.ohnmachtVerliert || []).filter((id) => wieViel(id) > 0);
+  const verlorenText = verloren.map((id) => `${wieViel(id)} ${DINGE[id].name}`).join(', ');
+  verloren.forEach((id) => rucksack.nehmen(id, wieViel(id)));
   schlafen();
   setTimeout(() => {
     window.__spiel.teleport(7, -1.5); // vor dem Zelt
     ueberleben.nachOhnmacht();
     // Beim ersten Mal groß erklären, danach reicht eine Meldung
     if (aufgaben.erklaert.includes('ohnmacht')) {
-      meldung(`😵 Ohnmächtig vor Hunger! −${kosten} Münzen${verloren.length ? ` und alle Funde weg (${verlorenText})` : ''}. Iss jeden Tag!`, 8);
+      meldung(`😵 Ohnmächtig vor Hunger! −${kosten} Münzen${verloren.length ? ` und die Hälfte deiner Funde weg (${verlorenText})` : ''}. Iss jeden Tag!`, 8);
       return;
     }
     aufgaben.erklaert.push('ohnmacht');
@@ -179,7 +181,7 @@ ueberleben.beiOhnmacht = () => {
       titel: 'Du bist ohnmächtig geworden!',
       text: `<p>Du hattest so lange <b>nichts gegessen</b>, dass du umgekippt bist.</p>
         <p>Ein Dorfbewohner hat dich gefunden, zu deinem <b>Zelt</b> gebracht und dir etwas zu essen gegeben. Dafür wollte er <b>${kosten} Münzen</b>.</p>
-        ${verloren.length ? `<p>Beim Umfallen ist dir alles aus dem Rucksack gefallen: <b>${verlorenText}</b> – weg! 😢</p>` : ''}
+        ${verloren.length ? `<p>Beim Umfallen ist dir die Hälfte deiner Funde aus dem Rucksack gefallen: <b>${verlorenText}</b> – weg! 😢</p>` : ''}
         <p class="erklaer-aufgabe">Iss <b>jeden Tag</b> etwas! Nimm immer ein Brot oder einen gegrillten Fisch mit, wenn du weit weg gehst.</p>`,
     });
   }, 1900);

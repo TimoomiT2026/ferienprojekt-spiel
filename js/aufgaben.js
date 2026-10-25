@@ -149,7 +149,7 @@ const ERKLAERUNG = {
     text: `<p>Oben in der Mitte siehst du, wie lange der Tag noch geht. Ist die Zeit fast um, wird sie <b>rot</b> und es piept.</p>
       <p>Nachts gehst du in dein <b>Zelt</b> und <b>schläfst</b>. Dann ist die Nacht ganz schnell vorbei und du bist sicher. 😴</p>
       <p>Schläfst du <b>zwei Nächte hintereinander nicht</b>, bist du so müde, dass du <b>50 Münzen verlierst</b>!</p>
-      <p>Und vergiss das <b>Essen</b> nicht: Wer einen ganzen Tag lang Hunger hat, wird <b>ohnmächtig</b> 😵 – dann verlierst du <b>20 Münzen</b> und <b>alle Steine, Erze, Gold und Edelsteine</b>!</p>
+      <p>Und vergiss das <b>Essen</b> nicht: Wer einen ganzen Tag lang Hunger hat, wird <b>ohnmächtig</b> 😵 – dann verlierst du <b>20 Münzen</b> und <b>die Hälfte deiner Steine, Erze, Gold und Edelsteine</b>!</p>
       <p class="erklaer-aufgabe">Achte immer auf die Uhr und geh rechtzeitig <b>zurück zu deinem Zelt</b>. Die Karte 🗺️ zeigt dir den Weg.</p>`,
   },
   zauberpilz: {
