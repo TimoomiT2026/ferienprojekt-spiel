@@ -10,7 +10,7 @@
 // Liegt der Finger in einem Fenster (Werkbank, Händler, Rucksack …)?
 // Dort soll man wischen und scrollen können, statt die Kamera zu drehen.
 function imFenster(e) {
-  return !!e.target?.closest?.('.spiel-fenster, [id$="-fenster"]');
+  return !!e.target?.closest?.('.spiel-fenster, [id$="-fenster"], #prolog-karte');
 }
 
 export function knopf(element, wasPassiert) {
@@ -20,7 +20,7 @@ export function knopf(element, wasPassiert) {
     e.stopPropagation();
     // In Fenstern (Rucksack, Werkbank …) erst beim LOSLASSEN drücken –
     // sonst könnte man dort nie scrollen, weil überall Knöpfe sind.
-    if (element.closest('.spiel-fenster, [id$="-fenster"]')) {
+    if (element.closest('.spiel-fenster, [id$="-fenster"], #prolog-karte')) {
       const t = e.changedTouches[0];
       start = { x: t.clientX, y: t.clientY };
       return;

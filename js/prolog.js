@@ -291,6 +291,9 @@ export class Prolog {
     this.karte = document.createElement('div');
     this.karte.id = 'prolog-karte';
     e.appendChild(this.karte);
+    // Wischen im Fenster = scrollen (nicht die Spielsteuerung) – wie bei allen anderen Fenstern
+    this.karte.addEventListener('touchstart', (ev) => ev.stopPropagation());
+    this.karte.addEventListener('touchmove', (ev) => ev.stopPropagation());
   }
 
   // Ein großes Erzähl-Fenster mit einem Knopf

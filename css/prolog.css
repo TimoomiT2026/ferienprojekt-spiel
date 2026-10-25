@@ -71,3 +71,9 @@ body.prolog-film #hud, body.prolog-film #prolog-ziel, body.prolog-film #prolog-u
   .reiseplan li { padding: 5px 10px 3px 36px; margin: 4px 0; }
 }
 #prolog-karte .prolog-quelle { font-size: 12px; color: #8b6a48; margin-top: 4px; }
+/* Handy quer: Labor-Bild kleiner, damit Text und Knopf ohne Scrollen passen; Knopf bleibt immer sichtbar */
+@media (max-height: 500px) {
+  .labor-bild { max-height: 26vh; width: auto; max-width: 100%; display: block; margin: 0 auto 4px; }
+  #prolog-karte .knopf-reihe { position: sticky; bottom: -12px; background: linear-gradient(rgba(255, 247, 230, 0), #fff7e6 35%); padding-top: 8px; }
+}
+#prolog-karte { touch-action: pan-y; overscroll-behavior: contain; }
