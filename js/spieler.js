@@ -546,19 +546,49 @@ export class Spieler {
     if (!this.amBoden) return;
     const pos = this.figur.position;
     const imTiefenWasser = !this.plattformBei(pos.x, pos.z) && bodenHoehe(pos.x, pos.z) <= wasserHoeheBei(pos.x, pos.z) - 0.5;
-    if (!imTiefenWasser) {
+    // Unten an der Klippe auf einem winzigen Fleck (z. B. einem Steg) – ringsum tiefes Wasser, kein Boot da?
+    this.eingesperrtUhr = (this.eingesperrtUhr || 0) - dt;
+    if (!imTiefenWasser && this.eingesperrtUhr <= 0) {
+      this.eingesperrtUhr = 1; // nur einmal pro Sekunde nachschauen
+      // Oder: oben in der Felswand hinter dem Zaun (auf einem Absatz)? Das ist auch gefährlich.
+      const hinterZaunOben = aufKlippenPlateau(pos.x, pos.z) && hinterDemZaun(pos.x, pos.z);
+      this.eingesperrt = hinterZaunOben || (nahAnDerKlippe(pos.x, pos.z) && !aufKlippenPlateau(pos.x, pos.z) &&
+        !this.bootInDerNaehe?.(pos.x, pos.z) && this.kleinerFleck(pos.x, pos.z));
+    }
+    if (!imTiefenWasser && !this.eingesperrt) {
       this.festZeit = 0;
       return;
     }
     this.festZeit = (this.festZeit || 0) + dt;
     if (this.festZeit < (EINSTELLUNGEN.rettungNachSekunden ?? 2)) return;
     this.festZeit = 0;
+    this.eingesperrt = false;
     // Unten an der Klippeninsel? Dann wieder nach oben aufs Plateau (innen am Zaun) – sonst zum nächsten Strand
     const ort = (nahAnDerKlippe(pos.x, pos.z) && platzInnenAmZaun(pos.x, pos.z)) || this.suchLandOrt(pos.x, pos.z);
     if (!ort) return;
     pos.set(ort.x, bodenHoehe(ort.x, ort.z), ort.z);
     this.geschwindigkeitY = 0;
     this.beiRettung?.();
+  }
+
+  // Wie groß ist der Fleck, auf dem man steht? Wir gehen in 1-m-Schritten überall hin,
+  // wo man hinlaufen dürfte. Weniger als 60 Plätze = eingesperrt (ein richtiger Strand ist viel größer).
+  kleinerFleck(x, z) {
+    const gesehen = new Set([`0,0`]);
+    const offen = [[0, 0]];
+    while (offen.length) {
+      const [i, j] = offen.pop();
+      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const ni = i + di, nj = j + dj, schluessel = `${ni},${nj}`;
+        if (gesehen.has(schluessel)) continue;
+        const ax = x + i, az = z + j, bx = x + ni, bz = z + nj;
+        if (!this.kannStehen(bx, bz) || zuSteilBergauf(ax, az, bx, bz)) continue;
+        gesehen.add(schluessel);
+        if (gesehen.size >= 60) return false;
+        offen.push([ni, nj]);
+      }
+    }
+    return true;
   }
 
   // Der nächste Ort an Land – am liebsten ein flacher Strand (nicht oben auf der Klippe)
@@ -644,7 +674,8 @@ export class Spieler {
 
       // Nicht ins tiefe Wasser, nicht durch Bäume/Felsen und keine Klippe hoch – sonst entlangrutschen
       // Oben auf der Klippe steht ein Zaun: von dort nicht über die Kante hinaus
-      const amZaun = (x, z) => aufKlippenPlateau(pos.x, pos.z) && hinterDemZaun(x, z);
+      // (Wer schon hinter dem Zaun steht, wird nicht festgehalten – den holt die Rettung rein)
+      const amZaun = (x, z) => aufKlippenPlateau(pos.x, pos.z) && !hinterDemZaun(pos.x, pos.z) && hinterDemZaun(x, z);
       const geht = (x, z) => this.kannStehen(x, z) && !zuSteilBergauf(pos.x, pos.z, x, z) && !amZaun(x, z);
       if (geht(neuX, neuZ)) {
         pos.x = neuX;
