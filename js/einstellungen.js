@@ -376,6 +376,30 @@ export const EINSTELLUNGEN = {
   // Festgeklemmt? Wer so viele Sekunden in 3 Richtungen schiebt und nicht vom Fleck kommt, wird gerettet
   klemmSekunden: 4,
 
+  // ---------- Kleiderschrank 👕 (ab Base-Stufe 3) ----------
+  // Die erste Zeile ist immer das, was man am Anfang anhat. shirt2 = zweite Streifen-Farbe (gleich = ohne Streifen)
+  kleidungAbStufe: 3,
+  kleidung: {
+    pullis: [
+      { name: 'Ringelpulli', shirt: '#b3202a', shirt2: '#1a1f33' },
+      { name: 'Blauer Ringel', shirt: '#2f78c8', shirt2: '#f2f2f2' },
+      { name: 'Grüner Ringel', shirt: '#3a9a4a', shirt2: '#f6d64a' },
+      { name: 'Lila Pulli', shirt: '#7a4ec2', shirt2: '#7a4ec2' },
+      { name: 'Oranger Pulli', shirt: '#ec7d22', shirt2: '#ec7d22' },
+      { name: 'Schwarzer Pulli', shirt: '#22252b', shirt2: '#22252b' },
+      { name: 'Pirat', shirt: '#f2f2f2', shirt2: '#1a1f33' },
+      { name: 'Insadorium-Rot', shirt: '#e0281c', shirt2: '#ff8a3c' },
+    ],
+    hosen: [
+      { name: 'Jogginghose', hose: '#1c1d22', hosenStreifen: '#dfe8f2', hosenStreifen2: '#8fb3d9' },
+      { name: 'Jeans', hose: '#3d5a8a' },
+      { name: 'Grüne Hose', hose: '#4a6b3a' },
+      { name: 'Sand-Hose', hose: '#c9a877' },
+      { name: 'Rote Sporthose', hose: '#a3242c', hosenStreifen: '#f2f2f2', hosenStreifen2: '#f2f2f2' },
+      { name: 'Graue Hose', hose: '#6b707a' },
+    ],
+  },
+
   // ---------- Freies Spiel 🌴 ----------
   // So viele Münzen hat man im Freien Spiel – und es werden nie weniger (Anzeige: ∞)
   freiesSpielMuenzen: 999999,

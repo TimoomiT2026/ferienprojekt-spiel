@@ -204,6 +204,17 @@ function hosenTextur(f) {
   return fertigeTextur(c);
 }
 
+// Neue Kleidung anziehen: Pulli- und Hosen-Bild neu malen (für den Kleiderschrank in kleidung.js)
+export function kleidungAnziehen(materialien, farben) {
+  const f = { ...JUNGE_FARBEN, ...farben };
+  for (const [art, malen] of [['shirt', streifenTextur], ['hose', hosenTextur]]) {
+    const alt = materialien[art].map;
+    materialien[art].map = malen(f);
+    materialien[art].needsUpdate = true;
+    alt?.dispose();
+  }
+}
+
 function fertigeTextur(canvas) {
   const t = new THREE.CanvasTexture(canvas);
   t.colorSpace = THREE.SRGBColorSpace;

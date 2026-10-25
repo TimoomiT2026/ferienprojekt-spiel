@@ -1158,6 +1158,16 @@ export class Base {
     } else {
       erw.appendChild(this.bauZeile(BILDER.pferd, 'Pferdestall', 'Ein Zuhause für ein gezähmtes Pferd.', EINSTELLUNGEN.stallKosten, 'Bauen', () => this.stallBauen()));
     }
+    // Der Kleiderschrank 👕: Pulli und Hose kostenlos wechseln (ab Stufe 3)
+    if (st >= EINSTELLUNGEN.kleidungAbStufe) {
+      const zeile = document.createElement('div');
+      zeile.className = 'rezept';
+      zeile.innerHTML = `<div class="rezept-bild kleidung-bild">👕</div><div class="rezept-mitte"><b>Kleiderschrank</b><div class="base-klein">Zieh dir einen anderen Pulli oder eine andere Hose an – kostet nichts!</div></div><button class="bauen">Anziehen</button>`;
+      knopf(zeile.querySelector('.bauen'), () => { this.schliessen(); this.beiKleidung?.(); });
+      erw.appendChild(zeile);
+    } else {
+      erw.insertAdjacentHTML('beforeend', `<div class="rezept gesperrt"><div class="rezept-bild kleidung-bild">👕</div><div class="rezept-mitte"><b>Kleiderschrank</b><div class="base-klein">🔒 Gibt es ab Base-Stufe ${EINSTELLUNGEN.kleidungAbStufe} (Holzhütte).</div></div></div>`);
+    }
     // Steht das Reisezelt gerade irgendwo draußen? Dann sagen, wo man es findet
     if (this._stufe >= 2 && this.reisezelt) {
       erw.insertAdjacentHTML('beforeend', `<div class="rezept"><div class="rezept-bild">${BILDER.reisezelt}</div><div class="rezept-mitte"><b>Reisezelt</b><div class="base-klein">Dein Reisezelt steht gerade draußen. Auf der Karte 🗺️ siehst du es als ⛺. Hinter dem Zelt kannst du es wieder einpacken.</div></div></div>`);

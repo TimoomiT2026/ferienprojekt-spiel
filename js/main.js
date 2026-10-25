@@ -40,6 +40,7 @@ import { Seilkanone } from './seilkanone.js';
 import { Tauchen } from './tauchen.js';
 import { Finale } from './finale.js';
 import { Ballon } from './ballon.js';
+import { Kleidung } from './kleidung.js';
 import { baueKlippenZaun } from './klippenzaun.js';
 import { Bewohner } from './bewohner.js';
 import { Palmendorf } from './palmendorf.js';
@@ -199,6 +200,8 @@ objekte.interaktionen.push(...angeln.interaktionen);
 
 // ---------- Die Base (Zelt → Hütte → Haus) ----------
 const base = new Base(szene, hindernisse, { rucksack, meldung, musik, tageszeit, spieler, angeln, schlafen, elternElement: spielfeld });
+const kleidung = new Kleidung({ spieler, meldung, musik, elternElement: spielfeld }); // der Kleiderschrank 👕
+base.beiKleidung = () => kleidung.oeffnen();
 base.beiNeuerInteraktion = (ia) => objekte.interaktionen.push(ia);
 objekte.interaktionen.push(...base.interaktionen);
 
@@ -213,7 +216,7 @@ objekte.interaktionen.push(...ballon.interaktionen);
 const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || aufgaben.erklaerOffen || base.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || aufgaben.erklaerOffen || base.offen || kleidung.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
 aufgaben.spiel.fensterOffen = () => fensterOffen() && !aufgaben.erklaerOffen; // andere Fenster offen? Dann warten Erklärungen
 
 // ---------- Boote & Tiere ----------
@@ -643,6 +646,7 @@ function spielSchleife() {
       else if (aufgaben.offen) aufgaben.schliessen();
       else if (base.offen) base.schliessen();
       else if (ballon.offen) ballon.schliessen();
+      else if (kleidung.offen) kleidung.schliessen();
       else if (bewohner.offen) bewohner.schliessen();
       else if (markt.offen) markt.schliessen();
       else if (zeitung.offen) zeitung.schliessen();
@@ -852,6 +856,7 @@ function sammleSpielstand() {
     ereignisse: ereignisse.alsDaten(),
     zeitung: zeitung.alsDaten(),
     finale: finale.alsDaten(),
+    kleidung: kleidung.alsDaten(),
     gefaellt: gefaellteHolzStellen(),
     feuer: lagerfeuer.brennt,
     boote: boote.liste.map((b) => ({ x: b.gruppe.position.x, z: b.gruppe.position.z, w: b.gruppe.rotation.y, entdeckt: b.entdeckt })),
@@ -886,6 +891,7 @@ function wendeSpielstandAn(s) {
     zeigeAngelstellen();
     ballonTag = tageszeit.tag;
     finale.ladeDaten(s.finale || {});
+    kleidung.ladeDaten(s.kleidung || {});
     ladeGefaellte(s.gefaellt);
     lagerfeuer.brennt = s.feuer || 0;
     (s.boote || []).forEach((d, i) => {
