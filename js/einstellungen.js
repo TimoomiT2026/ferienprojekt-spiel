@@ -402,7 +402,18 @@ export const EINSTELLUNGEN = {
 
   // ---------- Prolog in Düsseldorf 🏙️ (nur für ganz neue Spieler) ----------
   prolog: {
-    start: [20, 90], // wo man anfängt (Meter ab dem Rheinturm: x = Osten, z = Süden)
+    start: [-196, -24], // wo man anfängt: an der Rheinpromenade (Meter ab dem Rheinturm: x = Osten, z = Süden)
+    sichtweite: 1000, // so weit sieht man in Düsseldorf (Meter)
+    baeume: 420, // so viele Bäume stehen in der Stadt
+    gras: 26000, // so viele Gras-Büschel wachsen auf den Wiesen
+    // Schiffe auf dem Rhein: art = container / schuett / ausflug,
+    // spur = Abstand zum Ufer (Meter), tempo = Meter pro Sekunde,
+    // richtung = 1 flussabwärts (nach Nordosten) oder -1 flussaufwärts, start = wo es losfährt (0 bis 1)
+    schiffe: [
+      { art: 'container', spur: 70, tempo: 4.5, richtung: 1, start: 0.5 },
+      { art: 'ausflug', spur: 150, tempo: 3.6, richtung: -1, start: 0.72 },
+      { art: 'schuett', spur: 110, tempo: 3.2, richtung: -1, start: 0.93 },
+    ],
     boot: [-110, 30], // ungefähr hier liegt das Ruderboot im Yachthafen
     hausFarben: ['#f3d9b1', '#e8b9a0', '#cfe0c3', '#bcd4e6', '#f2e3a0', '#e6c7d9', '#d9d2c4', '#f0c8a0'],
     chatTempo: 1700, // so viele Millisekunden zwischen zwei Chat-Nachrichten

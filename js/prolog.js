@@ -11,22 +11,15 @@
 //  Kartendaten: © OpenStreetMap-Mitwirkende (siehe daten/duesseldorf.js)
 // =============================================================
 import * as THREE from 'three';
-import { mergeGeometries } from 'three/addons/utils/BufferGeometryUtils.js';
-import { DUESSELDORF } from './daten/duesseldorf.js';
 import { setzeStadt } from './gelaende.js';
 import { baueBoot, baueHolzTextur } from './boote.js';
 import { knopf } from './steuerung.js';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { Sturmfilm } from './sturmfilm.js';
+import { STADT, HALB, BODEN, Stadtplan, baueDuesseldorf } from './stadtbau.js';
 
+export { STADT };
 const E = () => EINSTELLUNGEN.prolog;
-// Die Stadt liegt weit weg von den Inseln (dort fährt man nie mit dem Boot hin)
-export const STADT = { x: 0, z: 6000 };
-const HALB = 700; // die Stadt ist 1,4 km groß
-const PIXEL = 2; // 1 Pixel im Stadtplan = 2 Meter
-const N = (HALB * 2) / PIXEL;
-const BODEN = 1.6; // so hoch liegen Straßen und Plätze
-const RHEIN = -6; // so tief ist der Rhein
 
 // ---------- Hat dieser Spieler den Prolog schon gesehen? ----------
 const GESEHEN = 'inselspiel-prolog-gesehen';
@@ -53,34 +46,6 @@ function aufZurInsel() {
   location.reload(); // frisch auf der Insel anfangen – wie bisher, mit dem Tagebuch
 }
 
-// ---------- Der Stadtplan als Bild: Rot = Wasser, Grün = Haushöhe, Blau = Straße ----------
-function maleStadtplan() {
-  const c = document.createElement('canvas');
-  c.width = c.height = N;
-  const g = c.getContext('2d');
-  g.fillStyle = 'rgb(0,0,0)';
-  g.fillRect(0, 0, N, N);
-  const P = ([x, z]) => [(x + HALB) / PIXEL, (z + HALB) / PIXEL];
-  const linie = (pts) => { g.beginPath(); pts.forEach((p, i) => (i ? g.lineTo(...P(p)) : g.moveTo(...P(p)))); };
-  g.strokeStyle = 'rgb(0,0,255)';
-  g.lineCap = g.lineJoin = 'round';
-  for (const w of DUESSELDORF.wege) {
-    g.lineWidth = w.b / PIXEL;
-    linie(w.p);
-    g.stroke();
-  }
-  g.fillStyle = 'rgb(255,0,0)';
-  for (const w of DUESSELDORF.wasser) { linie(w); g.closePath(); g.fill(); }
-  for (const h of DUESSELDORF.haeuser) {
-    if (h.m > 2) continue; // schwebende Teile (z. B. Vordächer) – darunter kann man laufen
-    g.fillStyle = `rgb(0,${Math.min(250, Math.round(h.h))},0)`;
-    linie(h.p); g.closePath(); g.fill();
-  }
-  g.fillStyle = 'rgb(0,250,0)';
-  linie(DUESSELDORF.turm); g.closePath(); g.fill();
-  return g.getImageData(0, 0, N, N).data;
-}
-
 export class Prolog {
   constructor(szene, spiel) {
     this.szene = szene;
@@ -90,20 +55,15 @@ export class Prolog {
     this.schritt = '';
   }
 
-  // ---------- Was ist an dieser Stelle? ----------
+  // ---------- Was ist an dieser Stelle? (x, z = echte Weltkoordinaten) ----------
   feld(x, z) {
-    const i = Math.floor((x - STADT.x + HALB) / PIXEL), j = Math.floor((z - STADT.z + HALB) / PIXEL);
-    if (i < 0 || j < 0 || i >= N || j >= N) return { wasser: true, haus: 0, weg: false };
-    const k = (j * N + i) * 4, d = this.plan;
-    return { wasser: d[k] > 127, haus: d[k] > 127 ? 0 : d[k + 1] > 20 ? d[k + 1] : 0, weg: d[k + 2] > 100 };
+    return this.plan.feld(x - STADT.x, z - STADT.z);
   }
   hoehe(x, z) {
-    const f = this.feld(x, z);
-    return f.wasser ? RHEIN : BODEN + f.haus;
+    return this.plan.hoehe(x - STADT.x, z - STADT.z);
   }
   frei(x, z) {
-    const f = this.feld(x, z);
-    return !f.wasser && !f.haus;
+    return this.plan.frei(x - STADT.x, z - STADT.z);
   }
   // Der nächste freie Platz (kein Wasser, kein Haus) bei (x, z) – lokal in Metern ab dem Rheinturm
   naechsterFreierPlatz(x, z) {
@@ -120,15 +80,16 @@ export class Prolog {
   // ---------- Los geht's! ----------
   starten() {
     this.aktiv = true;
-    this.plan = maleStadtplan();
+    this.plan = new Stadtplan();
     setzeStadt({ ...STADT, halb: HALB, hoehe: (x, z) => this.hoehe(x, z) });
     this.baueStadt();
     this.baueZiele();
     this.baueHud();
     document.body.classList.add('prolog');
-    if (this.szene.fog) this.szene.fog.far = 900; // in der Stadt sieht man weiter
+    if (this.szene.fog) { this.szene.fog.near = 150; this.szene.fog.far = E().sichtweite; } // in der Stadt sieht man weiter
+    this.spiel.wasser?.setzeFluss(true); // das Wasser ist hier der Rhein, kein Meer
     const s = this.start;
-    this.spiel.teleport(STADT.x + s.x, STADT.z + s.z, Math.atan2(s.x, s.z));
+    this.spiel.teleport(STADT.x + s.x, STADT.z + s.z, Math.atan2(s.x, s.z), 0.12); // Blick hoch zum Rheinturm
     this.zeigeKarte(`<h2>Düsseldorf, am Rhein</h2>
       <p>Hier arbeitest du als <b>Forscher</b>! 🔬</p>
       <p>Ganz oben im <b>Rheinturm</b> 🗼 hast du ein <b>geheimes Labor</b>. Niemand weiß davon.</p>
@@ -144,91 +105,22 @@ export class Prolog {
     this.markerBoot.visible = s === 'boot';
   }
 
-  // ---------- Die Stadt bauen ----------
+  // ---------- Die Stadt bauen (das meiste macht stadtbau.js) ----------
   baueStadt() {
-    const gruppe = new THREE.Group();
-    gruppe.position.set(STADT.x, 0, STADT.z);
-    this.gruppe = gruppe;
-
-    // Der Boden: Plätze, Straßen, Rheinwiesen – und das Flussbett
-    const seg = HALB * 2 / 4;
-    const boden = new THREE.PlaneGeometry(HALB * 2, HALB * 2, seg, seg);
-    boden.rotateX(-Math.PI / 2);
-    const pos = boden.attributes.position, farben = new Float32Array(pos.count * 3);
-    const pflaster = new THREE.Color('#a8998a'), strasse = new THREE.Color('#77736f'), wiese = new THREE.Color('#5f9e3e'), grund = new THREE.Color('#4a5848');
-    for (let i = 0; i < pos.count; i++) {
-      const x = STADT.x + pos.getX(i), z = STADT.z + pos.getZ(i);
-      const f = this.feld(x, z);
-      pos.setY(i, f.wasser ? RHEIN : BODEN - 0.02);
-      // Nah am Rhein ist Wiese (die Rheinwiesen), sonst Pflaster
-      let nahAmWasser = false;
-      if (!f.wasser) for (const [dx, dz] of [[30, 0], [-30, 0], [0, 30], [0, -30], [20, 20], [-20, -20], [20, -20], [-20, 20]]) if (this.feld(x + dx, z + dz).wasser) nahAmWasser = true;
-      const c = f.wasser ? grund : f.weg ? strasse : nahAmWasser ? wiese : pflaster;
-      const fleck = 0.92 + 0.08 * Math.sin(x * 0.7) * Math.cos(z * 0.9); // ein bisschen fleckig, wie echter Boden
-      farben.set([c.r * fleck, c.g * fleck, c.b * fleck], i * 3);
-    }
-    boden.setAttribute('color', new THREE.BufferAttribute(farben, 3));
-    boden.computeVertexNormals();
-    const bodenMesh = new THREE.Mesh(boden, new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.95 }));
-    bodenMesh.receiveShadow = true;
-    gruppe.add(bodenMesh);
-
-    // Die Häuser: echte Umrisse, aber mit weichen, runden Kanten (nicht eckig!)
-    const farbenListe = E().hausFarben.map((f) => new THREE.Color(f));
-    const waende = [], daecher = [];
-    DUESSELDORF.haeuser.forEach((h, n) => {
-      const form = new THREE.Shape(h.p.map(([x, z]) => new THREE.Vector2(x, -z)));
-      let geo;
-      try {
-        geo = new THREE.ExtrudeGeometry(form, { depth: Math.max(2, h.h - h.m - 0.8), bevelEnabled: true, bevelThickness: 0.8, bevelSize: 0.8, bevelSegments: 2, curveSegments: 1 });
-      } catch { return; }
-      geo.rotateX(-Math.PI / 2);
-      geo.translate(0, BODEN + h.m, 0);
-      const farbe = farbenListe[n % farbenListe.length];
-      const dach = farbe.clone().lerp(new THREE.Color('#ffffff'), 0.35);
-      teileInWaendeUndDaecher(geo, farbe, dach, waende, daecher);
-    });
-    const fenster = baueFensterTextur();
-    fenster.repeat.set(1 / 4, 1 / 3.4); // alle 4 Meter ein Fenster, alle 3,4 Meter ein Stockwerk
-    if (waende.length) gruppe.add(schatten(new THREE.Mesh(mergeGeometries(waende), new THREE.MeshStandardMaterial({ map: fenster, vertexColors: true, roughness: 0.85 }))));
-    if (daecher.length) gruppe.add(schatten(new THREE.Mesh(mergeGeometries(daecher), new THREE.MeshStandardMaterial({ vertexColors: true, roughness: 0.9 }))));
-
-    // Bäume auf den Rheinwiesen: runde Kronen
-    const plaetze = [];
-    for (let x = -HALB + 20; x < HALB - 20; x += 22) {
-      for (let z = -HALB + 20; z < HALB - 20; z += 22) {
-        const wx = STADT.x + x + Math.sin(z) * 6, wz = STADT.z + z + Math.cos(x) * 6;
-        const f = this.feld(wx, wz);
-        if (f.wasser || f.haus || f.weg) continue;
-        let nah = false;
-        for (const [dx, dz] of [[26, 0], [-26, 0], [0, 26], [0, -26]]) if (this.feld(wx + dx, wz + dz).wasser) nah = true;
-        if (nah && Math.hypot(x, z) > 30) plaetze.push([wx - STADT.x, wz - STADT.z]);
-      }
-    }
-    const krone = new THREE.InstancedMesh(new THREE.SphereGeometry(3.2, 12, 9), new THREE.MeshStandardMaterial({ color: '#4f8f3c', roughness: 0.9 }), plaetze.length);
-    const stamm = new THREE.InstancedMesh(new THREE.CylinderGeometry(0.35, 0.5, 4, 8), new THREE.MeshStandardMaterial({ color: '#6e4a2c' }), plaetze.length);
-    const m = new THREE.Matrix4();
-    plaetze.forEach(([x, z], i) => {
-      m.makeTranslation(x, BODEN + 2, z); stamm.setMatrixAt(i, m);
-      m.makeTranslation(x, BODEN + 6, z); krone.setMatrixAt(i, m);
-    });
-    gruppe.add(schatten(krone), stamm);
-
-    // Der Rheinturm 🗼 (gedrechselt – also schön rund)
-    gruppe.add(baueRheinturm());
-    this.szene.add(gruppe);
-
     // Wo fängt man an, wo ist die Tür, wo liegt das Boot?
     const [sx, sz] = E().start;
     this.start = this.naechsterFreierPlatz(sx, sz);
     // Die Tür: auf der Seite des Turms, die zum Startplatz zeigt
     const w = Math.atan2(this.start.x, this.start.z);
-    this.tuer = this.naechsterFreierPlatz(Math.sin(w) * 17, Math.cos(w) * 17);
+    this.tuer = this.naechsterFreierPlatz(Math.sin(w) * 21, Math.cos(w) * 21);
     this.boot = this.sucheBootsplatz(...E().boot);
+    const weitWegVomBoot = (x, z) => Math.hypot(x - this.boot.wasser.x, z - this.boot.wasser.z) > 9;
+    this.stadt = baueDuesseldorf(this.szene, this.plan, { hindernisse: this.spiel.hindernisse, frei: weitWegVomBoot, tuerWinkel: w });
+    this.gruppe = this.stadt.gruppe;
     const { boot } = baueBoot(baueHolzTextur());
     boot.position.set(this.boot.wasser.x, 0, this.boot.wasser.z);
     boot.rotation.y = Math.atan2(this.boot.land.x - this.boot.wasser.x, this.boot.land.z - this.boot.wasser.z) + Math.PI / 2;
-    gruppe.add(boot);
+    this.gruppe.add(boot);
     this.bootModell = boot;
   }
 
@@ -365,6 +257,7 @@ export class Prolog {
 
   aktualisiere(dt) {
     if (!this.aktiv) return;
+    this.stadt?.aktualisiere(dt); // Schiffe und Autos fahren
     const t = performance.now() / 1000;
     for (const m of [this.markerTurm, this.markerBoot]) {
       if (!m.visible) continue;
@@ -372,87 +265,6 @@ export class Prolog {
       m.rotation.y += dt;
     }
   }
-}
-
-// ---------- Kleine Helfer ----------
-function schatten(mesh) {
-  mesh.castShadow = mesh.receiveShadow = true;
-  return mesh;
-}
-
-// Häuser in Wände (mit Fenstern) und Dächer (ohne) teilen – das sind dann nur 2 Bauteile für die ganze Stadt
-function teileInWaendeUndDaecher(geo, wandFarbe, dachFarbe, waende, daecher) {
-  const g = geo.index ? geo.toNonIndexed() : geo;
-  const pos = g.attributes.position, nor = g.attributes.normal, uv = g.attributes.uv;
-  const teile = { wand: { p: [], n: [], u: [], c: [] }, dach: { p: [], n: [], u: [], c: [] } };
-  for (let t = 0; t < pos.count; t += 3) {
-    const oben = (nor.getY(t) + nor.getY(t + 1) + nor.getY(t + 2)) / 3 > 0.6;
-    const ziel = teile[oben ? 'dach' : 'wand'], c = oben ? dachFarbe : wandFarbe;
-    for (let k = t; k < t + 3; k++) {
-      ziel.p.push(pos.getX(k), pos.getY(k), pos.getZ(k));
-      ziel.n.push(nor.getX(k), nor.getY(k), nor.getZ(k));
-      ziel.u.push(uv.getX(k), uv.getY(k));
-      ziel.c.push(c.r, c.g, c.b);
-    }
-  }
-  for (const [name, liste] of [['wand', waende], ['dach', daecher]]) {
-    const t = teile[name];
-    if (!t.p.length) continue;
-    const b = new THREE.BufferGeometry();
-    b.setAttribute('position', new THREE.Float32BufferAttribute(t.p, 3));
-    b.setAttribute('normal', new THREE.Float32BufferAttribute(t.n, 3));
-    b.setAttribute('uv', new THREE.Float32BufferAttribute(t.u, 2));
-    b.setAttribute('color', new THREE.Float32BufferAttribute(t.c, 3));
-    liste.push(b);
-  }
-}
-
-// Ein Stück Hauswand mit einem Fenster (wird über die Wände gekachelt)
-function baueFensterTextur() {
-  const c = document.createElement('canvas');
-  c.width = c.height = 64;
-  const g = c.getContext('2d');
-  g.fillStyle = '#ffffff';
-  g.fillRect(0, 0, 64, 64);
-  g.fillStyle = '#7f98b5';
-  g.beginPath();
-  g.roundRect(18, 16, 28, 30, 6);
-  g.fill();
-  g.fillStyle = 'rgba(255,255,255,0.45)';
-  g.fillRect(22, 20, 8, 10);
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  t.wrapS = t.wrapT = THREE.RepeatWrapping;
-  return t;
-}
-
-// Der Rheinturm: Schaft, Kugel (die Kanzel mit den schrägen Fenstern), Antenne – und die Lichtzeituhr
-function baueRheinturm() {
-  const turm = new THREE.Group();
-  const V2 = (r, y) => new THREE.Vector2(r, y + BODEN);
-  const beton = new THREE.MeshStandardMaterial({ color: '#e6e3dc', roughness: 0.8 });
-  const glas = new THREE.MeshStandardMaterial({ color: '#2d4a66', roughness: 0.25, metalness: 0.4 });
-  const schaft = new THREE.LatheGeometry([V2(0, 0), V2(13.5, 0), V2(12, 4), V2(9.2, 20), V2(7.8, 60), V2(6.8, 120), V2(6, 163), V2(0, 163)], 40);
-  const kugelUnten = new THREE.LatheGeometry([V2(5.9, 163), V2(13, 167), V2(16.5, 171), V2(0, 171)], 40);
-  const fenster = new THREE.LatheGeometry([V2(16.5, 171), V2(17, 174), V2(15, 178.5), V2(0, 178.5)], 40);
-  const kugelOben = new THREE.LatheGeometry([V2(15, 178.5), V2(11, 181.5), V2(7, 184), V2(3, 185), V2(0, 185)], 40);
-  const antenne = new THREE.LatheGeometry([V2(2.4, 185), V2(1.7, 200), V2(1.1, 225), V2(0.5, 236), V2(0, 240.5)], 16);
-  for (const [geo, mat] of [[schaft, beton], [kugelUnten, beton], [fenster, glas], [kugelOben, beton], [antenne, beton]]) turm.add(schatten(new THREE.Mesh(geo, mat)));
-  const spitze = new THREE.Mesh(new THREE.CylinderGeometry(0.55, 0.75, 6, 12), new THREE.MeshStandardMaterial({ color: '#d23a2c' }));
-  spitze.position.y = BODEN + 230;
-  turm.add(spitze);
-  // Die Lichtzeituhr: viele runde Lichter am Schaft (die echte zeigt die Uhrzeit!)
-  const n = 39;
-  const lichter = new THREE.InstancedMesh(new THREE.SphereGeometry(0.55, 10, 8), new THREE.MeshStandardMaterial({ color: '#ffe9a8', emissive: '#ffcc55', emissiveIntensity: 1.4 }), n);
-  const m = new THREE.Matrix4();
-  for (let i = 0; i < n; i++) {
-    const y = 40 + i * 3.1;
-    const r = THREE.MathUtils.lerp(7.8, 6.1, (y - 60) / 103) + 0.1;
-    m.makeTranslation(Math.sin(0.6) * r, BODEN + y, Math.cos(0.6) * r);
-    lichter.setMatrixAt(i, m);
-  }
-  turm.add(lichter);
-  return turm;
 }
 
 // Das Labor als Bild: runder Raum, schräge Fenster, draußen der Rhein

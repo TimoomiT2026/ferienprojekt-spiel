@@ -211,8 +211,8 @@ export function istKlippenWand(x, z) {
 // Ist ein Schritt von (ax, az) nach (bx, bz) zu steil bergauf?
 // (Es zählt der Boden, nicht die Füße – sonst könnte man die Klippe hochhüpfen!)
 export function zuSteilBergauf(ax, az, bx, bz) {
-  // In der Stadt: Häuserwände und die Kaimauer am Rhein kann man nicht hochlaufen
-  if (inDerStadt(bx, bz)) return bodenHoehe(bx, bz) - bodenHoehe(ax, az) > 0.6;
+  // In der Stadt: Häuserwände kann man nicht hochlaufen – und vom Ufer nicht in den Rhein fallen
+  if (inDerStadt(bx, bz)) return Math.abs(bodenHoehe(bx, bz) - bodenHoehe(ax, az)) > 0.6;
   const I = neueInselBei(bx, bz);
   if (!I || !I.klippen) return false; // nur an den Klippen – die Startinsel bleibt, wie sie ist
   const weg = Math.max(Math.hypot(bx - ax, bz - az), 0.01);

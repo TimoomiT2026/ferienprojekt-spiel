@@ -226,6 +226,7 @@ export class Wasser {
     this.wellen = baueWellenTextur();
     this.zeit = ZEIT;
     this.kamera = { value: KAMERA };
+    this.fluss = { value: 0 }; // 1 = ruhiger Fluss (der Rhein im Prolog) statt Meer
     const tiefenKarte = baueTiefenKarte();
     const material = new THREE.MeshStandardMaterial({
       color: '#ffffff',
@@ -241,6 +242,7 @@ export class Wasser {
       shader.uniforms.uGroesse = { value: KARTEN_GROESSE };
       shader.uniforms.uMitte = { value: KARTEN_MITTE };
       shader.uniforms.uKamera = this.kamera;
+      shader.uniforms.uFluss = this.fluss;
       shader.vertexShader = shader.vertexShader
         .replace('#include <common>', `#include <common>
         uniform sampler2D tTiefe;
@@ -248,6 +250,7 @@ export class Wasser {
         uniform float uGroesse;
         uniform vec2 uMitte;
         uniform vec3 uKamera;
+        uniform float uFluss;
         varying vec3 vWP;
         varying float vWelle;
         // Eine Gerstner-Welle: hebt das Wasser und schiebt es ein bisschen vor und zurück
@@ -268,6 +271,7 @@ export class Wasser {
           float tiefeHier = texture2D(tTiefe, (p0 - uMitte) / uGroesse + 0.5).r * 6.0;
           float tw = clamp((tiefeHier - 0.1) / ${f(VOLLE_WELLEN_TIEFE - 0.1)}, 0.0, 1.0);
           float staerke = tw * (2.0 - tw);
+          staerke *= 1.0 - 0.88 * uFluss; // im Fluss nur kleine Wellen
           staerke *= 1.0 - smoothstep(${f(WELLEN_WEITE - 45)}, ${f(WELLEN_WEITE - 3)}, distance(p0, uKamera.xz));
           vec3 versatz = vec3(0.0);
           float nx = 0.0, nz = 0.0, ny = 1.0;
@@ -282,7 +286,7 @@ export class Wasser {
           transformed += versatz;
           vWP = (modelMatrix * vec4(transformed, 1.0)).xyz;`);
       shader.fragmentShader = shader.fragmentShader
-        .replace('#include <common>', '#include <common>\nuniform sampler2D tTiefe;\nuniform float uZeit;\nuniform float uGroesse;\nuniform vec2 uMitte;\nvarying vec3 vWP;\nvarying float vWelle;')
+        .replace('#include <common>', '#include <common>\nuniform float uFluss;\nuniform sampler2D tTiefe;\nuniform float uZeit;\nuniform float uGroesse;\nuniform vec2 uMitte;\nvarying vec3 vWP;\nvarying float vWelle;')
         .replace('#include <color_fragment>', `#include <color_fragment>
           float tiefe = texture2D(tTiefe, (vWP.xz - uMitte) / uGroesse + 0.5).r * 6.0;
           // Flaches Wasser türkis, tiefes Wasser dunkelblau
@@ -301,7 +305,11 @@ export class Wasser {
           // Ein bisschen weiße Gischt oben auf den höchsten Wellenbergen
           schaum = max(schaum, smoothstep(0.4, 0.62, vWelle) * smoothstep(0.55, 0.75, kraeusel) * 0.5);
           diffuseColor.rgb = mix(diffuseColor.rgb, vec3(0.92, 0.96, 0.98), schaum * 0.85);
-          diffuseColor.a = max(mix(0.45, 0.94, smoothstep(0.0, 3.0, tiefe)), schaum);`);
+          diffuseColor.a = max(mix(0.45, 0.94, smoothstep(0.0, 3.0, tiefe)), schaum);
+          // Der Rhein: grün-graues Flusswasser, kein Strand-Schaum
+          vec3 rhein = vec3(0.13, 0.21, 0.2) * (1.0 + 0.25 * berg + 0.12 * (kraeusel - 0.5));
+          diffuseColor.rgb = mix(diffuseColor.rgb, rhein, uFluss);
+          diffuseColor.a = mix(diffuseColor.a, 0.93, uFluss);`);
     };
     material.customProgramCacheKey = () => 'wasser-wellen';
 
@@ -326,6 +334,11 @@ export class Wasser {
       }
     };
     szene.add(this.flaeche);
+  }
+
+  // Im Prolog ist das Wasser der Rhein: ruhiger und grünlicher
+  setzeFluss(an) {
+    this.fluss.value = an ? 1 : 0;
   }
 
   aktualisiere(dt) {

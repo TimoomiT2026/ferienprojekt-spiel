@@ -203,7 +203,7 @@ objekte.interaktionen.push(...angeln.interaktionen);
 const base = new Base(szene, hindernisse, { rucksack, meldung, musik, tageszeit, spieler, angeln, schlafen, elternElement: spielfeld });
 const kleidung = new Kleidung({ spieler, meldung, musik, elternElement: spielfeld }); // der Kleiderschrank 👕
 // Der Prolog in Düsseldorf (nur für ganz neue Spieler) – teleport kommt weiter unten dazu
-const prolog = new Prolog(szene, { spieler, meldung, musik, objekte, elternElement: spielfeld, teleport: (x, z, w) => window.__spiel.teleport(x, z, w) });
+const prolog = new Prolog(szene, { spieler, meldung, musik, objekte, hindernisse, wasser, elternElement: spielfeld, teleport: (x, z, w, n) => window.__spiel.teleport(x, z, w, n) });
 base.beiKleidung = () => kleidung.oeffnen();
 base.beiNeuerInteraktion = (ia) => objekte.interaktionen.push(ia);
 objekte.interaktionen.push(...base.interaktionen);
@@ -1037,9 +1037,10 @@ window.__spiel = {
   haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, nebel, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye, ereignisse, zeitung, prolog, kleidung,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
-  teleport(x, z, winkel = kameraWinkel) {
+  teleport(x, z, winkel = kameraWinkel, neigung = null) {
     spieler.figur.position.set(x, bodenHoehe(x, z), z);
     kameraWinkel = winkel;
+    if (neigung !== null) kameraNeigung = neigung; // flacher = man sieht mehr nach oben (z. B. den Rheinturm)
     kameraPos.set(x + Math.sin(winkel) * 9, bodenHoehe(x, z) + 5, z + Math.cos(winkel) * 9);
   },
 };

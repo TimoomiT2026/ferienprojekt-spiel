@@ -1289,6 +1289,39 @@ export function baueNatur(szene, hindernisse) {
   baueTeilchen(szene);
 }
 
+// Bäume und Gras für die Stadt im Prolog (Düsseldorf) – genau dieselben Bausteine wie auf der Insel.
+// baeume: [{ x, y, z, groesse, form (0 = breit, 1 = hoch), farbe }] · gras: [{ x, y, z }]
+// (Muss nach baueNatur aufgerufen werden, sonst gibt es die Bausteine noch nicht.)
+export function baueStadtNatur(szene, baeume, gras) {
+  const B = BAUSTEINE;
+  const gruppe = new THREE.Group();
+  const z = zufallMitSeed(77);
+  const eintraege = baeume.map((b) => ({
+    x: b.x, z: b.z, form: b.form,
+    matrix: m4().compose(v3(b.x, b.y - 0.15, b.z), new THREE.Quaternion().setFromAxisAngle(hochAchse, z() * 6.3),
+      v3(b.groesse, b.groesse * (0.9 + z() * 0.25), b.groesse)),
+    farbe: b.farbe || new THREE.Color().setHSL(0.2 + z() * 0.07, 0.32, 0.78 + z() * 0.15),
+  }));
+  const weit = { stueck: 120, sichtweite: 650 }; // in der Stadt sieht man die Bäume von weit weg
+  for (const f of [0, 1]) {
+    const liste = eintraege.filter((e) => e.form === f);
+    if (!liste.length) continue;
+    gruppe.add(inStuecken(B.laubFormen[f].holz, B.laubHolz, liste.map(({ farbe, ...rest }) => rest), weit));
+    gruppe.add(inStuecken(B.laubFormen[f].blaetter, B.laubBlatt, liste, weit));
+  }
+  const halme = gras.map((g) => {
+    const s = 0.7 + z() * 0.7;
+    return {
+      x: g.x, z: g.z,
+      matrix: m4().compose(v3(g.x, g.y - 0.04, g.z), new THREE.Quaternion().setFromAxisAngle(hochAchse, z() * Math.PI), v3(s, s * (0.8 + z() * 0.5), s)),
+      farbe: new THREE.Color().setHSL(0.17 + z() * 0.08, 0.3 + z() * 0.2, 0.74 + z() * 0.2),
+    };
+  });
+  if (halme.length) gruppe.add(inStuecken(B.grasForm, B.grasMaterial, halme, { sichtweite: 70, schatten: false }));
+  szene.add(gruppe);
+  return gruppe;
+}
+
 // Wie weit man Pflanzen sieht (1 = normal). Ruckelt das iPad, wird es kleiner.
 let detail = 1;
 export function wenigerDetails() {
