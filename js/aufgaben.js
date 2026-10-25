@@ -13,7 +13,7 @@ import { EINSTELLUNGEN } from './einstellungen.js';
 const AUFGABEN = [
   { titel: 'Finde die Schaufel', start: 'aufgabenbuch', tipp: 'Sie liegt glitzernd neben dem Zelt.', geschafft: (s) => s.rucksack.hat('schaufel'), belohnung: 2 },
   { titel: 'Nimm die Schaufel in die Hand', start: 'schaufel', tipp: 'Rucksack 🎒 öffnen und die Schaufel antippen.', geschafft: (s) => s.rucksack.inDerHand === 'schaufel', belohnung: 0 },
-  { titel: 'Grab 3 Steine und 2 Eisenerz', start: 'huegel', tipp: 'An den glitzernden Erdhügeln graben. Am nächsten Morgen sind sie wieder voll.', geschafft: (s) => s.rucksack.anzahl('stein') >= 3 && s.rucksack.anzahl('eisenerz') >= 2, belohnung: 3 },
+  { titel: 'Grab 3 Steine und 2 Eisenerz', start: 'huegel', tipp: 'An den glitzernden Erdhügeln graben. Nach 2 Tagen sind sie wieder voll.', geschafft: (s) => s.rucksack.anzahl('stein') >= 3 && s.rucksack.anzahl('eisenerz') >= 2, belohnung: 3 },
   { titel: 'Kauf dir ein Brot beim Händler', start: 'dorf', tipp: 'Das Dorf 🏘️ ist auf der Karte 🗺️. Beim Händler „Handeln“ drücken, dann bei Brot „Kaufen“. (Nachts schläft er!)', geschafft: (s) => !!s.haendler?.gekauftJemals || s.rucksack.hat('brot') || s.aufgaben.brotGegessen, belohnung: 2 },
   { titel: 'Iss ein Brot', start: 'brotEssen', tipp: 'Rucksack 🎒 öffnen, Brot antippen, „Essen“ drücken.', geschafft: (s) => s.aufgaben.brotGegessen, belohnung: 3, danach: 'essen' },
   { titel: 'Verkauf etwas beim Händler', start: 'verkaufen', tipp: 'Grab erst noch einen Hügel aus ⛏️ – und verkauf, was du findest: beim Händler „Handeln“, dann „💰 Verkaufen“. Deine 3 Steine und 2 Eisenerz behältst du fürs Schwert! (Nachts schläft er!)', geschafft: (s) => s.aufgaben.gehandelt || Object.keys(s.haendler?.verkauftHeute || {}).length > 0, belohnung: 5, danach: 'werkbank' },
@@ -30,7 +30,7 @@ const AUFGABEN = [
   { titel: 'Iss deinen selbst gefangenen Fisch', tipp: 'Rucksack öffnen, Fisch antippen, „Essen“. Jetzt versorgst du dich selbst! 🎉', geschafft: (s) => s.aufgaben.fischGegessen, belohnung: 10, danach: 'selbstversorger' },
   { titel: 'Bau das große Zelt', tipp: 'Am Schild „BASE“ neben dem Zelt das Base-Menü öffnen und ausbauen.', geschafft: (s) => (s.base?.stufe || 1) >= 2, belohnung: 10 },
   { titel: 'Bau eine Holzhütte', tipp: 'Wieder im Base-Menü. In der Hütte steht eine Truhe 📦 – dort kannst du Sachen aufbewahren, wenn dein Rucksack voll ist!', geschafft: (s) => (s.base?.stufe || 1) >= 3, belohnung: 15 },
-  { titel: 'Zähme ein Wildpferd', tipp: 'Kauf einen 3er-Pack Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
+  { titel: 'Zähme ein Wildpferd', tipp: 'Kauf einen 3er-Pack Äpfel im Dorf, nimm einen in die Hand 🍎 und geh langsam zu einem Wildpferd und füttere es 3 Mal. Dann gehört es dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
   // ---------- Etappe 3: Das große Abenteuer ----------
   { titel: 'Bau ein Fernrohr', start: 'fernrohrBauen', tipp: 'An der Werkbank 🔨: 2 Eisenerz + 1 Gold + 1 Holz. Das geht ab Tag 3 – wenn du dich selbst versorgst und eine Holzhütte hast.', geschafft: (s) => s.rucksack.hat('fernrohr') || (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
   { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Dreh das Bild, bis eine Nebelbank in der Mitte ist – dann den grünen Knopf „Insel entdecken!“ antippen.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
@@ -159,7 +159,7 @@ const ERKLAERUNG = {
     text: `<p>Iss ihn im <b>Rucksack 🎒</b>, dann kannst du <b>eine Minute lang fliegen</b>! Sprungknopf festhalten = höher, „🛬 Landen“ = wieder runter.</p>
       <p>Von oben siehst du die ganze Insel – und kommst schnell über Berge und Seen.</p>
       <p>Oder du <b>verkaufst</b> ihn teuer beim Händler. 💰</p>
-      <p>Nur über die hohe <b>Klippeninsel</b> weht ein starker Wind – da oben musst du anders hinkommen …</p>`,
+      <p>Über den <b>anderen Inseln</b> weht ein starker Wind – dort kannst du nicht landen. Hin kommst du mit dem Boot 🚣.</p>`,
   },
   selbstversorger: {
     bild: '🏅',
@@ -201,13 +201,13 @@ const ERKLAERUNG = {
     bild: '🎈',
     titel: 'Hütte mit Garten – und ein Heißluftballon!',
     text: `<p>Im <b>Garten</b> wachsen jetzt jeden Tag <b>Karotten</b> 🥕 – für dich und für Pferde.</p>
-      <p class="erklaer-aufgabe">Und neben deiner Hütte steht jetzt dein eigener <b>Heißluftballon</b> 🎈! Damit fliegst du ganz unkompliziert von Ort zu Ort – zum Dorf, nach Hause und über die Inseln, die du schon kennst.</p>
+      <p class="erklaer-aufgabe">Und neben deiner Hütte steht jetzt dein eigener <b>Heißluftballon</b> 🎈! Damit fliegst du ganz einfach von Ort zu Ort – zum Dorf, nach Hause und über die Inseln, die du schon kennst.</p>
       <p>Geh zum Ballon und tipp auf „🎈 Ballon“: Dann kannst du aussuchen, wohin es geht.</p>`,
   },
   ballonTipp: {
     bild: '🎈',
     titel: 'Immer so weit laufen?',
-    text: `<p>Du läufst ganz schön oft hin und her! Kennst du schon den <b>Heißluftballon</b> 🎈? Mit dem fliegst du ganz unkompliziert von Ort zu Ort – zum Dorf, nach Hause und über die Inseln.</p>
+    text: `<p>Du läufst ganz schön oft hin und her! Kennst du schon den <b>Heißluftballon</b> 🎈? Mit dem fliegst du ganz einfach von Ort zu Ort – zum Dorf, nach Hause und über die Inseln.</p>
       <p class="erklaer-aufgabe">Bau deine Base auf <b>Stufe 4</b> aus (<b>Hütte mit Garten</b>) – dann bekommst du den Ballon dazu!</p>`,
   },
   baseStufe3: {
@@ -244,14 +244,14 @@ const ERKLAERUNG = {
     text: `<p>Riesige <b>Felswände</b>! Die dritte wertvolle Münze liegt ganz <b>oben auf der Klippe</b> – und dort oben soll auch ein geheimnisvoller <b>See</b> sein …</p>
       <p>Hochklettern geht nicht, und über der Klippe weht ein starker <b>Wind</b> – fliegen geht auch nicht. Hinauf kommst du nur mit einer <b>Seilkanone</b> 🪝: Sie schießt ein Seil mit Haken nach oben, und du kletterst daran hoch.</p>
       <p class="erklaer-aufgabe">Fahr zurück zu deiner <b>Werkbank</b> 🔨 und bau eine Seilkanone: Seil (aus 3 Schnüren), 4 Holz und 3 Eisenerz – und ein besonderes Teil …</p>
-      <p>Tipp: Unten am Strand findest du beim Graben <b>Eisenerz und Gold</b>!</p>`,
+      <p>Tipp: Oben auf der Klippe findest du beim Graben viel <b>Eisenerz und Gold</b>!</p>`,
   },
   unterWasser: {
     bild: '🌊',
     titel: 'Das Insadorium liegt unter Wasser!',
     text: `<p>Jetzt weißt du es: Das <b>Insadorium</b> 🔴 liegt irgendwo <b>unter Wasser</b>!</p>
       <p>Dafür brauchst du eine <b>Taucherbrille</b> 🤿. Du hast keine – aber <b>einer der Menschen</b> auf der Palmeninsel hat eine.</p>
-      <p class="erklaer-aufgabe">Sprich mit <b>allen Bewohnern</b> der Palmeninsel, bis du die Person mit der Taucherbrille gefunden hast. Auf der Karte 🗺️ siehst du, wo sie wohnen.</p>`,
+      <p class="erklaer-aufgabe">Sprich mit <b>allen Bewohnern</b> der Palmeninsel, bis du die Person mit der Taucherbrille gefunden hast. Sie wohnen verstreut über die ganze Insel.</p>`,
   },
   klippeBereit: {
     bild: '🎉',
@@ -349,7 +349,7 @@ const ERKLAERUNG = {
     titel: 'Selbst versorgen spart Geld!',
     text: `<p>Ein Brot kostet beim Händler <b>25 Münzen</b> – und du brauchst jeden Tag eins.</p>
       <p>Einen Fisch fängst du <b>gratis</b>! Grill ihn am <b>Lagerfeuer</b>, dann macht er dich genauso satt wie ein Brot.</p>
-      <p>Wer selbst angelt, spart seine Münzen für die Base, den Ballon und das große Abenteuer. 🎉</p>
+      <p>Wer selbst angelt, spart seine Münzen für die Base und das große Abenteuer. 🎉</p>
       <p><b>Als Nächstes:</b> Fürs Lagerfeuer brauchst du Holz und ein Feuerzeug. Dann grillst du deinen Fisch.</p>`,
   },
 };

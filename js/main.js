@@ -257,7 +257,7 @@ boote.beiNebel = (grund) => {
   if (grund !== 'klippe') return nebel.meldeSperre(meldung, rucksack.hat('fernrohr'));
   if (performance.now() - klippeGemeldet < 8000) return;
   klippeGemeldet = performance.now();
-  meldung('🌊 Die Brandung an der Klippeninsel ist viel zu wild! Was willst du da überhaupt? Du hast hier noch nichts verloren – sprich erst mit den Menschen auf der Palmeninsel 🌴.', 9);
+  meldung('🌊 Die Brandung an der Klippeninsel ist viel zu wild! Finde erst die Person mit der Taucherbrille auf der Palmeninsel 🌴 – dann weißt du, was du hier suchst.', 9);
 };
 karte.beiInselEntdeckt = (name) => {
   nebel.aktualisiere();

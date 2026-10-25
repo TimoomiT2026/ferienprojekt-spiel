@@ -451,7 +451,11 @@ export class Bewohner {
       return;
     }
     if (mensch.hatBrille) this.sprichMitBrillenMensch(mensch, ersterBesuch);
-    else this.zeigeBlase(mensch, `${this.trigger ? '' : FRAGE_BRILLE}${ersterBesuch ? mensch.hallo : mensch.nochmal} ${ABSAGE}`);
+    else if (this.trigger) {
+      // Die Brillen-Person ist schon gefunden – dann sagen die anderen, wer es ist (statt „frag woanders“)
+      const brille = this.leute.find((l) => l.id === this.brilleId);
+      this.zeigeBlase(mensch, `${ersterBesuch ? mensch.hallo : mensch.nochmal} Die Taucherbrille hat doch ${brille ? brille.name : 'jemand anderes'}!`);
+    } else this.zeigeBlase(mensch, `${FRAGE_BRILLE}${ersterBesuch ? mensch.hallo : mensch.nochmal} ${ABSAGE}`);
   }
 
   // Wie viele Münzen hat man dabei / schon gefunden?
@@ -481,7 +485,7 @@ export class Bewohner {
       const text = FRAGE_BRILLE + (ersterBesuch ? `${mensch.hallo} ` : '') +
         `<b>Ja, ich habe eine Taucherbrille! 🤿</b> Ich leihe sie dir – aber nur, wenn du mir ${noetig} wertvolle Münzen bringst. ` +
         `Eine von jeder Insel! Sie sind in Grabehügeln versteckt. ${glitzern}`;
-      this.zeigeBlase(mensch, text, () => meldung(`🏅 Neue Aufgabe: Finde ${noetig} wertvolle Münzen – eine auf jeder Insel!`, 6));
+      this.zeigeBlase(mensch, text, () => meldung(`🏅 Finde ${noetig} wertvolle Münzen – eine auf jeder Insel! Fang auf der Palmeninsel und deiner Heimatinsel an.`, 6));
       return;
     }
 

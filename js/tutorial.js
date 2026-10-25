@@ -57,7 +57,7 @@ export const ERKLAERUNGEN = {
   baum: '🌳 Ein Baum! Mit dem Schwert in der Hand kannst du ihn fällen. Das gibt Holz.',
   truhe: '📦 Deine Truhe! Hier kannst du Sachen aufbewahren, damit dein Rucksack nicht voll wird. 20 Plätze!',
   insel: '🏝️ Eine neue Insel! Auf der Karte 🗺️ kannst du jetzt „Alle Inseln“ anschauen.',
-  bewohner: '💬 Ein Inselbewohner! Sprich alle an – einer von ihnen hat eine Taucherbrille.',
+  bewohner: '💬 Ein Inselbewohner! Sprich ihn an – vielleicht weiß er etwas über das Insadorium.',
   wertvolleMuenze: '🏅 Eine wertvolle Münze! Die kann man nicht verkaufen. Bring alle 3 zur Person mit der Taucherbrille.',
   taucherbrille: '🤿 Die Taucherbrille! Geh an tiefes Wasser und drück „Tauchen“. Pass auf deine Luft auf!',
   seilkanone: '🪝 Die Seilkanone! In die Hand nehmen, vor eine hohe Felswand stellen und „Hochschießen“.',
