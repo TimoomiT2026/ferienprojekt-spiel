@@ -294,6 +294,7 @@ export class Ballon {
     h.sonderKauf = h.sonderKauf || {};
     h.sonderKauf.ballon = {
       gekauft: () => this.gekauft, // schon gekauft? → nicht mehr im Angebot
+      verfuegbar: () => (this.spiel.baseStufe?.() || 1) >= 4, // erst ab Base-Stufe 4 (Hütte mit Garten)
       kaufen: () => {
         this.gekauft = true;
         this.ort = 'base';

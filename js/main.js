@@ -333,7 +333,7 @@ rallye.inDieTruhe = (id, nurPruefen = false) => {
 };
 aufgaben.spiel.werkbank = werkbank;
 aufgaben.spiel.seilkanone = seilkanone;
-aufgaben.spiel.ballon = ballon;
+ballon.spiel.baseStufe = () => base.stufe; // den Ballon gibt es erst ab Base-Stufe 4
 werkbank.spiel.inDieTruhe = rallye.inDieTruhe; // Werkbank: Rucksack voll? Dann in die Truhe
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
 function groessererRucksack() {
@@ -522,6 +522,7 @@ let laeuft = false;
 let warNacht = false;
 let umgebungsUhr = 0, wasserNah = 0;
 let inselUhr = 0; // prüft 1× pro Sekunde, auf welcher Insel man ist
+let dorfBesuche = 0, warImDorf = true; // zählt, wie oft man ins Dorf gekommen ist (für den Ballon-Tipp)
 let ballonTag = 1; // an welchem Tag haben wir zuletzt nach dem Ballon geschaut? // für Meeresrauschen & Rascheln
 
 // Automatische Qualität: Ruckelt es, rechnen wir mit etwas weniger Pixeln
@@ -677,8 +678,19 @@ function spielSchleife() {
     karte.punkt('reisezelt', { name: 'Reisezelt', bild: '⛺', x: base.reisezelt?.x ?? 0, z: base.reisezelt?.z ?? 0, sichtbar: !!base.reisezelt });
     // Zum ersten Mal an Land auf einer neuen Insel: groß erklären, was es dort gibt
     const insel = aufWelcherInsel(pos.x, pos.z);
+    // Oft zu Fuß ins Dorf gelaufen (noch ohne Ballon)? Dann vom Ballon erzählen
+    const imDorf = Math.hypot(pos.x - DORF.x, pos.z - DORF.z) < DORF.radius;
+    if (imDorf && !warImDorf && !boote.faehrt && !ballon.faehrt && !spieler.fliegt) {
+      dorfBesuche++;
+      if (dorfBesuche >= EINSTELLUNGEN.ballonTippNachDorfBesuchen && !ballon.gekauft && base.stufe < 4) aufgaben.erklaere('ballonTipp');
+    }
+    warImDorf = imDorf;
     if (!boote.faehrt && !spieler.fliegt && !ballon.faehrt) {
-      if (insel === 'Palmeninsel') aufgaben.erklaere('palmeninsel');
+      if (insel === 'Palmeninsel') {
+        // Schon da? Dann braucht es das Fenster „Eine neue Insel – fahr hinüber!“ nicht mehr
+        if (!aufgaben.erklaert.includes('inselEntdeckt')) aufgaben.erklaert.push('inselEntdeckt');
+        aufgaben.erklaere('palmeninsel');
+      }
       if (insel === 'Klippeninsel') { aufgaben.klippeBesucht = true; aufgaben.erklaere('klippeninsel'); }
     }
   }

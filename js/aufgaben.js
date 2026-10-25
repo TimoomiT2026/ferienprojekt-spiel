@@ -31,7 +31,6 @@ const AUFGABEN = [
   { titel: 'Bau das große Zelt', tipp: 'Am Schild „BASE“ neben dem Zelt das Base-Menü öffnen und ausbauen.', geschafft: (s) => (s.base?.stufe || 1) >= 2, belohnung: 10 },
   { titel: 'Bau eine Holzhütte', tipp: 'Wieder im Base-Menü. In der Hütte steht eine Truhe 📦 – dort kannst du Sachen aufbewahren, wenn dein Rucksack voll ist!', geschafft: (s) => (s.base?.stufe || 1) >= 3, belohnung: 15 },
   { titel: 'Zähme ein Wildpferd', tipp: 'Kauf einen 3er-Pack Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
-  { titel: 'Spar 150 Münzen und kauf den Ballon', tipp: 'Verkauf, was du findest, bis du 150 Münzen hast. Dann kauf beim Händler im Dorf den Heißluftballon 🎈 – er steht danach an deiner Base. Erst dann geht es weiter!', geschafft: (s) => !!s.ballon?.gekauft, belohnung: 25 },
   // ---------- Etappe 3: Das große Abenteuer ----------
   { titel: 'Bau ein Fernrohr', start: 'fernrohrBauen', tipp: 'An der Werkbank 🔨: 2 Eisenerz + 1 Gold + 1 Holz. Das geht ab Tag 3 – wenn du dich selbst versorgst und eine Holzhütte hast.', geschafft: (s) => s.rucksack.hat('fernrohr') || (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
   { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Halt den Kreis auf eine Insel im Nebel, bis sie entdeckt ist.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
@@ -197,6 +196,19 @@ const ERKLAERUNG = {
     text: `<p>Dein <b>altes Zelt</b> ist jetzt ein <b>Reisezelt</b> und liegt in deinem <b>Rucksack</b> 🎒 (es braucht 3 Plätze).</p>
       <p class="erklaer-aufgabe">So geht's: Rucksack öffnen, Reisezelt antippen, <b>„⛺ Aufstellen“</b>. Dann kannst du dort <b>schlafen</b> – auch auf anderen Inseln! Hinter dem Zelt packst du es wieder <b>ein</b>.</p>
       <p>Und im großen Zelt schläfst du so gut, dass du nachts nur <b>halb so schnell hungrig</b> wirst. 😴</p>`,
+  },
+  baseStufe4: {
+    bild: '🎈',
+    titel: 'Hütte mit Garten – und ein Ballonplatz!',
+    text: `<p>Im <b>Garten</b> wachsen jetzt jeden Tag <b>Karotten</b> 🥕 – für dich und für Pferde.</p>
+      <p class="erklaer-aufgabe">Neben deiner Hütte ist jetzt Platz für einen <b>Heißluftballon</b> 🎈! Du bekommst ihn beim <b>Händler im Dorf</b> für <b>${EINSTELLUNGEN.kaufPreise.ballon} Münzen</b>.</p>
+      <p>Mit dem Ballon fliegst du ganz schnell zum Dorf, nach Hause und zu den Inseln, die du schon kennst.</p>`,
+  },
+  ballonTipp: {
+    bild: '🎈',
+    titel: 'Immer so weit laufen?',
+    text: `<p>Du läufst ganz schön oft hin und her! Wusstest du, dass es einen <b>Heißluftballon</b> 🎈 gibt? Mit dem fliegst du ganz schnell zum Dorf, nach Hause und zu anderen Inseln.</p>
+      <p class="erklaer-aufgabe">Bau deine Base auf <b>Stufe 4</b> aus (<b>Hütte mit Garten</b>) – dann ist Platz für einen Ballon, und der Händler verkauft ihn dir für <b>${EINSTELLUNGEN.kaufPreise.ballon} Münzen</b>.</p>`,
   },
   baseStufe3: {
     bild: '🛖',
@@ -584,7 +596,7 @@ export class Aufgaben {
   }
 
   alsDaten() {
-    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 10, klippeBesucht: !!this.klippeBesucht };
+    return { nummer: this.nummer, fischGegessen: this.fischGegessen, brotGegessen: this.brotGegessen, gehandelt: this.gehandelt, holzGekauft: this.holzGekauft, erklaert: this.erklaert, version: 11, klippeBesucht: !!this.klippeBesucht };
   }
 
   ladeDaten(d) {
@@ -609,6 +621,8 @@ export class Aufgaben {
     if ((d.version || 1) < 9) nummer = { 25: 25, 26: 28, 27: 29, 28: 25, 29: 31, 30: 32 }[nummer] ?? nummer;
     // Version 9 kannte „Bau ein Seil zum Hochschießen“ (jetzt 30) noch nicht
     if ((d.version || 1) < 10 && nummer >= 30) nummer += 1;
+    // Version 10 hatte noch „Spar 150 Münzen und kauf den Ballon“ (Nummer 20) – die ist raus, der Ballon kommt mit Base-Stufe 4
+    if ((d.version || 1) < 11 && nummer > 20) nummer -= 1;
     this.klippeBesucht = !!d.klippeBesucht;
     this.rallyePruefen = true; // einmal nachschauen, ob die Rallye übersprungen wurde (siehe aktualisiere)
     this.holzGekauft = !!d.holzGekauft || nummer > 12;
