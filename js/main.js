@@ -333,6 +333,7 @@ rallye.inDieTruhe = (id, nurPruefen = false) => {
 };
 aufgaben.spiel.werkbank = werkbank;
 aufgaben.spiel.seilkanone = seilkanone;
+aufgaben.spiel.ballon = ballon;
 werkbank.spiel.inDieTruhe = rallye.inDieTruhe; // Werkbank: Rucksack voll? Dann in die Truhe
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
 function groessererRucksack() {
@@ -363,6 +364,8 @@ werkbank.spiel.sperre = (id) => {
   // Die Seilkanone erst, wenn man weiß, wofür: Die Münze oben auf der Klippe (das sagt einem ein Inselbewohner)
   if (id === 'seilkanone') return bewohner.trigger || rucksack.hat('seilkanone') || tauchen.gefunden ? null : 'Wozu? Sprich erst mit den Menschen auf der Palmeninsel 🌴 – dann weißt du, wofür du sie brauchst.';
   if (id !== 'fernrohr' || rucksack.hat('fernrohr') || karte.entdeckteInseln.length > 0) return null;
+  // Aufgaben der Reihe nach: Das Fernrohr gibt es erst, wenn seine Aufgabe dran ist
+  if (!aufgaben.istDran('Bau ein Fernrohr')) return `Erst die Aufgabe „${aufgaben.aktuellerTitel()}“ schaffen!`;
   const fehlt = (EINSTELLUNGEN.fernrohrNachAufgaben || []).filter((t) => !aufgaben.istGeschafft(t));
   if (fehlt.length) return `Erst wenn du dich selbst versorgst: ${fehlt.join(' + ')}`;
   if (tageszeit.tag < EINSTELLUNGEN.fernrohrAbTag) return `Erst ab Tag ${EINSTELLUNGEN.fernrohrAbTag}`;

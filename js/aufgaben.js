@@ -31,7 +31,7 @@ const AUFGABEN = [
   { titel: 'Bau das große Zelt', tipp: 'Am Schild „BASE“ neben dem Zelt das Base-Menü öffnen und ausbauen.', geschafft: (s) => (s.base?.stufe || 1) >= 2, belohnung: 10 },
   { titel: 'Bau eine Holzhütte', tipp: 'Wieder im Base-Menü. In der Hütte steht eine Truhe 📦 – dort kannst du Sachen aufbewahren, wenn dein Rucksack voll ist!', geschafft: (s) => (s.base?.stufe || 1) >= 3, belohnung: 15 },
   { titel: 'Zähme ein Wildpferd', tipp: 'Kauf einen 3er-Pack Äpfel im Dorf, nimm einen in die Hand 🍎 und füttere ein Wildpferd 3 Mal. Dann kommt es neugierig zu dir!', geschafft: (s) => !!s.pferde?.eigenes, belohnung: 15 },
-  { titel: 'Spar 150 Münzen', tipp: 'Verkauf, was du findest. Bald brauchst du viel Geld für das große Abenteuer …', geschafft: (s) => s.rucksack.muenzen >= 150, belohnung: 25 },
+  { titel: 'Spar 150 Münzen und kauf den Ballon', tipp: 'Verkauf, was du findest, bis du 150 Münzen hast. Dann kauf beim Händler im Dorf den Heißluftballon 🎈 – er steht danach an deiner Base. Erst dann geht es weiter!', geschafft: (s) => !!s.ballon?.gekauft, belohnung: 25 },
   // ---------- Etappe 3: Das große Abenteuer ----------
   { titel: 'Bau ein Fernrohr', start: 'fernrohrBauen', tipp: 'An der Werkbank 🔨: 2 Eisenerz + 1 Gold + 1 Holz. Das geht ab Tag 3 – wenn du dich selbst versorgst und eine Holzhütte hast.', geschafft: (s) => s.rucksack.hat('fernrohr') || (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5 },
   { titel: 'Entdecke eine neue Insel', start: 'nebel', tipp: 'Fernrohr in die Hand, an die Küste gehen (am besten auf einen Hügel) und „Durchschauen“. Halt den Kreis auf eine Insel im Nebel, bis sie entdeckt ist.', geschafft: (s) => (s.karte?.entdeckteInseln || []).length > 0, belohnung: 5, danach: 'inselEntdeckt' },
@@ -401,6 +401,17 @@ export class Aufgaben {
   }
 
   // Ist die Aufgabe mit diesem Titel schon geschafft?
+  // Ist diese Aufgabe schon dran (oder schon geschafft)? Vorher bleibt das, was dazu gehört, gesperrt.
+  istDran(titel) {
+    const i = AUFGABEN.findIndex((a) => a.titel === titel);
+    return i < 0 || i <= this.nummer;
+  }
+
+  // Der Titel der Aufgabe, die gerade dran ist
+  aktuellerTitel() {
+    return AUFGABEN[this.nummer]?.titel || '';
+  }
+
   istGeschafft(titel) {
     const i = AUFGABEN.findIndex((a) => a.titel === titel);
     return i >= 0 && i < this.nummer;

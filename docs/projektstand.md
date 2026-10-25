@@ -30,7 +30,7 @@ Wenn ein neuer Chat mit Claude startet, liest Claude zuerst hier und in `CLAUDE.
   - Jede der ersten 6 Aufgaben wird beim Start einmal groß erklärt (`start:` in AUFGABEN): Aufgabenbuch (die Anzeige oben links blinkt danach), Schaufel in die Hand, Hügel suchen, „Grab weiter bis 3 Steine + 2 Eisenerz“, ab ins Dorf, Brot essen, verkaufen
 - **Fortschritt in Stufen** (Wunsch des Produzenten nach dem Testen):
   - **Nebel** 🌫️ um Palmen- und Klippeninsel (js/nebel.js): Boot und Zauberpilz drehen um. Erst wer die Insel mit dem **Fernrohr** entdeckt, kommt durch.
-  - **Fernrohr** an der Werkbank erst, wenn man sich selbst versorgt (Fisch gegessen + großes Zelt) und ab **Tag 3** (`fernrohrAbTag`, `fernrohrNachAufgaben`)
+  - **Fernrohr** an der Werkbank erst, wenn seine Aufgabe dran ist (vorher: Ballon kaufen), man sich selbst versorgt (Fisch gegessen + großes Zelt) und ab **Tag 3** (`fernrohrAbTag`, `fernrohrNachAufgaben`)
   - Neue Aufgaben „Bau ein Fernrohr“, „Sammle alles für die Seilkanone“ (danach: „Achtung, dir fehlt der Widerhaken!“) und „Gewinne die Zauberpilz-Rallye“ – der **erste Rallye-Sieg bringt den Widerhaken** (nicht baubar, nicht kaufbar)
   - **Großes Ziel** steht oben im Aufgabenbuch; Erklär-Fenster bei Selbstversorgung, Insel entdeckt, erste Ankunft auf Palmen- und Klippeninsel
   - **Geschichte auf der Palmeninsel**: Man fragt jeden Bewohner nach dem Insadorium. Der erste verrät: „unter Wasser suchen – jemand hier hat eine Taucherbrille“ → Aufgaben „Frag die Bewohner nach dem Insadorium“ und „Finde die Person mit der Taucherbrille“. Danach: Seilkanone (Teile → Widerhaken-Warnung → Rallye → bauen) → 3 Münzen → Taucherbrille → Insadorium. Die Klippeninsel lässt das Boot erst nach dem Gespräch an Land (`klippeSperrAbstand`).
