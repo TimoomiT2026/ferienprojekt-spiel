@@ -17,6 +17,7 @@ import { knopf } from './steuerung.js';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { Sturmfilm } from './sturmfilm.js';
 import { STADT, HALB, BODEN, Stadtplan, baueDuesseldorf } from './stadtbau.js';
+import { baueLabor, laborHoehe, kameraImLabor, schaftRadius, polar, LABOR_Y, AUFZUG_OBEN } from './labor.js';
 
 export { STADT };
 const E = () => EINSTELLUNGEN.prolog;
@@ -60,6 +61,7 @@ export class Prolog {
     return this.plan.feld(x - STADT.x, z - STADT.z);
   }
   hoehe(x, z) {
+    if (this.imLabor) return laborHoehe(x - STADT.x, z - STADT.z); // oben im Turm
     return this.plan.hoehe(x - STADT.x, z - STADT.z);
   }
   frei(x, z) {
@@ -98,11 +100,13 @@ export class Prolog {
 
   setzeSchritt(s) {
     this.schritt = s;
-    const ziele = { turm: '🗼 Geh zum Rheinturm', boot: '🚣 Lauf zum Ruderboot im Yachthafen' };
+    const ziele = { turm: '🗼 Geh zum Rheinturm', computer: '💻 Geh zum Computer', runter: '🛗 Fahr mit dem Aufzug wieder runter', boot: '🚣 Lauf zum Ruderboot im Yachthafen' };
     this.zielAnzeige.innerHTML = `<span>${ziele[s] || ''}</span>`;
     this.zielAnzeige.style.display = ziele[s] ? '' : 'none';
     this.markerTurm.visible = s === 'turm';
     this.markerBoot.visible = s === 'boot';
+    this.markerComputer.visible = s === 'computer';
+    this.markerAufzug.visible = s === 'runter';
   }
 
   // ---------- Die Stadt bauen (das meiste macht stadtbau.js) ----------
@@ -117,6 +121,8 @@ export class Prolog {
     const weitWegVomBoot = (x, z) => Math.hypot(x - this.boot.wasser.x, z - this.boot.wasser.z) > 9;
     this.stadt = baueDuesseldorf(this.szene, this.plan, { hindernisse: this.spiel.hindernisse, frei: weitWegVomBoot, tuerWinkel: w });
     this.gruppe = this.stadt.gruppe;
+    this.tuerWinkel = w;
+    this.lab = baueLabor(this.gruppe, w); // das Labor oben in der Kugel + der Glas-Aufzug
     const { boot } = baueBoot(baueHolzTextur());
     boot.position.set(this.boot.wasser.x, 0, this.boot.wasser.z);
     boot.rotation.y = Math.atan2(this.boot.land.x - this.boot.wasser.x, this.boot.land.z - this.boot.wasser.z) + Math.PI / 2;
@@ -158,10 +164,18 @@ export class Prolog {
     this.markerTurm.position.set(this.tuer.x, BODEN + 0.1, this.tuer.z);
     this.markerBoot = ring();
     this.markerBoot.position.set(this.boot.land.x, BODEN + 0.1, this.boot.land.z);
-    this.gruppe.add(this.markerTurm, this.markerBoot);
+    this.markerComputer = ring();
+    this.markerComputer.position.set(this.lab.computerPlatz.x, LABOR_Y + 0.05, this.lab.computerPlatz.z);
+    this.markerComputer.scale.setScalar(0.6);
+    this.markerAufzug = ring();
+    this.markerAufzug.position.set(this.lab.aufzugTuer.x, LABOR_Y + 0.05, this.lab.aufzugTuer.z);
+    this.markerAufzug.scale.setScalar(0.6);
+    this.gruppe.add(this.markerTurm, this.markerBoot, this.markerComputer, this.markerAufzug);
     const welt = (p) => new THREE.Vector3(STADT.x + p.x, BODEN, STADT.z + p.z);
     this.interaktionen = [
-      { pos: welt(this.tuer), radius: 5, bild: '🛗', text: 'Hochfahren', aktiv: () => this.aktiv && this.schritt === 'turm', ausfuehren: () => this.labor() },
+      { pos: welt(this.tuer), radius: 5, bild: '🛗', text: 'Hochfahren', aktiv: () => this.aktiv && this.schritt === 'turm', ausfuehren: () => this.hochfahren() },
+      { pos: welt(this.lab.computerPlatz), radius: 3, bild: '💻', text: 'Forschen', aktiv: () => this.imLabor && this.schritt === 'computer', ausfuehren: () => this.forschen() },
+      { pos: welt(this.lab.aufzugTuer), radius: 3, bild: '🛗', text: 'Runterfahren', aktiv: () => this.imLabor && this.schritt === 'runter', ausfuehren: () => this.runterfahren() },
       { pos: welt(this.boot.land), radius: 5, bild: '🚣', text: 'Losrudern', aktiv: () => this.aktiv && this.schritt === 'boot', ausfuehren: () => this.ablegen() },
     ];
     this.spiel.objekte.interaktionen.push(...this.interaktionen);
@@ -186,6 +200,10 @@ export class Prolog {
     // Wischen im Fenster = scrollen (nicht die Spielsteuerung) – wie bei allen anderen Fenstern
     this.karte.addEventListener('touchstart', (ev) => ev.stopPropagation());
     this.karte.addEventListener('touchmove', (ev) => ev.stopPropagation());
+    // Weiß aufblenden, wenn der Aufzug oben ankommt
+    this.blende = document.createElement('div');
+    this.blende.id = 'prolog-blende';
+    e.appendChild(this.blende);
   }
 
   // Ein großes Erzähl-Fenster mit einem Knopf
@@ -198,24 +216,144 @@ export class Prolog {
     });
   }
   get offen() {
-    return this.karte?.classList.contains('offen');
+    return this.karte?.classList.contains('offen') || !!this.ablauf; // im Aufzug kann man nicht laufen
+  }
+  // Im Labor ist es eng: die Kamera kommt näher
+  get kameraAbstandFaktor() {
+    return this.imLabor ? 0.55 : 1;
+  }
+  kameraKlemmen(v) {
+    if (this.imLabor) return kameraImLabor(v, STADT);
+    if (!this.aktiv) return;
+    // Nie in den Turm-Schaft hinein (z. B. wenn der Aufzug außen hochfährt)
+    const lx = v.x - STADT.x, lz = v.z - STADT.z, r = Math.hypot(lx, lz);
+    if (r < 14 && r > 0.01 && v.y < BODEN + 156) {
+      v.x = STADT.x + (lx / r) * 14;
+      v.z = STADT.z + (lz / r) * 14;
+    }
   }
 
-  // ---------- Das Labor oben in der Turmkugel ----------
-  labor() {
+  // ---------- Kleine Abläufe (Aufzug fahren, Blenden) – Schritt für Schritt ----------
+  spiele(schritte) {
+    this.ablauf = { schritte, i: 0, zeit: 0 };
+  }
+  weiterSpielen(dt) {
+    const a = this.ablauf;
+    const s = a.schritte[a.i];
+    a.zeit += dt;
+    const f = Math.min(1, a.zeit / s.dauer);
+    s.tue?.(f);
+    if (f >= 1) {
+      a.i++;
+      a.zeit = 0;
+      if (a.i >= a.schritte.length) this.ablauf = null;
+    }
+  }
+  setzeBlende(staerke) {
+    this.blende.style.opacity = String(staerke);
+  }
+  // Den Glas-Aufzug (und dich darin) auf Höhe y stellen – außen am Turm entlang
+  aufzugBei(y) {
+    const p = polar(schaftRadius(y) + 1.45, this.tuerWinkel);
+    this.lab.kabine.position.set(p.x, y, p.z);
+    this.spiel.spieler.figur.position.set(STADT.x + p.x, y, STADT.z + p.z);
+  }
+
+  // ---------- Mit dem Aufzug hoch ins Labor ----------
+  hochfahren() {
+    this.setzeSchritt('');
+    const w = this.tuerWinkel, weich = (f) => f * f * (3 - 2 * f);
+    this.spiel.musik?.pling?.();
+    this.spiele([
+      { dauer: 0.01, tue: () => {
+        const p = polar(schaftRadius(BODEN) + 1.45, w);
+        this.spiel.teleport(STADT.x + p.x, STADT.z + p.z, w + 0.5, 0.35); // Kamera außen, Blick auf dich und den Turm
+        this.spiel.spieler.figur.rotation.y = w;
+      } },
+      { dauer: E().aufzugSekunden, tue: (f) => this.aufzugBei(BODEN + (AUFZUG_OBEN - BODEN) * weich(f)) },
+      { dauer: 0.5, tue: (f) => this.setzeBlende(f) },
+      { dauer: 0.01, tue: () => this.betreteLabor() },
+      { dauer: 0.7, tue: (f) => this.setzeBlende(1 - f) },
+      { dauer: 0.01, tue: () => {
+        this.setzeSchritt('computer');
+        this.spiel.musik?.pling?.();
+        this.spiel.meldung('🔬 Dein geheimes Labor – 174 Meter über dem Rhein! Geh zum Computer.', 6);
+      } },
+    ]);
+  }
+  betreteLabor() {
+    this.imLabor = true;
+    this.lab.labor.visible = true;
+    this.laborHindernisse = this.lab.hindernisse.map((h) => this.spiel.hindernisse?.hinzufuegen(STADT.x + h.x, STADT.z + h.z, h.r));
+    const a = this.lab.ankunft;
+    this.spiel.teleport(STADT.x + a.x, STADT.z + a.z, this.tuerWinkel + 1.2, 0.3);
+  }
+  verlasseLabor() {
+    this.imLabor = false;
+    this.lab.labor.visible = false;
+    for (const h of this.laborHindernisse || []) if (h) this.spiel.hindernisse.entfernen(h);
+    this.laborHindernisse = null;
+  }
+
+  // ---------- Mit dem Aufzug wieder runter ----------
+  runterfahren() {
+    this.setzeSchritt('');
+    const w = this.tuerWinkel, weich = (f) => f * f * (3 - 2 * f);
+    this.spiele([
+      { dauer: 0.5, tue: (f) => this.setzeBlende(f) },
+      { dauer: 0.01, tue: () => {
+        this.verlasseLabor();
+        const p = polar(schaftRadius(AUFZUG_OBEN) + 1.45, w);
+        this.spiel.teleport(STADT.x + p.x, STADT.z + p.z, w + 0.5, 0.6);
+        this.aufzugBei(AUFZUG_OBEN);
+      } },
+      { dauer: E().aufzugSekunden * 0.8, tue: (f) => {
+        this.aufzugBei(AUFZUG_OBEN - (AUFZUG_OBEN - BODEN) * weich(f));
+        this.setzeBlende(Math.max(0, 1 - f * 6));
+      } },
+      { dauer: 0.01, tue: () => {
+        this.spiel.teleport(STADT.x + this.tuer.x, STADT.z + this.tuer.z, this.tuerWinkel, 0.3);
+        this.setzeSchritt('boot');
+        this.spiel.meldung('🚣 Schnell zum Ruderboot im Yachthafen – folge dem gelben Pfeil!', 6);
+      } },
+    ]);
+  }
+
+  // ---------- Oben im Labor: am Computer forschen ----------
+  forschen() {
     this.setzeSchritt('');
     this.spiel.musik?.pling?.();
-    const raum = laborBild();
-    this.zeigeKarte(`${raum}<h2>Dein geheimes Labor</h2>
-      <p>Ganz oben in der Kugel des Rheinturms, 170 Meter über dem Rhein. 🔬</p>
-      <p>Du erforschst ein großes Rätsel: Vor langer Zeit gab es ein Computerspiel namens <b>„Mini Blocks“</b>. Alle Menschen wurden süchtig danach – deshalb wurde es <b>für immer verbannt</b>.</p>
-      <p>Aber die Kinder wollen es immer noch spielen. Es gibt nur ein Material, das die Sucht für immer beenden kann: das <b>Insadorium</b> 🔴. Doch <b>niemand</b> hat es je gesehen …</p>`,
-      '💻 An den Computer', () => this.chat(), 'labor');
+    this.zeigeKarte(`<h2>Deine Forschung 🔬</h2>
+      <p>Vor langer Zeit gab es ein Computerspiel namens <b>„Mini Blocks“</b>. Alle Menschen wurden süchtig danach – deshalb wurde es <b>für immer verbannt</b>.</p>
+      <p>Aber die Kinder wollen es immer noch spielen. Es gibt nur ein Material, das die Sucht für immer beenden kann: das <b>Insadorium</b> 🔴. Doch <b>niemand</b> hat es je gesehen …</p>
+      <p>🔥 Du verfolgst gerade eine <b>heiße Spur</b>: Heute soll im Chat von Mini Blocks ein <b>anonymer Tipp</b> eingehen – <b>wo man das Insadorium finden kann!</b></p>
+      <p>Mach den Computer an und logg dich als Forscher bei Mini Blocks ein. 🕵️</p>`,
+      '💻 Computer anmachen', () => this.computerAn(), 'labor');
+  }
+
+  computerAn() {
+    this.lab.computer.userData.anschalten?.();
+    this.spiel.musik?.pling?.();
+    this.zeigeKarte(`<div class="computer"><div class="mini-blocks">${'<i></i>'.repeat(48)}<b>MINI BLOCKS</b></div>
+      <div class="login">
+        <div class="login-feld"><span>👤 Name</span><b class="login-name"></b></div>
+        <div class="login-feld"><span>🔑 Passwort</span><b class="login-pw"></b></div>
+        <p class="login-hinweis">🕵️ Forscher-Zugang: nur mitlesen – nicht spielen!</p>
+      </div></div>`,
+      '🔑 Einloggen', () => this.chat(), 'labor');
+    // Name und Passwort tippen sich selbst ein
+    const knopfEl = this.karte.querySelector('button');
+    knopfEl.disabled = true;
+    const tippe = (el, text, start) => [...text].forEach((z, i) => setTimeout(() => { if (el.isConnected) el.textContent += z; }, start + i * 110));
+    const name = 'Forscher_007';
+    tippe(this.karte.querySelector('.login-name'), name, 500);
+    tippe(this.karte.querySelector('.login-pw'), '••••••••', 700 + name.length * 110);
+    setTimeout(() => { knopfEl.disabled = false; }, 1100 + (name.length + 8) * 110);
   }
 
   chat() {
     const nachrichten = E().chat;
-    this.zeigeKarte(`<div class="computer"><div class="mini-blocks">${'<i></i>'.repeat(48)}<b>MINI BLOCKS</b></div><div class="chat"><div class="chat-kopf">💬 Geheimer Chat</div><div class="chat-liste"></div></div></div>`,
+    this.zeigeKarte(`<div class="computer"><div class="mini-blocks">${'<i></i>'.repeat(48)}<b>MINI BLOCKS</b></div><div class="chat"><div class="chat-kopf">💬 Mini Blocks Chat · ✅ eingeloggt als Forscher_007</div><div class="chat-liste"></div></div></div>`,
       '🧭 Reise planen', () => this.reiseplan(), 'labor');
     const liste = this.karte.querySelector('.chat-liste');
     const knopfEl = this.karte.querySelector('button');
@@ -236,8 +374,8 @@ export class Prolog {
     const punkte = E().reiseplan;
     this.zeigeKarte(`<h2>🧭 Die Reise planen</h2><ul class="reiseplan">${punkte.map((p) => `<li>${p}</li>`).join('')}</ul>`,
       'Los geht\'s! ⬇️', () => {
-        this.setzeSchritt('boot');
-        this.spiel.meldung('🚣 Schnell zum Ruderboot im Yachthafen – folge dem gelben Pfeil!', 6);
+        this.setzeSchritt('runter');
+        this.spiel.meldung('🛗 Fahr mit dem Aufzug runter – und dann schnell zum Ruderboot!', 6);
       }, 'labor');
     const knopfEl = this.karte.querySelector('button');
     knopfEl.disabled = true;
@@ -258,29 +396,12 @@ export class Prolog {
   aktualisiere(dt) {
     if (!this.aktiv) return;
     this.stadt?.aktualisiere(dt); // Schiffe und Autos fahren
+    if (this.ablauf) this.weiterSpielen(dt);
     const t = performance.now() / 1000;
-    for (const m of [this.markerTurm, this.markerBoot]) {
+    for (const m of [this.markerTurm, this.markerBoot, this.markerComputer, this.markerAufzug]) {
       if (!m.visible) continue;
       m.userData.pfeil.position.y = 4 + Math.sin(t * 3) * 0.5;
       m.rotation.y += dt;
     }
   }
-}
-
-// Das Labor als Bild: runder Raum, schräge Fenster, draußen der Rhein
-function laborBild() {
-  return `<svg class="labor-bild" viewBox="0 0 400 150" aria-hidden="true">
-    <defs><linearGradient id="himmelL" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fc9f0"/><stop offset="1" stop-color="#d9efff"/></linearGradient></defs>
-    <rect width="400" height="150" rx="16" fill="#3a4656"/>
-    ${[20, 110, 200, 290].map((x) => `<path d="M${x} 18 L${x + 90} 18 L${x + 80} 92 L${x + 10} 92 Z" fill="url(#himmelL)" stroke="#2a3340" stroke-width="5"/>
-      <path d="M${x + 10} 80 Q${x + 45} 70 ${x + 80} 82 L${x + 80} 92 L${x + 10} 92 Z" fill="#4f86b8"/>
-      <rect x="${x + 25}" y="66" width="8" height="14" fill="#c9bfae"/><rect x="${x + 55}" y="60" width="10" height="20" fill="#b7aa96"/>`).join('')}
-    <rect x="0" y="100" width="400" height="50" fill="#56483a"/>
-    <rect x="130" y="104" width="140" height="10" rx="4" fill="#8a6a46"/>
-    <rect x="170" y="64" width="60" height="40" rx="5" fill="#1d2430" stroke="#9aa6b5" stroke-width="3"/>
-    <rect x="176" y="70" width="48" height="28" rx="2" fill="#3fae3a"/>
-    <rect x="196" y="104" width="8" height="6" fill="#9aa6b5"/>
-    <circle cx="300" cy="96" r="9" fill="#ff5a3a" opacity="0.9"/><rect x="292" y="104" width="16" height="10" rx="3" fill="#cfd6df"/>
-    <rect x="90" y="86" width="22" height="18" rx="4" fill="#e9e2d0"/><circle cx="101" cy="83" r="6" fill="#7fd2ff" opacity="0.85"/>
-  </svg>`;
 }

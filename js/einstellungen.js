@@ -404,6 +404,7 @@ export const EINSTELLUNGEN = {
   prolog: {
     start: [-196, -24], // wo man anfängt: an der Rheinpromenade (Meter ab dem Rheinturm: x = Osten, z = Süden)
     sichtweite: 1000, // so weit sieht man in Düsseldorf (Meter)
+    aufzugSekunden: 9, // so lange fährt der Glas-Aufzug am Rheinturm hoch
     baeume: 420, // so viele Bäume stehen in der Stadt
     gras: 26000, // so viele Gras-Büschel wachsen auf den Wiesen
     // Schiffe auf dem Rhein: art = container / schuett / ausflug,

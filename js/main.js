@@ -477,6 +477,7 @@ const NEUE_DINGE = [['schaufel', 'schaufel'], ['angel', 'angel'], ['tofufisch', 
   ['leine', 'leine'], ['fernrohr', 'fernrohr'], ['schwert', 'schwert'],
   ['wertvolleMuenze', 'wertvolleMuenze'], ['taucherbrille', 'taucherbrille'], ['seilkanone', 'seilkanone']];
 function tutorialPruefen(dt, naechste, pos) {
+  if (prolog.aktiv) return; // in Düsseldorf gibt es noch keine Insel-Tipps (Schaufel usw.)
   // Was ist gerade in der Nähe?
   if (naechste && !spieler.fliegt && !tauchen.taucht && !ballon.faehrt) {
     if (naechste === werkbank.interaktion) tutorial.neu('werkbank');
@@ -582,14 +583,16 @@ function bewegeKamera(dt, drehung, neigung) {
   const p = spieler.figur.position;
   // Beim Fliegen geht die Kamera weich etwas weiter weg
   flugZoom += ((spieler.fliegt ? 1 : 0) - flugZoom) * Math.min(1, dt * 2);
-  const abstand = EINSTELLUNGEN.kameraAbstand * (1 + 0.45 * flugZoom + 1.8 * ballon.kameraZoom) * tauchen.kameraAbstandFaktor * rallye.kameraAbstandFaktor;
+  const abstand = EINSTELLUNGEN.kameraAbstand * (1 + 0.45 * flugZoom + 1.8 * ballon.kameraZoom) * tauchen.kameraAbstandFaktor * rallye.kameraAbstandFaktor * prolog.kameraAbstandFaktor;
   const ziel = new THREE.Vector3(
     p.x + Math.sin(kameraWinkel) * Math.cos(kameraNeigung) * abstand,
     p.y + 1.5 + Math.sin(kameraNeigung) * abstand,
     p.z + Math.cos(kameraWinkel) * Math.cos(kameraNeigung) * abstand
   );
+  prolog.kameraKlemmen(ziel); // im Labor oben im Rheinturm bleibt die Kamera drinnen
   ziel.y = Math.max(ziel.y, bodenHoehe(ziel.x, ziel.z) + 1, 0.8);
   kameraPos.lerp(ziel, Math.min(1, dt * 8));
+  prolog.kameraKlemmen(kameraPos);
   kameraPos.y = Math.max(kameraPos.y, bodenHoehe(kameraPos.x, kameraPos.z) + 0.8); // nie im Hügel stecken
   const decke = tauchen.kameraDecke; // unter Wasser bleibt die Kamera auch unter Wasser
   if (decke !== null) { ziel.y = Math.min(ziel.y, decke); kameraPos.y = Math.min(kameraPos.y, decke); }

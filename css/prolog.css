@@ -77,3 +77,13 @@ body.prolog-film #hud, body.prolog-film #prolog-ziel, body.prolog-film #prolog-u
   #prolog-karte .knopf-reihe { position: sticky; bottom: -12px; background: linear-gradient(rgba(255, 247, 230, 0), #fff7e6 35%); padding-top: 8px; }
 }
 #prolog-karte { touch-action: pan-y; overscroll-behavior: contain; }
+
+/* Login bei Mini Blocks (Forscher-Zugang) */
+.login { flex: 1; display: flex; flex-direction: column; gap: 10px; justify-content: center; background: #1d2430; border-radius: 12px; padding: 14px; color: #e8eef5; }
+.login-feld { display: flex; align-items: center; gap: 10px; background: #2b3442; border-radius: 8px; padding: 8px 10px; font-size: 16px; }
+.login-feld span { flex: 0 0 auto; color: #9fb0c2; }
+.login-feld b { flex: 1; min-height: 1.2em; font-family: ui-monospace, monospace; letter-spacing: 1px; color: #7dff8a; }
+.login-hinweis { margin: 2px 0 0; font-size: 14px; color: #ffd84a; }
+
+/* Weiße Blende, wenn der Aufzug oben ankommt */
+#prolog-blende { position: absolute; inset: 0; background: #fff; opacity: 0; pointer-events: none; z-index: 30; }

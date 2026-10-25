@@ -37,6 +37,10 @@
 <body>
   <div id="spielfeld">
     <div id="start">
+      <script>
+        // Nach dem Prolog-Film: Startbildschirm gar nicht erst zeigen (main.js geht gleich weiter)
+        try { if (sessionStorage.getItem('inselspiel-direktstart') === '1') document.getElementById('start').classList.add('weg'); } catch (e) {}
+      </script>
       <h1>Inselspiel</h1>
       <p class="untertitel">Ein Ferienprojekt von Jori</p>
       <p class="tippen">Tippen zum Starten</p>

@@ -182,8 +182,9 @@ function maleStadtplan() {
     g.fillStyle = `rgb(0,${Math.min(250, Math.max(21, Math.round(h.h)))},0)`;
     zeichnePfad(g, h.p, P); g.closePath(); g.fill();
   }
+  // Der Fuß vom Rheinturm (die Daten zeigen die breite Kugel oben – unten ist der Schaft schmaler)
   g.fillStyle = 'rgb(0,250,0)';
-  zeichnePfad(g, DUESSELDORF.turm, P); g.closePath(); g.fill();
+  g.beginPath(); g.arc(HALB / PIXEL, HALB / PIXEL, 11.8 / PIXEL, 0, Math.PI * 2); g.fill();
   // Wo die Brücke noch ganz flach ist, kann man nicht drunter durch
   g.fillStyle = 'rgb(0,30,0)';
   zeichnePfad(g, [brueckePunkt(0, -BRUECKE.breite / 2), brueckePunkt(26, -BRUECKE.breite / 2), brueckePunkt(26, BRUECKE.breite / 2), brueckePunkt(0, BRUECKE.breite / 2)].map((v) => [v.x, v.y]), P);
