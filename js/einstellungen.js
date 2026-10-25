@@ -371,6 +371,8 @@ export const EINSTELLUNGEN = {
 
   // Im tiefen Wasser festgesteckt? Nach so vielen Sekunden schwimmt man zum nächsten Strand
   rettungNachSekunden: 2,
+  // Festgeklemmt? Wer so viele Sekunden in 3 Richtungen schiebt und nicht vom Fleck kommt, wird gerettet
+  klemmSekunden: 4,
 
   // ---------- Heißluftballon 🎈 ----------
   // Beim wievielten Weg ins Dorf (noch ohne Ballon) kommt der Tipp: „Es gibt einen Ballon!“

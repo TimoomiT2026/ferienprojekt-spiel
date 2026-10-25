@@ -563,12 +563,46 @@ export class Spieler {
     if (this.festZeit < (EINSTELLUNGEN.rettungNachSekunden ?? 2)) return;
     this.festZeit = 0;
     this.eingesperrt = false;
-    // Unten an der Klippeninsel? Dann wieder nach oben aufs Plateau (innen am Zaun) – sonst zum nächsten Strand
+    this.retten();
+  }
+
+  // Die Figur in Sicherheit bringen: an der Klippeninsel nach oben aufs Plateau (innen am Zaun),
+  // sonst zum nächsten Strand
+  retten() {
+    const pos = this.figur.position;
     const ort = (nahAnDerKlippe(pos.x, pos.z) && platzInnenAmZaun(pos.x, pos.z)) || this.suchLandOrt(pos.x, pos.z);
     if (!ort) return;
     pos.set(ort.x, bodenHoehe(ort.x, ort.z), ort.z);
     this.geschwindigkeitY = 0;
+    if (this.klemm) this.klemm.zeit = 0;
     this.beiRettung?.();
+  }
+
+  // ---------- Festgeklemmt? ----------
+  // Wer mehrere Sekunden lang in mindestens 3 verschiedene Richtungen schiebt
+  // und trotzdem nicht vom Fleck kommt, steckt fest – dann retten wir ihn.
+  pruefeKlemmen(dt, schiebt, winkel) {
+    const k = (this.klemm ||= { zeit: 0, pause: 0, x: 0, z: 0, richtungen: new Set() });
+    const pos = this.figur.position;
+    if (!schiebt) {
+      k.pause += dt;
+      if (k.pause > 3) k.zeit = 0; // lange nicht geschoben: von vorne zählen
+      return;
+    }
+    if (k.zeit === 0) {
+      k.x = pos.x;
+      k.z = pos.z;
+      k.richtungen.clear();
+    }
+    k.pause = 0;
+    k.zeit += dt;
+    const voll = Math.PI * 2;
+    k.richtungen.add(Math.round((((winkel % voll) + voll) % voll) / (Math.PI / 4)) % 8);
+    if (Math.hypot(pos.x - k.x, pos.z - k.z) > 0.6) {
+      k.zeit = 0; // man kommt voran – alles gut
+      return;
+    }
+    if (k.zeit >= (EINSTELLUNGEN.klemmSekunden ?? 4) && k.richtungen.size >= 3) this.retten();
   }
 
   // Wie groß ist der Fleck, auf dem man steht? Wir gehen in 1-m-Schritten überall hin,
@@ -599,7 +633,7 @@ export class Spieler {
       for (let i = 0; i < schritte; i++) {
         const w = (i / schritte) * Math.PI * 2;
         const px = x + Math.cos(w) * r, pz = z + Math.sin(w) * r;
-        if (!this.kannStehen(px, pz) || istKlippenWand(px, pz)) continue;
+        if (!this.kannStehen(px, pz) || istKlippenWand(px, pz) || this.kleinerFleck(px, pz)) continue;
         if (bodenHoehe(px, pz) > wasserHoeheBei(px, pz) + 0.2 && bodenHoehe(px, pz) < WASSER_HOEHE + 6) return { x: px, z: pz };
         if (!notfalls) notfalls = { x: px, z: pz };
       }
@@ -693,6 +727,7 @@ export class Spieler {
       // So schnell sind wir wirklich gekommen (an einem Baum: fast gar nicht)
       if (dt > 0) tempoZiel = Math.hypot(pos.x - altX, pos.z - altZ) / dt;
     }
+    this.pruefeKlemmen(dt, staerke > 0.5, staerke > 0.05 ? Math.atan2(richtung.x, richtung.y) + kameraWinkel : 0);
 
     // Springen und Schwerkraft
     if (springen && this.amBoden) {
