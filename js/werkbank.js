@@ -11,6 +11,14 @@ import { BILDER } from './bilder.js';
 import { knopf } from './steuerung.js';
 import { textur } from './texturen.js';
 
+// Woher bekommt man eine Zutat? Steht als Tipp unter dem Rezept, wenn sie noch fehlt
+const WOHER = {
+  schnur: '🧵 Schnur baust du hier an der Werkbank – aus 2 Holz.',
+  schuh: '👞 Einen alten Schuh fischst du beim Angeln aus dem Wasser.',
+  seil: '➰ Das Seil baust du hier an der Werkbank – aus 3 Schnüren.',
+  kohle: '⛏️ Kohle findest du beim Graben.',
+};
+
 function baueTisch() {
   const tisch = new THREE.Group();
   const holz = new THREE.MeshStandardMaterial({ map: textur('rinde.jpg'), color: '#c9a27a', roughness: 0.9 });
@@ -102,9 +110,14 @@ export class Werkbank {
           return `<span class="zutat ${hat >= n ? 'ok' : 'fehlt'}">${DINGE[z].bild} ${Math.min(hat, n)}/${n} ${DINGE[z].name}${preis}</span>`;
         })
         .join('');
+      // Tipps für Zutaten, die noch fehlen
+      const tipps = sperre ? '' : Object.entries(zutaten)
+        .filter(([z, n]) => WOHER[z] && rucksack.anzahl(z) < n)
+        .map(([z]) => `<div class="rezept-tipp">${WOHER[z]}</div>`)
+        .join('');
       zeile.innerHTML = `
         <div class="rezept-bild">${ding.bild}</div>
-        <div class="rezept-mitte"><b>${ding.name}</b><div class="zutaten">${zutatenHtml}</div>${sperre ? `<div class="rezept-sperre">🔒 ${sperre}</div>` : ''}</div>
+        <div class="rezept-mitte"><b>${ding.name}</b><div class="zutaten">${zutatenHtml}</div>${tipps}${sperre ? `<div class="rezept-sperre">🔒 ${sperre}</div>` : ''}</div>
         <button class="bauen" ${kannBauen ? '' : 'disabled'}>${sperre ? '🔒' : 'Bauen'}</button>`;
       knopf(zeile.querySelector('.bauen'), () => this.bauen(id));
       liste.appendChild(zeile);
@@ -125,15 +138,27 @@ export class Werkbank {
       return;
     }
     for (const [z, n] of Object.entries(zutaten)) rucksack.nehmen(z, n);
+    let inDerTruhe = false;
     if (!rucksack.hinein(id)) {
-      // Kein Platz: Zutaten zurückgeben
-      for (const [z, n] of Object.entries(zutaten)) rucksack.hinein(z, n);
-      info.textContent = 'Dein Rucksack ist voll!';
-      return;
+      // Kein Platz im Rucksack: Hast du eine Truhe mit Platz? Dann kommt es dort hinein.
+      inDerTruhe = !!this.spiel.inDieTruhe?.(id);
+      if (!inDerTruhe) {
+        // Auch keine Truhe: Zutaten zurückgeben und laut Bescheid sagen
+        for (const [z, n] of Object.entries(zutaten)) rucksack.hinein(z, n);
+        info.textContent = '🎒 Dein Rucksack ist voll! Mach erst einen Platz frei.';
+        meldung(`🎒 Dein Rucksack ist voll – ${DINGE[id].artikel || 'ein'} ${DINGE[id].name} passt nicht mehr hinein! Wirf etwas weg oder verkauf es, dann versuch es noch mal.`, 7);
+        musik.gehtNicht?.();
+        return;
+      }
     }
     musik.pling();
-    info.innerHTML = `${DINGE[id].bild} ${DINGE[id].name} gebaut! Nimm es im Rucksack in die Hand.`;
-    meldung(`🔨 Du hast ${DINGE[id].artikel || 'ein'} ${DINGE[id].name} gebaut!`, 4);
+    if (inDerTruhe) {
+      info.innerHTML = `${DINGE[id].bild} ${DINGE[id].name} gebaut! Dein Rucksack ist voll – es liegt in deiner Truhe 📦.`;
+      meldung(`🔨 ${DINGE[id].name} gebaut! Dein Rucksack ist voll – darum liegt es in deiner Truhe 📦 an der Base.`, 7);
+    } else {
+      info.innerHTML = `${DINGE[id].bild} ${DINGE[id].name} gebaut! Nimm es im Rucksack in die Hand.`;
+      meldung(`🔨 Du hast ${DINGE[id].artikel || 'ein'} ${DINGE[id].name} gebaut!`, 4);
+    }
     this.zeichnen();
   }
 }

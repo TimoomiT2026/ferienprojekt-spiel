@@ -116,11 +116,11 @@ export const EINSTELLUNGEN = {
     schnur: { holz: 2 }, // dünnes Holz, zur Schnur gebunden
     angel: { holz: 2, schnur: 1 },
     fernrohr: { eisenerz: 2, gold: 1, holz: 1 },
-    leine: { schuh: 1, schnur: 1 }, // Leder vom alten Schuh + Schnur = Pferde-Leine
-    // Seilkanone (schwer zu schaffen!): erst Seil und Widerhaken bauen, dann die Kanone
+    // Seilkanone (schwer zu schaffen!): erst Seil bauen, dann die Kanone
     seil: { schnur: 3 }, // 3 Schnüre zusammengedreht = ein starkes Seil
     // (Den Widerhaken kann man nicht bauen – den gibt es als Preis bei der Zauberpilz-Rallye! 🏁)
     seilkanone: { holz: 4, eisenerz: 3, seil: 1, widerhaken: 1 },
+    leine: { schuh: 1, schnur: 1 }, // Leder vom alten Schuh + Schnur = Pferdeleine (nicht für die Seilkanone!)
   },
 
   // Wie oft kann man etwas benutzen, bevor es kaputt / leer ist?

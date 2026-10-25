@@ -39,7 +39,7 @@ export const DINGE = {
   kokosnuss: { name: 'Kokosnuss', bild: BILDER.kokosnuss, artikel: 'eine', text: 'Hart wie ein Stein! Essen kann man sie nicht – aber verkaufen.' },
   karotte: { name: 'Karotte', bild: BILDER.karotte, essen: true, werkzeug: true, text: 'Aus deinem Garten! Eine Mahlzeit – oder Futter für dein Pferd (in die Hand nehmen).' },
   apfel: { name: 'Apfel', bild: BILDER.apfel, werkzeug: true, text: 'Pferde lieben Äpfel! Nimm einen in die Hand und geh zu einem Wildpferd.' },
-  leine: { name: 'Leine', bild: BILDER.leine, werkzeug: true, artikel: 'eine', text: 'Aus dem Leder vom alten Schuh. In die Hand nehmen, dann kannst du dein Pferd führen und am Stall anbinden.' },
+  leine: { name: 'Pferdeleine', bild: BILDER.leine, werkzeug: true, artikel: 'eine', text: 'Aus dem Leder vom alten Schuh. In die Hand nehmen, dann kannst du dein Pferd führen und am Stall anbinden.' },
   zauberpilz: { name: 'Zauberpilz', bild: BILDER.zauberpilz, zauber: true, text: 'Selten! Essen = 1 Minute fliegen. Oder teuer verkaufen.' },
   fernrohr: { name: 'Fernrohr', bild: BILDER.fernrohr, werkzeug: true, text: 'Damit schaust du ganz weit. Vielleicht siehst du andere Inseln?' },
   seil: { name: 'Seil', bild: BILDER.seil, artikel: 'ein', text: 'Ein starkes Seil aus 3 Schnüren. Jeder Schuss mit der Seilkanone braucht eins.' },

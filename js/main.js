@@ -332,6 +332,7 @@ rallye.inDieTruhe = (id, nurPruefen = false) => {
   return true;
 };
 aufgaben.spiel.werkbank = werkbank;
+werkbank.spiel.inDieTruhe = rallye.inDieTruhe; // Werkbank: Rucksack voll? Dann in die Truhe
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler
 function groessererRucksack() {
   const n = rucksack.plaetze.length;

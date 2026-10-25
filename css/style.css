@@ -484,6 +484,7 @@ b, strong { font-weight: 700; }
 
 /* Zutaten: kleine Fächer mit Häkchen, wenn genug da ist */
 .zutaten { display: flex; flex-wrap: wrap; gap: 8px 10px; margin-top: 8px; }
+.rezept-tipp { margin-top: 4px; font-size: 14px; color: #5b6b2f; }
 .rezept-sperre { margin-top: 6px; font-size: 15px; font-weight: 700; color: #8a4f1c; background: #fff2b8; border-radius: 8px; padding: 3px 8px; display: inline-block; }
 .zutat {
   position: relative;
