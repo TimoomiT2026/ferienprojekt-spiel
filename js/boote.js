@@ -6,7 +6,7 @@
 import * as THREE from 'three';
 import { EINSTELLUNGEN } from './einstellungen.js';
 import { zufallMitSeed } from './rauschen.js';
-import { bodenHoehe, WASSER_HOEHE, imErlaubtenMeer, istKlippenWand } from './gelaende.js';
+import { bodenHoehe, WASSER_HOEHE, imErlaubtenMeer, istKlippenWand, INSELN } from './gelaende.js';
 import { wellenHoehe, wasserZeit } from './wasser.js';
 
 // ---------- Zahlen zum Rumprobieren ----------
@@ -230,16 +230,16 @@ function bauePfosten(holz) {
 // ---------- Gute Bootsplätze suchen ----------
 // Wir laufen von weit draußen auf dem Meer in Richtung Insel,
 // bis das Wasser flach wird. Dort ist das Ufer.
-function sucheUferstelle(winkel) {
-  const R = EINSTELLUNGEN.inselGroesse;
+function sucheUferstelle(winkel, mitte = { x: 0, z: 0 }, R = EINSTELLUNGEN.inselGroesse) {
   const cx = Math.cos(winkel), cz = Math.sin(winkel);
+  const mx = mitte.x, mz = mitte.z;
   let r = R + 120;
-  while (r > 20 && bodenHoehe(cx * r, cz * r) < -1.5) r -= 0.5;
+  while (r > 20 && bodenHoehe(mx + cx * r, mz + cz * r) < -1.5) r -= 0.5;
   // Weiter Richtung Land, bis Land kommt
   const kandidaten = [];
   let land = null;
   for (let s = r; s > r - 40; s -= 0.2) {
-    const h = bodenHoehe(cx * s, cz * s);
+    const h = bodenHoehe(mx + cx * s, mz + cz * s);
     if (h > 0.5) {
       land = s;
       break;
@@ -251,7 +251,31 @@ function sucheUferstelle(winkel) {
   const gut = kandidaten.filter((s) => s - land >= 1.9 && s - land <= 2.9);
   if (gut.length === 0) return null;
   const s = gut[Math.floor(gut.length / 2)];
-  return { x: cx * s, z: cz * s, landR: land, winkel };
+  return { x: mx + cx * s, z: mz + cz * s, landR: land, winkel };
+}
+
+// Notfallboote an der Klippeninsel: in jeder Bucht liegt immer eins.
+// (Falls man an der falschen Seite unten steht – damit kommt man ums Riff herum zurück.)
+function klippenNotfallPlaetze(spieler) {
+  const K = INSELN.find((I) => I.klippen);
+  if (!K) return [];
+  const plaetze = [];
+  const buchten = EINSTELLUNGEN.inseln.find((I) => I.klippen)?.buchten || []; // Richtungen der Buchten (Grad)
+  for (const grad of buchten) {
+    // Ein paar Richtungen rund um die Buchtmitte ausprobieren
+    for (const versatz of [0, 3, -3, 6, -6, 9, -9, 12, -12, 15, -15]) {
+      const s = sucheUferstelle((grad + versatz) * Math.PI / 180, K, K.radius);
+      if (!s) continue;
+      // Am Ufer muss man wirklich stehen können – und zwar am großen Strand (nicht auf einem kleinen Fleck)
+      const land = naechstesLand(s.x, s.z, 3, (x, z) => spieler.kannStehen(x, z) && !spieler.kleinerFleck(x, z));
+      if (!land || land.abstand < 1.5) continue;
+      s.land = land;
+      s.notfall = true;
+      plaetze.push(s);
+      break;
+    }
+  }
+  return plaetze;
 }
 
 // Wo ist das nächste Land? (sucht in Ringen um den Punkt herum)
@@ -325,11 +349,11 @@ export class Boote {
     const pfostenHolz = new THREE.MeshStandardMaterial({ color: '#6e4526', roughness: 0.9 });
     const seilMat = new THREE.MeshStandardMaterial({ color: '#d8c08a', roughness: 1 });
 
-    for (const platz of waehleBootsplaetze()) {
+    for (const platz of [...waehleBootsplaetze(), ...klippenNotfallPlaetze(spieler)]) {
       const { boot: gruppe, ruder } = baueBoot(holzTextur);
       // Das Boot liegt längs zum Ufer (die Seite zeigt zum Land)
       const zumLand = Math.atan2(platz.land.x - platz.x, platz.land.z - platz.z);
-      const winkel = zumLand + (zufall() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
+      const winkel = zumLand + (platz.notfall || zufall() < 0.5 ? Math.PI / 2 : -Math.PI / 2);
       gruppe.position.set(platz.x, WASSER_HOEHE, platz.z);
       gruppe.rotation.y = winkel;
       szene.add(gruppe);
@@ -360,7 +384,8 @@ export class Boote {
         ruderPhase: 0,
         ruderEinsatz: 0, // 0 = Ruder eingezogen, 1 = rudern
         entdeckt: false,
-        wackelVersatz: zufall() * 10,
+        wackelVersatz: platz.notfall ? 3.3 : zufall() * 10,
+        notfall: !!platz.notfall, // Notfallboot an der Klippe – fährt jeden Morgen heim in seine Bucht
         boden: { x: Infinity, z: Infinity, h: 0 }, // gemerkte Bodenhöhe unter dem Boot
       };
       this.liste.push(boot);
@@ -384,6 +409,19 @@ export class Boote {
       aktiv: () => this.faehrt && this.landStelle !== null,
       ausfuehren: () => this.aussteigen(),
     });
+  }
+
+  // Jeden Morgen: Notfallboote, die woanders liegen, fahren heim in ihre Bucht (damit dort immer eins ist)
+  notfallHeim() {
+    for (const b of this.liste) {
+      if (!b.notfall || b === this.aktuelles) continue;
+      const p = b.gruppe.position;
+      if (Math.hypot(p.x - b.heimat.x, p.z - b.heimat.z) < 3) continue;
+      if (Math.hypot(p.x - this.spieler.figur.position.x, p.z - this.spieler.figur.position.z) < 15) continue; // nicht vor deinen Augen
+      p.set(b.heimat.x, WASSER_HOEHE, b.heimat.z);
+      b.gruppe.rotation.y = b.winkel;
+      b.tempo.set(0, 0);
+    }
   }
 
   get interaktionen() {

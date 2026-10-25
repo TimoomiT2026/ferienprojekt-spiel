@@ -672,6 +672,7 @@ function spielSchleife() {
   if (ballon.faehrt || rallye.laeuft) naechste = null;
   if (tageszeit.tag !== ballonTag) {
     ballonTag = tageszeit.tag;
+    boote.notfallHeim(); // Notfallboote an der Klippe fahren heim in ihre Bucht
     if (laeuft && ballon.morgensHeim()) setTimeout(() => meldung('🎈 Dein Ballon ist über Nacht heim zur Base geflogen.', 5), 6000);
   }
   // Wer auf der Palmeninsel war, kann mit dem Ballon ins Palmendorf fliegen
