@@ -39,7 +39,7 @@ function istWasser(x, z, tiefe = 0.35) {
 }
 
 // ---------- Holz-Bild malen (statt einer Bilddatei) ----------
-function baueHolzTextur() {
+export function baueHolzTextur() {
   const leinwand = document.createElement('canvas');
   leinwand.width = 256;
   leinwand.height = 256;
@@ -124,7 +124,7 @@ function baueRuder(seite, holz) {
   return ruder;
 }
 
-function baueBoot(holzTextur) {
+export function baueBoot(holzTextur) {
   const boot = new THREE.Group();
   boot.rotation.order = 'YXZ'; // erst drehen, dann schaukeln
   const planken = new THREE.MeshStandardMaterial({ color: '#c98a52', map: holzTextur, roughness: 0.8, side: THREE.DoubleSide });

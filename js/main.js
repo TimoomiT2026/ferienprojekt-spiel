@@ -41,6 +41,7 @@ import { Tauchen } from './tauchen.js';
 import { Finale } from './finale.js';
 import { Ballon } from './ballon.js';
 import { Kleidung } from './kleidung.js';
+import { Prolog, prologGesehen, prologVergessen, direktStart } from './prolog.js';
 import { baueKlippenZaun } from './klippenzaun.js';
 import { Bewohner } from './bewohner.js';
 import { Palmendorf } from './palmendorf.js';
@@ -201,6 +202,8 @@ objekte.interaktionen.push(...angeln.interaktionen);
 // ---------- Die Base (Zelt → Hütte → Haus) ----------
 const base = new Base(szene, hindernisse, { rucksack, meldung, musik, tageszeit, spieler, angeln, schlafen, elternElement: spielfeld });
 const kleidung = new Kleidung({ spieler, meldung, musik, elternElement: spielfeld }); // der Kleiderschrank 👕
+// Der Prolog in Düsseldorf (nur für ganz neue Spieler) – teleport kommt weiter unten dazu
+const prolog = new Prolog(szene, { spieler, meldung, musik, objekte, elternElement: spielfeld, teleport: (x, z, w) => window.__spiel.teleport(x, z, w) });
 base.beiKleidung = () => kleidung.oeffnen();
 base.beiNeuerInteraktion = (ia) => objekte.interaktionen.push(ia);
 objekte.interaktionen.push(...base.interaktionen);
@@ -216,7 +219,7 @@ objekte.interaktionen.push(...ballon.interaktionen);
 const aufgaben = new Aufgaben({ rucksack, lagerfeuer, meldung, musik, elternElement: spielfeld, base: null, pferde: null });
 
 // Fenster, die das Spiel anhalten
-const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || aufgaben.erklaerOffen || base.offen || kleidung.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
+const fensterOffen = () => rucksack.offen || karte.offen || werkbank.offen || haendler.offen || palmendorf.haendler.offen || aufgaben.offen || aufgaben.erklaerOffen || base.offen || kleidung.offen || prolog.offen || finale.offen || ballon.offen || bewohner.offen || markt.offen || zeitung.offen;
 aufgaben.spiel.fensterOffen = () => fensterOffen() && !aufgaben.erklaerOffen; // andere Fenster offen? Dann warten Erklärungen
 
 // ---------- Boote & Tiere ----------
@@ -627,6 +630,12 @@ function spielSchleife() {
   requestAnimationFrame(spielSchleife);
   const echteZeit = uhr.getDelta();
   const dt = Math.min(echteZeit, 0.05);
+  // Der Sturm-Film im Prolog: eigene kleine Welt, eigene Kamera
+  if (prolog.film) {
+    prolog.film.aktualisiere(dt);
+    renderer.render(prolog.film.szene, prolog.film.kamera);
+    return;
+  }
   if (laeuft) passeQualitaetAn(echteZeit);
 
   if (laeuft && fernrohr.aktiv) {
@@ -655,7 +664,7 @@ function spielSchleife() {
     if (karte.offen && rucksack.offen) rucksack.schliessen();
     const pausiert = fensterOffen() || schlaeft;
     if (!pausiert) {
-      tageszeit.aktualisiere(dt);
+      if (!prolog.aktiv) tageszeit.aktualisiere(dt); // in Düsseldorf bleibt die Zeit stehen
       if (eingabe.aktion && !seilkanone.beschaeftigt && !ballon.faehrt && !rallye.laeuft) {
         if (tauchen.taucht) tauchen.aktion();
         else if (spieler.fliegt) spieler.landen(); // in der Luft: Aktion = landen
@@ -714,9 +723,12 @@ function spielSchleife() {
     pruefeVorrat();
     pruefeRucksackVoll();
     rallye.widerhakenNachliefern();
-    ueberleben.aktualisiere();
-    zeitung.aktualisiere(dt);
-    aufgaben.aktualisiere(dt);
+    if (!prolog.aktiv) {
+      ueberleben.aktualisiere();
+      zeitung.aktualisiere(dt);
+      aufgaben.aktualisiere(dt);
+    }
+    prolog.aktualisiere(dt);
   }
   tiere.aktualisiere(dt, pos, himmel.helligkeit);
   pferde.aktualisiere(dt, pos, himmel.helligkeit);
@@ -914,6 +926,7 @@ function wendeSpielstandAn(s) {
 let neuAnfangen = false; // wurde "Neues Spiel" gedrückt?
 function speichern() {
   if (neuAnfangen) return; // gerade wird alles gelöscht – nicht wieder speichern!
+  if (prolog.aktiv) return; // im Prolog (Düsseldorf) wird nichts gespeichert – erst auf der Insel geht's richtig los
   if (laeuft && !boote.faehrt && !pferde.reitet && !seilkanone.beschaeftigt && !ballon.faehrt && !tauchen.taucht && !rallye.laeuft) speichereSpielstand(sammleSpielstand());
 }
 setInterval(speichern, 10000);
@@ -946,10 +959,16 @@ if (gespeichert) {
     neuAnfangen = true; // ab jetzt: nichts mehr speichern, nichts starten
     if (confirm('Wirklich ganz von vorn anfangen? Dein Spielstand wird gelöscht.')) {
       loescheSpielstand();
+      prologVergessen(); // ganz von vorn = auch wieder in Düsseldorf
       location.reload();
     } else neuAnfangen = false;
   });
 }
+// Nach dem Prolog-Film lädt das Spiel neu – dann ohne Startbildschirm gleich weiter (zum Tagebuch)
+if (direktStart()) setTimeout(() => {
+  startBildschirm.classList.add('weg');
+  starte();
+}, 0);
 // Zweiter Weg ins Spiel: das Freie Spiel (eigener Speicherplatz)
 {
   const freiKnopf = document.createElement('button');
@@ -977,6 +996,11 @@ function starte() {
   if (gespeichert) {
     wendeSpielstandAn(gespeichert);
     los();
+  } else if (!prologGesehen()) {
+    // Ganz neu hier? Dann beginnt alles in Düsseldorf am Rheinturm 🏙️
+    laeuft = true;
+    document.getElementById('hud').classList.add('sichtbar');
+    prolog.starten();
   } else zeigeVorgeschichte(spielfeld, los);
 }
 startBildschirm.addEventListener('click', starte);
@@ -1010,7 +1034,7 @@ verbindeEreignisse(ereignisse, { rucksack, angeln, objekte, base, pferde, karte,
 
 window.__spiel = {
   spieler, rucksack, tageszeit, objekte, renderer, starte, karte, werkbank, szene, kamera, boote, tiere, pferde, fernrohr, base, pilze,
-  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, nebel, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye, ereignisse, zeitung,
+  haendler, lagerfeuer, ueberleben, aufgaben, speichern, sammleSpielstand, nach, musik, tutorial, nebel, seilkanone, tauchen, finale, ballon, bewohner, palmendorf, angeln, markt, rallye, ereignisse, zeitung, prolog, kleidung,
   set qualitaetsAutomatik(an) { automatik = an; },
   get kameraWinkel() { return kameraWinkel; },
   teleport(x, z, winkel = kameraWinkel) {

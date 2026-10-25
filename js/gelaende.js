@@ -6,6 +6,16 @@ import { EINSTELLUNGEN } from './einstellungen.js';
 import { fbm } from './rauschen.js';
 import { textur } from './texturen.js';
 
+// Die Stadt im Prolog (Düsseldorf am Rheinturm, siehe prolog.js) – nur solange der Prolog läuft.
+// (Steht ganz oben, weil die Bodenhöhe schon beim Laden gebraucht wird.)
+var STADT = null; // { x, z, halb, hoehe(x, z) }
+export function setzeStadt(stadt) {
+  STADT = stadt;
+}
+function inDerStadt(x, z) {
+  return !!STADT && Math.abs(x - STADT.x) < STADT.halb && Math.abs(z - STADT.z) < STADT.halb;
+}
+
 export const WASSER_HOEHE = 0;
 const R = EINSTELLUNGEN.inselGroesse;
 
@@ -201,6 +211,8 @@ export function istKlippenWand(x, z) {
 // Ist ein Schritt von (ax, az) nach (bx, bz) zu steil bergauf?
 // (Es zählt der Boden, nicht die Füße – sonst könnte man die Klippe hochhüpfen!)
 export function zuSteilBergauf(ax, az, bx, bz) {
+  // In der Stadt: Häuserwände und die Kaimauer am Rhein kann man nicht hochlaufen
+  if (inDerStadt(bx, bz)) return bodenHoehe(bx, bz) - bodenHoehe(ax, az) > 0.6;
   const I = neueInselBei(bx, bz);
   if (!I || !I.klippen) return false; // nur an den Klippen – die Startinsel bleibt, wie sie ist
   const weg = Math.max(Math.hypot(bx - ax, bz - az), 0.01);
@@ -270,6 +282,7 @@ export const INSELN = [
 // Wie hoch ist der Boden an der Stelle (x, z)? (alle Inseln zusammen)
 // Zwischen den Inseln ist überall Meeresboden (−7 m).
 export function bodenHoehe(x, z) {
+  if (inDerStadt(x, z)) return STADT.hoehe(x, z);
   // Weit draußen ist die Startinsel sowieso nur Meeresboden – das spart Rechnen
   let h = x * x + z * z > START_REICHWEITE * START_REICHWEITE ? -7 : startInselHoehe(x, z);
   for (const I of NEUE_INSELN) {

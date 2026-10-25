@@ -400,6 +400,29 @@ export const EINSTELLUNGEN = {
     ],
   },
 
+  // ---------- Prolog in Düsseldorf 🏙️ (nur für ganz neue Spieler) ----------
+  prolog: {
+    start: [20, 90], // wo man anfängt (Meter ab dem Rheinturm: x = Osten, z = Süden)
+    boot: [-110, 30], // ungefähr hier liegt das Ruderboot im Yachthafen
+    hausFarben: ['#f3d9b1', '#e8b9a0', '#cfe0c3', '#bcd4e6', '#f2e3a0', '#e6c7d9', '#d9d2c4', '#f0c8a0'],
+    chatTempo: 1700, // so viele Millisekunden zwischen zwei Chat-Nachrichten
+    chat: [
+      '<b>❓ Unbekannt:</b> Pssst … Forscher?',
+      '<b>❓ Unbekannt:</b> Ich weiß, wonach du suchst. Das Insadorium gibt es wirklich!',
+      '<b>❓ Unbekannt:</b> Es liegt auf einer unbekannten Inselgruppe, weit draußen im Meer. Kaum jemand war je dort.',
+      '<b>❓ Unbekannt:</b> Hier sind die Koordinaten: <b>47°11′ S · 31°08′ W</b> 🗺️',
+      '<b>❓ Unbekannt:</b> Erzähl niemandem davon. Viel Glück!',
+      '— Unbekannt hat den Chat verlassen —',
+    ],
+    reiseplan: ['🗺️ Koordinaten in die Seekarte eintragen', '🎒 Rucksack packen', '⛺ Zelt einpacken', '🍞 Proviant für viele Wochen', '🚣 Ruderboot im Yachthafen bereitmachen'],
+  },
+  // Der Sturm-Film („2 Wochen später …“)
+  sturmfilm: {
+    dauer: 17, // Sekunden
+    wellen: 1.0, // wie hoch die Wellen sind (1 = normal, 2 = riesig)
+    regenTropfen: 2500,
+  },
+
   // ---------- Freies Spiel 🌴 ----------
   // So viele Münzen hat man im Freien Spiel – und es werden nie weniger (Anzeige: ∞)
   freiesSpielMuenzen: 999999,

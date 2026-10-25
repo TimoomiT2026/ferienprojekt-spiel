@@ -1,0 +1,73 @@
+/* =============================================================
+   PROLOG in Düsseldorf 🏙️ und der Sturm-Film ⛈️
+   ============================================================= */
+
+/* Im Prolog braucht man keine Münzen, keinen Rucksack, keine Uhr … */
+body.prolog #muenz-anzeige, body.prolog #hunger-anzeige, body.prolog #rucksack-knopf,
+body.prolog #uhr, body.prolog #aufgabe-anzeige, body.prolog #karte-knopf, body.prolog #bonus-anzeige { display: none !important; }
+/* Im Film: gar keine Knöpfe */
+body.prolog-film #hud, body.prolog-film #prolog-ziel, body.prolog-film #prolog-ueberspringen { display: none !important; }
+
+#prolog-ziel {
+  position: absolute; top: max(16px, env(safe-area-inset-top)); left: max(16px, env(safe-area-inset-left)); z-index: 6;
+  padding: 10px 18px 7px; border-radius: 18px; background: #fff3dc; border: 3px solid var(--holz-rand); color: var(--tinte);
+  font-weight: 800; font-size: 20px; box-shadow: 0 4px 0 var(--holz-rand); pointer-events: none;
+  animation: aufgabe-leuchten 0.9s ease-in-out 4;
+}
+#prolog-ueberspringen {
+  position: absolute; bottom: max(16px, env(safe-area-inset-bottom)); left: 50%; transform: translateX(-50%); z-index: 6;
+  min-height: 44px; padding: 8px 18px 6px; font: inherit; font-size: 16px; font-weight: 700; color: #fff;
+  background: rgba(0, 0, 0, 0.45); border: 2px solid rgba(255, 255, 255, 0.6); border-radius: 22px;
+}
+
+/* Das große Erzähl-Fenster */
+#prolog-karte {
+  display: none; position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 70;
+  width: min(620px, calc(100vw - 24px)); max-height: calc(100% - 24px); overflow-y: auto; -webkit-overflow-scrolling: touch;
+  padding: 22px 24px 18px; border-radius: 26px; background: #fff7e6; border: 6px solid #a0693a; box-shadow: 0 10px 0 rgba(0, 0, 0, 0.25);
+  color: var(--tinte); text-align: center; font-size: 18px; line-height: 1.4;
+}
+#prolog-karte.offen { display: block; }
+#prolog-karte h2 { margin: 4px 0 8px; font-size: 28px; color: #2f78c8; }
+#prolog-karte p { margin: 0 0 10px; }
+#prolog-karte .fenster-knopf[disabled] { opacity: 0.45; }
+.labor-bild { width: 100%; height: auto; border-radius: 16px; margin-bottom: 6px; }
+
+/* Der Computer: links „Mini Blocks“, rechts der geheime Chat */
+.computer { display: flex; gap: 12px; align-items: stretch; text-align: left; }
+.mini-blocks { position: relative; flex: 0 0 38%; display: grid; grid-template-columns: repeat(8, 1fr); align-content: start; gap: 2px; padding: 8px;
+  background: #1d2430; border: 6px solid #9aa6b5; border-radius: 12px; min-height: 180px; }
+.mini-blocks i { aspect-ratio: 1; background: #3fae3a; border-radius: 2px; }
+.mini-blocks i:nth-child(3n) { background: #7a5a3a; } .mini-blocks i:nth-child(7n) { background: #8fc9f0; } .mini-blocks i:nth-child(11n) { background: #9aa0a8; }
+.mini-blocks b { position: absolute; left: 0; right: 0; bottom: 8px; text-align: center; color: #ffd84a; font-size: 15px; letter-spacing: 1px; text-shadow: 0 2px 0 #000; }
+.chat { flex: 1; display: flex; flex-direction: column; background: #eef3f8; border: 3px solid #b7c6d6; border-radius: 14px; overflow: hidden; }
+.chat-kopf { background: #2f78c8; color: #fff; font-weight: 800; padding: 6px 10px 4px; font-size: 16px; }
+.chat-liste { flex: 1; padding: 8px; max-height: 240px; overflow-y: auto; font-size: 15px; line-height: 1.3; }
+.chat-nachricht { background: #fff; border-radius: 12px 12px 12px 3px; padding: 6px 10px; margin-bottom: 6px; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.08); animation: chat-rein 0.3s ease-out; }
+.chat-ende { text-align: center; color: #7d8a99; font-style: italic; font-size: 13px; margin-top: 4px; }
+@keyframes chat-rein { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+
+/* Der Reiseplan: Punkte werden nacheinander abgehakt */
+.reiseplan { list-style: none; padding: 0; margin: 6px auto 4px; max-width: 420px; text-align: left; }
+.reiseplan li { padding: 8px 12px 6px 40px; margin: 6px 0; border-radius: 12px; background: #fffdf7; border: 2px solid #e0c79a; position: relative; opacity: 0.45; transition: opacity 0.3s; }
+.reiseplan li::before { content: '⬜'; position: absolute; left: 10px; }
+.reiseplan li.erledigt { opacity: 1; }
+.reiseplan li.erledigt::before { content: '✅'; }
+
+/* Der Sturm-Film */
+#sturmfilm { position: absolute; inset: 0; z-index: 90; pointer-events: none; }
+#sturmfilm .film-blitz { position: absolute; inset: 0; background: #eef4ff; opacity: 0; }
+#sturmfilm .film-schwarz { position: absolute; inset: 0; background: #000; display: flex; align-items: center; justify-content: center; }
+#sturmfilm .film-titel { color: #fff; font-size: clamp(32px, 7vw, 60px); font-weight: 800; letter-spacing: 1px; }
+#sturmfilm .film-untertitel { position: absolute; left: 50%; bottom: 8%; transform: translateX(-50%); width: min(720px, 90vw); text-align: center;
+  color: #fff; font-size: clamp(18px, 3vw, 26px); font-weight: 700; text-shadow: 0 2px 6px #000; }
+
+@media (max-height: 500px) {
+  #prolog-ziel { top: var(--rand-o); left: var(--rand-l); font-size: 15px; padding: 6px 12px 4px; }
+  #prolog-karte { font-size: 15px; padding: 14px 16px 12px; }
+  #prolog-karte h2 { font-size: 21px; }
+  .mini-blocks { min-height: 120px; }
+  .chat-liste { max-height: 150px; font-size: 13px; }
+  .reiseplan li { padding: 5px 10px 3px 36px; margin: 4px 0; }
+}
+#prolog-karte .prolog-quelle { font-size: 12px; color: #8b6a48; margin-top: 4px; }
