@@ -1186,7 +1186,8 @@ export function baueDuesseldorf(szene, plan, { hindernisse, frei = () => true, t
   baueHaeuser(gruppe);
   gruppe.add(baueRheinturm(tuerWinkel));
   // Durch den Glas-Eingang am Turm kann man nicht durchlaufen
-  if (hindernisse) for (const r of [11, 15]) hindernisse.hinzufuegen(STADT.x + Math.sin(tuerWinkel) * r, STADT.z + Math.cos(tuerWinkel) * r, 4.6);
+  const turmHindernisse = [11, 15].map((r) => ({ x: STADT.x + Math.sin(tuerWinkel) * r, z: STADT.z + Math.cos(tuerWinkel) * r, r: 4.6 }));
+  if (hindernisse) for (const h of turmHindernisse) h.griff = hindernisse.hinzufuegen(h.x, h.z, h.r);
   const autosFahren = baueBruecke(gruppe, plan);
   const laternen = baueLaternenUndBaenke(gruppe, plan);
   baueYachthafen(gruppe, plan, frei);
@@ -1198,6 +1199,7 @@ export function baueDuesseldorf(szene, plan, { hindernisse, frei = () => true, t
   if (hindernisse) for (const b of baeume) hindernisse.hinzufuegen(STADT.x + b.x, STADT.z + b.z, 0.5 * b.groesse);
   return {
     gruppe,
+    turmHindernisse, // nur unten am Boden – oben im Labor werden sie weggenommen
     aktualisiere(dt) {
       schiffeFahren(dt);
       autosFahren(dt);

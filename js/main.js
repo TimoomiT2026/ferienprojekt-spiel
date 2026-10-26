@@ -348,6 +348,7 @@ aufgaben.spiel.seilkanone = seilkanone;
 rallye.widerhakenFehlt = () => !tauchen.gefunden && !['widerhaken', 'seilkanone'].some((id) => rucksack.hat(id) || base.truhe.some((p) => p && p.id === id));
 // Im tiefen Wasser festgesteckt (z. B. von der Klippe gefallen)? Dann zum nächsten Strand
 spieler.bootInDerNaehe = (x, z) => boote.positionen.some((b) => Math.hypot(b.x - x, b.z - z) < 4); // nah genug zum Einsteigen
+spieler.keineRettung = () => prolog.imLabor || !!prolog.ablauf;
 spieler.beiRettung = () => meldung('🌊 Platsch! Du warst im tiefen Wasser – jetzt bist du wieder in Sicherheit.', 6);
 werkbank.spiel.inDieTruhe = rallye.inDieTruhe; // Werkbank: Rucksack voll? Dann in die Truhe
 // Rucksack voll? Dann den Tipp mit dem größeren Rucksack beim Händler

@@ -569,6 +569,7 @@ export class Spieler {
   // Die Figur in Sicherheit bringen: an der Klippeninsel nach oben aufs Plateau (innen am Zaun),
   // sonst zum nächsten Strand
   retten() {
+    if (this.keineRettung?.()) return; // z. B. oben im Rheinturm (Prolog) – da gibt es kein Wasser
     const pos = this.figur.position;
     // Aufs Plateau nur, wenn man von oben kam (runtergefallen) oder noch oben in der Wand hängt –
     // wer mit dem Boot unten am Strand ist, kommt zum nächsten Strand (sonst säße er oben ohne Seil fest)

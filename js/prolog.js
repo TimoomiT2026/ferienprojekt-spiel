@@ -284,15 +284,20 @@ export class Prolog {
   betreteLabor() {
     this.imLabor = true;
     this.lab.labor.visible = true;
-    this.laborHindernisse = this.lab.hindernisse.map((h) => this.spiel.hindernisse?.hinzufuegen(STADT.x + h.x, STADT.z + h.z, h.r));
+    const H = this.spiel.hindernisse;
+    // Hindernisse kennen keine Höhe: Was unten am Turm steht (der Glas-Eingang), würde oben im Labor im Weg stehen
+    for (const h of this.stadt.turmHindernisse) { if (h.griff) H?.entfernen(h.griff); h.griff = null; }
+    this.laborHindernisse = this.lab.hindernisse.map((h) => H?.hinzufuegen(STADT.x + h.x, STADT.z + h.z, h.r));
     const a = this.lab.ankunft;
     this.spiel.teleport(STADT.x + a.x, STADT.z + a.z, this.tuerWinkel + 1.2, 0.3);
   }
   verlasseLabor() {
     this.imLabor = false;
     this.lab.labor.visible = false;
-    for (const h of this.laborHindernisse || []) if (h) this.spiel.hindernisse.entfernen(h);
+    const H = this.spiel.hindernisse;
+    for (const h of this.laborHindernisse || []) if (h) H?.entfernen(h);
     this.laborHindernisse = null;
+    for (const h of this.stadt.turmHindernisse) if (!h.griff && H) h.griff = H.hinzufuegen(h.x, h.z, h.r);
   }
 
   // ---------- Mit dem Aufzug wieder runter ----------
